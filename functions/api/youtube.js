@@ -11,7 +11,10 @@ function json(body, status = 200) {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
       'x-content-type-options': 'nosniff',
-      'referrer-policy': 'no-referrer'
+      'referrer-policy': 'no-referrer',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'GET, OPTIONS',
+      'access-control-allow-headers': 'Accept, Content-Type'
     }
   });
 }
@@ -139,6 +142,7 @@ export async function onRequest(context) {
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: {
       'allow': 'GET, OPTIONS',
+      'access-control-allow-origin': '*',
       'access-control-allow-methods': 'GET, OPTIONS',
       'access-control-allow-headers': 'Accept, Content-Type',
       'cache-control': 'no-store'
