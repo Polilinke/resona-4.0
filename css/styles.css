@@ -965,3 +965,15 @@ input,select,textarea,.track img,.feature-track img,.np-thumb,.np-full-art {
 .btn.icon,.transport .btn.icon { border-radius:50%; }
 html[data-device-layout="mobile"] .nav-btn { border-radius:18px; }
 html[data-device-layout="mobile"] .library-subnav-btn { border-radius:16px; }
+
+
+/* Resona account dialog */
+.account-card { width: min(440px, calc(100vw - 32px)); }
+.account-tabs { display: flex; gap: 8px; margin: 12px 0 18px; }
+.account-tabs .btn { flex: 1; }
+.account-form { display: grid; gap: 13px; margin: 12px 0; }
+.account-form label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+.account-form input { width: 100%; }
+.account-form button { justify-self: start; }
+.account-card .status { margin: 14px 0 0; overflow-wrap: anywhere; }
+.account-card .status.error { color: var(--danger); }
