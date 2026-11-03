@@ -1,76 +1,75 @@
-# DeepFlow Player (Windows)
+# Resona
 
-## Setup (once)
+Resona is a browser-based music discovery and playback interface, with an optional Electron desktop shell. It uses the official YouTube IFrame Player for playback and the YouTube Data API v3 for search and popular tracks. It does not download or extract YouTube audio.
 
-1. Replace the files in `C:\Users\kakke\MusicApp` with the files in this package. Keep the folder structure: `js\` and `css\` subfolders.
-2. Open **Command Prompt** in that folder and run:
+## Cloudflare Pages deployment
 
-   ```
-   cd C:\Users\kakke\MusicApp
-   npm install
-   ```
+The browser edition is designed to deploy to **Cloudflare Pages**. The repository root is the Pages project root; there is no build step because the frontend is plain HTML, CSS and JavaScript.
 
-## Run
+### 1. Create the D1 database
 
-```
-npm start
-```
+1. In the Cloudflare dashboard, open **Workers & Pages → D1 SQL Database**.
+2. Create a database named `resona-production`.
+3. Open the database and run the SQL in `migrations/0001_initial.sql`.
+4. Copy the database ID into `wrangler.toml`, replacing `REPLACE_WITH_YOUR_D1_DATABASE_ID`.
 
-## Get a YouTube API key (free)
+The D1 binding name must remain `DB`. The Pages Function uses it for persistent per-IP rate limits and short-lived search caching.
 
-1. Go to https://console.cloud.google.com and create a project.
-2. Enable **YouTube Data API v3** for it (APIs & Services > Library).
-3. Go to APIs & Services > Credentials > Create credentials > API key.
-4. In the app, click ⚙ and paste the key, then **Save & close**.
+### 2. Connect Pages to GitHub
 
-Limits: the free quota is 10,000 units per day. Each search costs 100 units, so you get about 100 fresh searches per day. Playback uses no quota. Cached searches are free and last 24 hours. Keys created in the same Google Cloud project share one quota pool. To get more quota, request an increase through Google's official quota extension form.
+1. Open **Workers & Pages → Create → Pages → Connect to Git**.
+2. Select `Polilinke/resona-4.0`.
+3. Set the production branch to `main`.
+4. Set **Build command** to blank / none.
+5. Set **Build output directory** to `.` (the repository root).
+6. Deploy.
 
-## Notes
+Cloudflare Pages automatically discovers the API route at `functions/api/youtube.js`, which serves `/api/youtube`.
 
-- Installer: `npm run dist:win`. The output is in `dist\`.
+### 3. Add the YouTube API key
 
-- Playback uses YouTube's official embedded player. The app does not download or extract audio.
-- Some videos disallow embedding. The app skips them and shows a message.
-- The visualizer bars are decorative animation. They do not react to the real audio.
-- Your library, playlists, queue, and API key are stored on this computer only. Use **Export backup** to save a copy.
-- Quota tracking is an estimate kept on this computer. Google's own count is authoritative.
+In the Pages project, open **Settings → Variables and Secrets → Add** and create:
 
-## Files
+- Name: `YOUTUBE_API_KEY`
+- Value: your Google Cloud YouTube Data API v3 key
+- Type: secret / encrypted
+- Environment: Production (and Preview only if you want preview deployments to search)
 
-- `main.js`: Electron window setup
-- `index.html`: interface layout
-- `css/styles.css`: themes, accent colours, animations
-- `js/store.js`: saved data, playlists, queue, quota, cache
-- `js/youtube.js`: YouTube search
-- `js/app.js`: UI, search, playback, queue, settings
+Never put the real key in frontend JavaScript, HTML, GitHub, or an Electron package. Keep `.env` local and untracked.
 
-## Browser edition and Netlify
+### 4. Verify the deployment
 
-This folder can be deployed as a static browser app: create a Netlify site and publish the `MusicApp` folder (the folder containing `index.html`). The browser edition keeps library, playlists, history, queue, settings and the selected MP4 background in that browser's local storage / IndexedDB. These are not synced between devices.
+After deployment, test:
 
-### Browser features in this build
+- `https://YOUR-PAGES-DOMAIN/api/youtube?action=popular&region=IN`
+- `https://YOUR-PAGES-DOMAIN/api/youtube?action=search&q=daft%20punk`
 
-- Insights and a local DeepFlow Wrapped summary based on recorded play starts.
-- Smart queue suggestions based on saved tracks and listening history; these do not call YouTube Search and do not use YouTube Data API quota.
-- Per-track synced-lyrics timing adjustment, saved separately for each track.
-- Theme studio controls for custom accent colour and glass blur intensity.
-- Sleep timer that pauses the YouTube player.
-- MP4 background persistence using IndexedDB in the browser.
-- Listening Rooms screen is a placeholder pending a realtime backend.
+A successful response is JSON containing an `items` array. A missing secret or D1 binding returns a service-configuration error rather than exposing credentials.
 
-### Current technical limitations
+## Cloudflare configuration
 
-The YouTube embedded player does not expose its audio stream to this page, so the existing animated visualizer is not a true audio analyser and a real equalizer cannot process YouTube playback. A supported direct audio source is needed for those features. Listening Rooms require a realtime backend and authentication. See `docs/FUTURE-INTEGRATIONS.md` for the planned secure architecture for Rooms and a future JARVIS connection.
+- `wrangler.toml`: Pages output directory and D1 binding.
+- `functions/api/youtube.js`: server-side YouTube API proxy.
+- `migrations/0001_initial.sql`: persistent D1 tables.
+- `js/youtube.js`: same-origin frontend API client.
 
-The YouTube API key is still entered by each visitor in Settings. Browser-side keys are visible to site visitors; restrict each key to YouTube Data API v3 and configure appropriate website restrictions where possible. A future server-side search proxy is recommended for a public production launch.
+The API uses D1-backed limits: a five-second fresh-request cooldown and up to 30 fresh requests per IP per Pacific calendar day. IP addresses are SHA-256 hashed before storage. Successful responses are cached in D1 for five minutes. These are abuse-reduction guardrails, not a guarantee against distributed abuse or exhaustion of Google's project quota. Set Google Cloud API restrictions and quota alerts as well.
 
+## Browser data and privacy
 
-## Shared YouTube search API (Netlify)
+The browser edition stores the user's library, playlists, queue, history, settings and selected custom MP4 background locally in that browser using localStorage / IndexedDB. These are not synced between devices and are not automatically shared with other users. The current Listening Rooms view is a placeholder, not a functioning multiplayer feature.
 
-Set `YOUTUBE_API_KEY` in Netlify Site configuration → Environment variables and mark it as a secret.
-The browser app calls the `netlify/functions/youtube.mjs` serverless function; it never receives the key.
-For local Netlify Dev, copy `.env.example` to `.env` and add your private key. Never distribute `.env`.
+## Local development
 
-**Important rate-limit note:** this starter includes a per-server-instance 5-second cooldown and a 30-search daily cap per IP. Serverless instances can restart or scale independently, so these are basic guardrails, not a hard global quota. Before a broad public launch, add persistent shared rate-limit storage and configure Google Cloud API restrictions / quota alerts. The API key is hidden from website visitors but server-side keys are not magically impossible to abuse if the endpoint is public.
+Serve the repository through Cloudflare Pages local development so that the `/api/youtube` Function and D1 binding are available. Configure the local secret with Wrangler's local secret workflow; do not commit it. The frontend is static and does not need a bundler.
 
-For the Electron `file://` build, the API endpoint must be configured to your deployed Netlify site's `/.netlify/functions/youtube` URL before distributing the installer. The browser deployment uses same-origin automatically. Do not ship an API key in the Electron package.
+## Electron desktop edition
+
+The Electron shell remains in the repository, but the Cloudflare Pages API is same-origin and is intended for the hosted browser edition. A packaged Electron app opened from `file://` cannot call the relative `/api/youtube` route. Before distributing Electron builds, add a configurable HTTPS API base URL and point it at the deployed Pages domain; do not embed the YouTube API key in the app. The current repository migration does not claim that this desktop API endpoint has been configured.
+
+## Known limitations
+
+- The YouTube embedded player does not expose decoded audio to the page. The visualizer is decorative; a real equalizer or audio-reactive visualizer needs a supported direct audio source.
+- Listening Rooms need authentication and a realtime backend before they can be enabled.
+- JARVIS integration is not enabled. Any future assistant API must be server-side, authenticated and rate-limited; never expose a Gemini key or a user's local JARVIS service to the public browser.
+- Google controls the authoritative YouTube API quota. Cached responses reduce repeat requests but do not change Google's quota rules.
