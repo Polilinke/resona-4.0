@@ -22,13 +22,16 @@
       "css/**/*",
       "js/**/*",
       "assets/**/*",
-      "package.json"
+      "package.json",
+      "config.js"
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
