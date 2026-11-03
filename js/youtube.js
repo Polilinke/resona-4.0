@@ -1,15 +1,20 @@
-// Browser requests use the same-origin Cloudflare Pages Function.
-// The YouTube API key stays in the server-side YOUTUBE_API_KEY secret.
+// YouTube API requests are proxied by the Cloudflare Pages Function.
+// Never place the YouTube API key in this browser or desktop code.
 const YouTubeAPI = (() => {
   class QuotaExhaustedError extends Error {}
   async function request(action, params = {}) {
-    const url = new URL('/api/youtube', window.location.origin);
+    const configuredBase = String(window.RESONA_CONFIG?.apiBaseUrl || '').trim();
+    const base = configuredBase || window.location.origin;
+    if (base === 'null' || window.location.protocol === 'file:' && !configuredBase) {
+      throw new Error('Set the deployed Cloudflare Pages URL in config.js before using search in the desktop app.');
+    }
+    const url = new URL('/api/youtube', base);
     url.searchParams.set('action', action);
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
     const res = await fetch(url.toString(), {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      credentials: 'same-origin'
+      credentials: configuredBase ? 'omit' : 'same-origin'
     });
     const body = await res.json().catch(() => ({}));
     if (res.status === 429) throw new Error(body.error || 'Please wait before searching again.');
