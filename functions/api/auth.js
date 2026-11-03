@@ -33,7 +33,7 @@ function validEmail(email) {
 }
 async function sendVerification(env, email, displayName, token, origin) {
   if (!env.RESEND_API_KEY || !env.RESONA_EMAIL_FROM) throw new Error("EMAIL_SERVICE_NOT_CONFIGURED");
-  const link = `${origin}/?verify=${encodeURIComponent(token)}`;
+  const link = `${origin}/api/auth?verify=${encodeURIComponent(token)}`;
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "authorization": `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
@@ -83,6 +83,8 @@ export async function onRequest(context) {
     const user = await currentUser(request, env.DB);
     return response({ user: user ? { id: user.id, email: user.email, displayName: user.display_name, emailVerified: !!user.email_verified_at } : null });
   }
+  const requestOrigin = request.headers.get("Origin");
+  if (requestOrigin && requestOrigin !== origin) return response({ error: "Cross-origin account requests are not allowed." }, 403);
   let body;
   try { body = await request.json(); } catch { return response({ error: "Invalid request." }, 400); }
   const action = String(body.action || "");
