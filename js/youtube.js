@@ -1,15 +1,21 @@
-// All YouTube Data API requests go through the site's Netlify serverless function.
-// The API key is never sent to the browser or desktop client.
+// Browser requests use the same-origin Cloudflare Pages Function.
+// The YouTube API key stays in the server-side YOUTUBE_API_KEY secret.
 const YouTubeAPI = (() => {
   class QuotaExhaustedError extends Error {}
   async function request(action, params = {}) {
-    const url = new URL('/.netlify/functions/youtube', window.location.origin);
+    const url = new URL('/api/youtube', window.location.origin);
     url.searchParams.set('action', action);
-    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, String(v)));
-    const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      credentials: 'same-origin'
+    });
     const body = await res.json().catch(() => ({}));
     if (res.status === 429) throw new Error(body.error || 'Please wait before searching again.');
-    if (res.status === 503 && body.code === 'QUOTA_EXHAUSTED') throw new QuotaExhaustedError(body.error);
+    if (res.status === 503 && body.code === 'QUOTA_EXHAUSTED') {
+      throw new QuotaExhaustedError(body.error || 'The shared YouTube quota is exhausted.');
+    }
     if (!res.ok) throw new Error(body.error || `Search service failed (${res.status}).`);
     return body;
   }
