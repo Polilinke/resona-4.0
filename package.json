@@ -1,7 +1,7 @@
 {
-  "name": "deepflow",
-  "version": "0.2.0",
-  "description": "DeepFlow custom Windows music player with YouTube discovery and embedded playback",
+  "name": "resona",
+  "version": "0.3.0",
+  "description": "Resona music discovery and playback app",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -13,23 +13,22 @@
     "electron-builder": "^25.0.0"
   },
   "build": {
-    "appId": "com.deepflow.player",
-    "productName": "DeepFlow",
+    "appId": "com.resona.player",
+    "productName": "Resona",
     "files": [
       "main.js",
       "preload.js",
       "index.html",
       "css/**/*",
       "js/**/*",
+      "assets/**/*",
       "package.json"
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ]
     },
