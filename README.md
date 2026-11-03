@@ -78,3 +78,24 @@ The Electron shell remains available. The hosted browser edition uses the same-o
 - Listening Rooms need authentication and a realtime backend before they can be enabled.
 - JARVIS integration is not enabled. Any future assistant API must be server-side, authenticated and rate-limited; never expose a Gemini key or a user's local JARVIS service to the public browser.
 - Google controls the authoritative YouTube API quota. Cached responses reduce repeat requests but do not change Google's quota rules.
+
+
+## Resona accounts (initial implementation)
+
+The browser edition now includes email/password account registration, email verification, sign-in, sign-out, and display-name editing. Passwords are hashed with PBKDF2 before storage; sessions are stored server-side in D1 and issued in secure, HTTP-only cookies.
+
+### Configure account storage
+
+1. Apply the new migration to the same D1 database:
+   \`npx wrangler d1 migrations apply resona-production --remote\`
+2. Configure a Resend account and verify the sender domain/address you intend to use.
+3. In Cloudflare Pages → Settings → Variables and Secrets, add these **encrypted secrets**:
+   - \`RESEND_API_KEY\`: your Resend API key.
+   - \`RESONA_EMAIL_FROM\`: a sender such as \`Resona <accounts@your-verified-domain.example>\` (use an address/domain verified with Resend).
+4. Redeploy the Pages project after adding the secrets.
+
+The verification link expires after one hour. Account sessions expire after 30 days. The account API is same-origin and is currently intended for the hosted browser edition.
+
+### Current account scope
+
+This is the first authentication layer, not the complete cloud-library feature yet. Playlists, saved tracks, queue, history and settings still use device-local storage. They are **not yet synced to accounts**. Password reset, account deletion, profile pictures, Google sign-in, and Electron account sign-in are also not implemented yet. Do not announce cloud sync until the user-data API and migration are complete.
