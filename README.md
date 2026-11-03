@@ -61,11 +61,16 @@ The browser edition stores the user's library, playlists, queue, history, settin
 
 ## Local development
 
-Serve the repository through Cloudflare Pages local development so that the `/api/youtube` Function and D1 binding are available. Configure the local secret with Wrangler's local secret workflow; do not commit it. The frontend is static and does not need a bundler.
+1. Install Node.js and run `npm install` to install Wrangler locally through `npx` when needed.
+2. Copy `.dev.vars.example` to `.dev.vars` and put your private YouTube key in `.dev.vars`. The real `.dev.vars` file is ignored by Git.
+3. Apply the D1 schema locally with `npx wrangler d1 migrations apply resona-production --local`.
+4. Run `npx wrangler pages dev .` from the repository root. The frontend and `/api/youtube` Function will be served together.
+
+The frontend is static and does not need a bundler. Do not commit `.dev.vars` or paste a real key into chat.
 
 ## Electron desktop edition
 
-The Electron shell remains in the repository, but the Cloudflare Pages API is same-origin and is intended for the hosted browser edition. A packaged Electron app opened from `file://` cannot call the relative `/api/youtube` route. Before distributing Electron builds, add a configurable HTTPS API base URL and point it at the deployed Pages domain; do not embed the YouTube API key in the app. The current repository migration does not claim that this desktop API endpoint has been configured.
+The Electron shell remains available. The hosted browser edition uses the same-origin Pages API automatically. For an Electron build, edit the public `apiBaseUrl` value in `config.js` to your deployed HTTPS Pages domain (for example, `https://your-project.pages.dev`). This is a public endpoint URL, not a secret. The Pages Function allows cross-origin requests for this public search endpoint; never put the YouTube API key in the Electron package. The build configuration includes `config.js` and the built-in `assets/` folder.
 
 ## Known limitations
 
