@@ -49,6 +49,7 @@
       </select>
       <button id="themeToggle" class="btn ghost" title="Toggle dark / light">☾ / ☀</button>
       <button id="fullscreenBtn" class="btn ghost" title="Fullscreen (F11)">⛶</button>
+      <button id="accountBtn" class="btn ghost" title="Account">Account</button>
       <button id="settingsBtn" class="btn ghost" title="Settings">⚙</button>
     </div>
   </header>
@@ -204,6 +205,34 @@
   <!-- Hidden holder for the official YouTube embedded player -->
   <div id="ytHolder"></div>
 
+  <!-- Account dialog -->
+  <div id="accountDialog" class="modal hidden">
+    <div class="modal-card account-card">
+      <div class="row-between"><h3>Resona account</h3><button id="accountClose" class="btn ghost" type="button">Close</button></div>
+      <div id="accountSignedOut">
+        <div class="account-tabs"><button id="showLogin" class="btn primary" type="button">Sign in</button><button id="showSignup" class="btn ghost" type="button">Create account</button></div>
+        <form id="loginForm" class="account-form">
+          <label>Email address<input id="loginEmail" type="email" autocomplete="email" required maxlength="254" /></label>
+          <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required maxlength="128" /></label>
+          <button class="btn primary" type="submit">Sign in</button>
+        </form>
+        <form id="signupForm" class="account-form hidden">
+          <label>Display name<input id="signupName" type="text" autocomplete="nickname" required minlength="2" maxlength="40" /></label>
+          <label>Email address<input id="signupEmail" type="email" autocomplete="email" required maxlength="254" /></label>
+          <label>Password<input id="signupPassword" type="password" autocomplete="new-password" required minlength="10" maxlength="128" /></label>
+          <p class="hint">Use at least 10 characters. We'll email you a verification link.</p>
+          <button class="btn primary" type="submit">Create account</button>
+        </form>
+      </div>
+      <div id="accountSignedIn" class="hidden">
+        <p class="hint">Signed in as</p><h2 id="accountDisplayName"></h2><p id="accountEmail" class="hint"></p>
+        <form id="profileForm" class="account-form"><label>Display name<input id="profileName" type="text" required minlength="2" maxlength="40" /></label><button class="btn" type="submit">Save display name</button></form>
+        <button id="accountLogout" class="btn danger" type="button">Sign out</button>
+      </div>
+      <p id="accountStatus" class="status" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
   <!-- Settings dialog -->
   <div id="settingsDialog" class="modal hidden">
     <div class="modal-card">
@@ -292,5 +321,6 @@
   <script src="js/features.js"></script>
   <script src="js/support-message.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
 </body>
 </html>
