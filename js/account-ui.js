@@ -71,7 +71,7 @@
       const sb = await initialise();
       const { error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      message('Signed in! Your music data has not been synced yet.');
+      message('Successfully signed in!');
     } catch (error) { message(error.message || 'Sign-in failed.', true); }
     finally { button.disabled = false; button.textContent = 'Sign in'; }
   });
@@ -87,7 +87,12 @@
         email, password, options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin }
       });
       if (error) throw error;
-      message(data.session ? 'Account created and signed in. Music data is not synced yet.' : 'Account created! Check your email for the confirmation link, then sign in.');
+      if (data.session?.user) {
+        setUser(data.session.user);
+        message(`Successfully created your account, ${displayName}! You're now signed in.`);
+      } else {
+        message('Account created successfully! Please confirm your email using the link we sent. You can sign in automatically after confirmation.');
+      }
     } catch (error) { message(error.message || 'Account creation failed.', true); }
     finally { button.disabled = false; button.textContent = 'Create account'; }
   });
