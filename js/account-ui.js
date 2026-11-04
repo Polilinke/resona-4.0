@@ -154,7 +154,7 @@
         message(`Account created — you're signed in as ${displayName}.`, 'success');
       } else if (data.user) {
         setUser(null);
-        message('Your account was created. Supabase requires email confirmation before sign-in. Check your inbox (and spam folder), confirm your email, then sign in here.', 'success');
+        message('Account created! Please check your Gmail inbox (and Spam folder) for the confirmation email. Click the confirmation link, then come back here to sign in.', 'success');
       } else throw new Error('Supabase did not return an account. Please try again.');
     } catch (error) { message(error.message || 'Account creation failed.', 'error'); }
     finally { setBusy(button, false); }
