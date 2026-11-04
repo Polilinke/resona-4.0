@@ -7,9 +7,12 @@
   const status = $('accountStatus'), accountButton = $('accountBtn');
   let client = null, currentUser = null;
 
-  function message(text, error = false) {
+  function message(text, kind = 'info') {
     status.textContent = text;
-    status.dataset.kind = error ? 'error' : 'info';
+    status.className = 'account-feedback';
+    status.dataset.kind = kind;
+    status.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    status.classList.toggle('hidden', !text);
   }
   function showMode(mode) {
     const login = mode === 'login';
@@ -33,10 +36,13 @@
   }
   async function initialise() {
     if (client) return client;
-    if (!window.supabase?.createClient) throw new Error('The sign-in library could not load. Refresh and try again.');
+    if (!window.supabase?.createClient) throw new Error('The sign-in library could not load. Refresh the page and try again.');
     const response = await fetch('/api/config', { cache: 'no-store' });
-    const config = await response.json();
-    if (!response.ok) throw new Error(config.error || 'Could not load account configuration.');
+    let config;
+    try { config = await response.json(); }
+    catch { throw new Error('The account configuration endpoint returned an invalid response.'); }
+    if (!response.ok) throw new Error(config.error || `Account configuration failed (HTTP ${response.status}).`);
+    if (!config.supabaseUrl || !config.supabaseAnonKey) throw new Error('Supabase URL or publishable key is missing in the server configuration.');
     client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
@@ -55,7 +61,7 @@
   accountButton.addEventListener('click', async () => {
     dialog.classList.remove('hidden');
     if (!currentUser) showMode('login');
-    try { await initialise(); } catch (error) { message(error.message, true); }
+    try { await initialise(); } catch (error) { message(error.message, 'error'); }
   });
   $('accountClose').addEventListener('click', () => dialog.classList.add('hidden'));
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.classList.add('hidden'); });
@@ -65,40 +71,56 @@
 
   $('loginSubmit').addEventListener('click', async () => {
     const email = $('loginEmail').value.trim(), password = $('loginPassword').value;
-    if (!email || !password) return message('Enter your email and password.', true);
+    if (!email || !password) return message('Enter your email and password.', 'error');
     const button = $('loginSubmit'); button.disabled = true; button.textContent = 'Signing in…';
     try {
       const sb = await initialise();
-      const { error } = await sb.auth.signInWithPassword({ email, password });
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      message('Successfully signed in!');
-    } catch (error) { message(error.message || 'Sign-in failed.', true); }
+      setUser(data.user);
+      message(`Successfully signed in${data.user?.user_metadata?.display_name ? `, ${data.user.user_metadata.display_name}` : ''}!`, 'success');
+    } catch (error) { message(error.message || 'Sign-in failed. Please try again.', 'error'); }
     finally { button.disabled = false; button.textContent = 'Sign in'; }
   });
+
   $('signupSubmit').addEventListener('click', async () => {
     const displayName = $('signupName').value.trim();
     const email = $('signupEmail').value.trim(), password = $('signupPassword').value;
-    if (!displayName || !email || !password) return message('Complete all three fields.', true);
-    if (password.length < 8) return message('Use a password with at least 8 characters.', true);
+    if (!displayName || !email || !password) return message('Complete your display name, email address and password.', 'error');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return message('Enter a valid email address.', 'error');
+    if (password.length < 8) return message('Your password must contain at least 8 characters.', 'error');
     const button = $('signupSubmit'); button.disabled = true; button.textContent = 'Creating account…';
+    message('Creating your account…', 'info');
     try {
       const sb = await initialise();
       const { data, error } = await sb.auth.signUp({
         email, password, options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin }
       });
       if (error) throw error;
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        throw new Error('An account with this email may already exist. Try signing in instead.');
+      }
       if (data.session?.user) {
         setUser(data.session.user);
-        message(`Successfully created your account, ${displayName}! You're now signed in.`);
+        message(`Account created successfully, ${displayName}! You're now signed in.`, 'success');
+      } else if (data.user) {
+        message('Account created successfully! Check your inbox and confirm your email. Sign-in will be available after confirmation.', 'success');
       } else {
-        message('Account created successfully! Please confirm your email using the link we sent. You can sign in automatically after confirmation.');
+        throw new Error('Supabase did not return a new account. Please try again.');
       }
-    } catch (error) { message(error.message || 'Account creation failed.', true); }
-    finally { button.disabled = false; button.textContent = 'Create account'; }
+    } catch (error) {
+      message(error.message || 'Account creation failed. Please try again.', 'error');
+    } finally { button.disabled = false; button.textContent = 'Create account'; }
   });
+
   $('signOutBtn').addEventListener('click', async () => {
-    try { const sb = await initialise(); const { error } = await sb.auth.signOut(); if (error) throw error; message('Signed out.'); }
-    catch (error) { message(error.message || 'Could not sign out.', true); }
+    try {
+      const sb = await initialise();
+      const { error } = await sb.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      message('Signed out successfully.', 'success');
+    } catch (error) { message(error.message || 'Could not sign out.', 'error'); }
   });
   initialise().catch(error => console.warn('Resona account setup:', error.message));
 })();
