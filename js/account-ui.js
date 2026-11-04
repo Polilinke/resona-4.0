@@ -9,29 +9,39 @@
 
   function message(text, kind = 'info') {
     if (!status) return;
-    status.textContent = text;
-    status.className = 'account-feedback';
+    status.textContent = text || '';
     status.dataset.kind = kind;
+    status.className = 'account-status-message' + (text ? ' is-visible' : '');
     status.setAttribute('role', kind === 'error' ? 'alert' : 'status');
-    status.classList.toggle('hidden', !text);
+  }
+  function profileName(user) {
+    return user?.user_metadata?.display_name?.trim() || user?.email?.split('@')[0] || 'Listener';
   }
   function setUser(user) {
     currentUser = user || null;
-    const username = currentUser?.user_metadata?.display_name?.trim()
-      || currentUser?.email?.split('@')[0]
-      || 'there';
+    const name = profileName(currentUser);
     if (accountButton) {
-      accountButton.textContent = currentUser ? `Hey ${username}` : 'Account';
-      accountButton.setAttribute('aria-label', currentUser ? `Account: signed in as ${username}` : 'Account');
+      accountButton.textContent = currentUser ? 'Hey ' + name : 'Account';
+      accountButton.setAttribute('aria-label', currentUser ? 'Account: signed in as ' + name : 'Account');
       accountButton.classList.toggle('is-signed-in', !!currentUser);
     }
     $('accountSignedIn')?.classList.toggle('hidden', !currentUser);
     $('accountSignedOut')?.classList.toggle('hidden', !!currentUser);
-    if ($('accountUserEmail')) $('accountUserEmail').textContent = currentUser?.email || '';
     loginPanel?.classList.toggle('hidden', !!currentUser);
     signupPanel?.classList.add('hidden');
     loginTab?.classList.toggle('hidden', !!currentUser);
     signupTab?.classList.toggle('hidden', !!currentUser);
+    if (currentUser) {
+      $('accountProfileName').textContent = name;
+      $('accountAvatar').textContent = name.charAt(0).toUpperCase();
+      $('accountUserEmail').textContent = currentUser.email || '';
+      $('accountDetailEmail').textContent = currentUser.email || '—';
+      $('profileDisplayName').value = currentUser.user_metadata?.display_name || '';
+      $('profileBio').value = currentUser.user_metadata?.bio || '';
+      const created = currentUser.created_at ? new Date(currentUser.created_at) : null;
+      $('accountMemberSince').textContent = created && !Number.isNaN(created.getTime())
+        ? created.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : '—';
+    }
     window.dispatchEvent(new CustomEvent('resona:auth-changed', { detail: { user: currentUser } }));
   }
   function showMode(mode) {
@@ -48,11 +58,11 @@
     if (client) return client;
     if (initPromise) return initPromise;
     initPromise = (async () => {
-      if (!window.supabase?.createClient) throw new Error('The Supabase sign-in library did not load. Refresh and try again.');
+      if (!window.supabase?.createClient) throw new Error('The sign-in service did not load. Refresh and try again.');
       const response = await fetch('/api/config', { cache: 'no-store' });
       const config = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(config.error || `Account configuration failed (HTTP ${response.status}).`);
-      if (!config.supabaseUrl || !config.supabaseAnonKey) throw new Error('Supabase URL or publishable key is missing in Vercel environment variables.');
+      if (!response.ok) throw new Error(config.error || 'Account configuration failed.');
+      if (!config.supabaseUrl || !config.supabaseAnonKey) throw new Error('Supabase URL or publishable key is missing.');
       const projectUrl = config.supabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
       client = window.supabase.createClient(projectUrl, config.supabaseAnonKey, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
@@ -77,96 +87,91 @@
       field.parentNode.insertBefore(wrap, field);
       wrap.appendChild(field);
       const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.className = 'password-toggle';
-      toggle.textContent = 'Show';
-      toggle.setAttribute('aria-label', 'Show password');
-      toggle.setAttribute('aria-pressed', 'false');
+      toggle.type = 'button'; toggle.className = 'password-toggle'; toggle.textContent = 'Show';
       toggle.addEventListener('click', () => {
         const reveal = field.type === 'password';
         field.type = reveal ? 'text' : 'password';
         toggle.textContent = reveal ? 'Hide' : 'Show';
-        toggle.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
-        toggle.setAttribute('aria-pressed', String(reveal));
         field.focus();
       });
       wrap.appendChild(toggle);
     });
   }
   function setBusy(button, busy, label) {
+    if (!button) return;
     button.disabled = busy;
     button.textContent = busy ? label : button.dataset.idleLabel;
   }
   accountButton?.addEventListener('click', async () => {
-    dialog.classList.remove('hidden');
-    try {
-      await initialise();
-      if (!currentUser) showMode('login');
-    } catch (error) { message(error.message || 'Could not connect to accounts.', 'error'); }
+    dialog.classList.remove('hidden'); dialog.setAttribute('aria-hidden', 'false');
+    try { await initialise(); if (!currentUser) showMode('login'); }
+    catch (error) { message(error.message || 'Could not connect to accounts.', 'error'); }
   });
-  $('accountClose')?.addEventListener('click', () => dialog.classList.add('hidden'));
-  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.classList.add('hidden'); });
+  function closeDrawer() { dialog.classList.add('hidden'); dialog.setAttribute('aria-hidden', 'true'); }
+  $('accountClose')?.addEventListener('click', closeDrawer);
+  dialog.addEventListener('click', event => { if (event.target === dialog) closeDrawer(); });
   loginTab?.addEventListener('click', () => showMode('login'));
   signupTab?.addEventListener('click', () => showMode('signup'));
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') dialog.classList.add('hidden'); });
-
-  ['loginSubmit', 'signupSubmit'].forEach(id => {
-    const button = $(id);
-    if (button) button.dataset.idleLabel = button.textContent;
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeDrawer(); });
+  ['loginSubmit', 'signupSubmit', 'saveProfileBtn'].forEach(id => {
+    const button = $(id); if (button) button.dataset.idleLabel = button.textContent;
   });
   addPasswordToggles();
 
   $('loginSubmit')?.addEventListener('click', async () => {
     const email = $('loginEmail').value.trim(), password = $('loginPassword').value;
     if (!email || !password) return message('Enter your email and password.', 'error');
-    const button = $('loginSubmit'); setBusy(button, true, 'Signing in…');
-    message('Signing in…', 'info');
+    const button = $('loginSubmit'); setBusy(button, true, 'Signing in…'); message('Signing in…', 'info');
     try {
       const sb = await initialise();
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      setUser(data.user);
-      message(`You're signed in as ${data.user.user_metadata?.display_name || data.user.email}.`, 'success');
+      setUser(data.user); message('Signed in successfully. Your profile is ready.', 'success');
     } catch (error) { message(error.message || 'Sign-in failed.', 'error'); }
     finally { setBusy(button, false); }
   });
-
   $('signupSubmit')?.addEventListener('click', async () => {
     const displayName = $('signupName').value.trim();
     const email = $('signupEmail').value.trim(), password = $('signupPassword').value;
-    if (!displayName || !email || !password) return message('Complete your display name, email address and password.', 'error');
+    if (!displayName || !email || !password) return message('Complete all fields.', 'error');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return message('Enter a valid email address.', 'error');
     if (password.length < 8) return message('Your password must contain at least 8 characters.', 'error');
-    const button = $('signupSubmit'); setBusy(button, true, 'Creating account…');
-    message('Contacting Supabase…', 'info');
+    const button = $('signupSubmit'); setBusy(button, true, 'Creating account…'); message('Creating your account…', 'info');
     try {
       const sb = await initialise();
       const { data, error } = await Promise.race([
-        sb.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin } }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('The signup request timed out. Check your connection and Supabase Auth settings, then try again.')), 20000))
+        sb.auth.signUp({ email, password, options: { data: { display_name: displayName, bio: '' }, emailRedirectTo: window.location.origin } }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Signup timed out. Check your connection and try again.')), 20000))
       ]);
       if (error) throw error;
-      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        throw new Error('An account with this email may already exist. Try signing in instead.');
-      }
-      if (data.session?.user) {
-        setUser(data.session.user);
-        message(`Account created — you're signed in as ${displayName}.`, 'success');
-      } else if (data.user) {
-        setUser(null);
-        message('Account created! Please check your Gmail inbox (and Spam folder) for the confirmation email. Click the confirmation link, then come back here to sign in.', 'success');
-      } else throw new Error('Supabase did not return an account. Please try again.');
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) throw new Error('An account with this email may already exist. Try signing in.');
+      if (data.session?.user) { setUser(data.session.user); message('Account created. Welcome to Resona!', 'success'); }
+      else if (data.user) { message('Account created. Check your email (including Spam) and confirm it before signing in.', 'success'); }
+      else throw new Error('No account was returned. Please try again.');
     } catch (error) { message(error.message || 'Account creation failed.', 'error'); }
     finally { setBusy(button, false); }
   });
-
-  $('signOutBtn')?.addEventListener('click', async () => {
+  $('saveProfileBtn')?.addEventListener('click', async () => {
+    const displayName = $('profileDisplayName').value.trim();
+    const bio = $('profileBio').value.trim();
+    if (!displayName) return message('Please add a display name.', 'error');
+    const button = $('saveProfileBtn'); setBusy(button, true, 'Saving profile…'); message('Saving your profile…', 'info');
     try {
       const sb = await initialise();
-      const { error } = await sb.auth.signOut();
+      const { data, error } = await sb.auth.updateUser({ data: { display_name: displayName, bio } });
       if (error) throw error;
-      setUser(null); message('Signed out successfully.', 'success');
+      setUser(data.user); message('Profile saved successfully.', 'success');
+    } catch (error) { message(error.message || 'Could not save your profile.', 'error'); }
+    finally { setBusy(button, false); }
+  });
+  $('signOutBtn')?.addEventListener('click', async () => {
+    const button = $('signOutBtn'); button.disabled = true;
+    try {
+      const sb = await initialise(); const { error } = await sb.auth.signOut();
+      if (error) throw error;
+      setUser(null); showMode('login'); message('Signed out successfully.', 'success');
     } catch (error) { message(error.message || 'Could not sign out.', 'error'); }
+    finally { button.disabled = false; }
   });
   initialise().catch(error => console.warn('Resona account setup:', error));
 })();
