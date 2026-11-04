@@ -27,6 +27,9 @@ const Store = (() => {
   function write(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
+      if (['library', 'playlists', 'history'].includes(key)) {
+        window.dispatchEvent(new CustomEvent('resona:data-changed', { detail: { key } }));
+      }
     } catch (e) {
       console.error('Could not save', key, e);
     }
