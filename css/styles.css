@@ -1011,3 +1011,14 @@ html[data-device-layout="mobile"] .library-subnav-btn { border-radius:16px; }
 .account-feedback[data-kind="success"]{color:var(--account-success);background:rgba(50,170,100,.13);border:1px solid rgba(100,220,145,.42);box-shadow:0 0 18px rgba(60,190,110,.08)}
 .account-feedback[data-kind="error"]{color:var(--account-error);background:rgba(210,65,65,.13);border:1px solid rgba(255,115,115,.45);box-shadow:0 0 18px rgba(220,70,70,.08)}
 .account-feedback[data-kind="info"]{color:var(--text);background:rgba(103,207,224,.09);border:1px solid rgba(103,207,224,.25)}
+
+
+/* Account controls: visible password toggles and clear signed-in state */
+.password-field-wrap{position:relative;display:flex;align-items:center;width:100%}
+.password-field-wrap input{padding-right:66px!important}
+.password-toggle{position:absolute;right:9px;top:50%;transform:translateY(-50%);border:1px solid var(--panel-border);border-radius:8px;background:rgba(120,160,180,.10);color:var(--text);padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;z-index:2}
+.password-toggle:hover{background:rgba(120,210,225,.18)}
+.account-preview .account-submit{opacity:1;cursor:pointer}
+.account-preview .account-submit:disabled{opacity:.65;cursor:wait}
+.account-preview .account-form input{pointer-events:auto;opacity:1}
+#accountBtn.is-signed-in{border-color:rgba(100,220,145,.55);color:var(--account-success,#86d6a5)}
