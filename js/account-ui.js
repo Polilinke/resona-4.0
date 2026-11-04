@@ -21,7 +21,8 @@
   }
   function setUser(user) {
     currentUser = user || null;
-    accountButton.textContent = currentUser ? 'Account · ' + (currentUser.user_metadata?.display_name || currentUser.email) : 'Account';
+    const username = currentUser?.user_metadata?.display_name || currentUser?.email?.split('@')[0];
+    accountButton.textContent = currentUser ? `Hey ${username}` : 'Account';
     $('accountSignedIn').classList.toggle('hidden', !currentUser);
     $('accountSignedOut').classList.toggle('hidden', !!currentUser);
     $('accountUserEmail').textContent = currentUser?.email || '';
@@ -42,7 +43,12 @@
     const { data, error } = await client.auth.getSession();
     if (error) throw error;
     setUser(data.session?.user || null);
-    client.auth.onAuthStateChange((_event, session) => setUser(session?.user || null));
+    client.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+      window.dispatchEvent(new CustomEvent('resona:auth-changed', { detail: { user: session?.user || null } }));
+    });
+    window.ResonaAccount = { getClient: initialise, getUser: () => currentUser };
+    window.dispatchEvent(new CustomEvent('resona:auth-ready', { detail: { user: currentUser } }));
     return client;
   }
 
