@@ -1,9 +1,0 @@
-name = "resona-4-0"
-pages_build_output_dir = "."
-compatibility_date = "2026-11-03"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "resona-production"
-database_id = "319c7805-b173-4a5f-9948-5fe848446ee8"
-migrations_dir = "migrations"
