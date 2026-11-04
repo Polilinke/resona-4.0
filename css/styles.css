@@ -1022,3 +1022,15 @@ html[data-device-layout="mobile"] .library-subnav-btn { border-radius:16px; }
 .account-preview .account-submit:disabled{opacity:.65;cursor:wait}
 .account-preview .account-form input{pointer-events:auto;opacity:1}
 #accountBtn.is-signed-in{border-color:rgba(100,220,145,.55);color:var(--account-success,#86d6a5)}
+
+
+/* Persistent, high-contrast account feedback: independent of modal paragraph styles */
+.resona-account-toast{position:fixed;right:22px;top:22px;z-index:100000;display:none;width:min(390px,calc(100vw - 32px));padding:15px 17px;border-radius:13px;font-size:13px;line-height:1.5;font-weight:600;overflow-wrap:anywhere;box-shadow:0 12px 38px rgba(0,0,0,.38);backdrop-filter:blur(16px);border:1px solid rgba(150,170,190,.35);color:#f5f7fa;background:#182331}
+.resona-account-toast.visible{display:block}
+.resona-account-toast[data-kind="success"]{display:block;color:#c9f8d8;background:#103b27;border:1px solid #43c878;box-shadow:0 0 24px rgba(55,200,115,.2)}
+.resona-account-toast[data-kind="error"]{display:block;color:#ffe0e0;background:#481d25;border:1px solid #ff666f;box-shadow:0 0 24px rgba(255,75,85,.2)}
+.resona-account-toast[data-kind="info"]{display:block;color:#e0f7ff;background:#123442;border:1px solid #54c6df}
+.account-feedback{display:block!important;visibility:visible!important;min-height:0;margin:14px 0 0;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.account-feedback[data-kind="success"]{color:#bdf5ce!important;background:#103b27!important;border:1px solid #43c878!important}
+.account-feedback[data-kind="error"]{color:#ffd5d5!important;background:#481d25!important;border:1px solid #ff666f!important}
+.account-feedback[data-kind="info"]{color:#d8f5ff!important;background:#123442!important;border:1px solid #54c6df!important}
