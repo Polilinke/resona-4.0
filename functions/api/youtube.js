@@ -59,11 +59,20 @@ async function setCached(db, key, body, now) {
 }
 
 export async function onRequestGet({ request, env }) {
+  const url = new URL(request.url);
+
+  // Temporary diagnostic: exposes only whether bindings are present, never secret values.
+  if (url.searchParams.get('action') === 'diagnostic') {
+    return json({
+      youtubeApiKeyPresent: typeof env.YOUTUBE_API_KEY === 'string' && env.YOUTUBE_API_KEY.length > 0,
+      databaseBindingPresent: Boolean(env.DB)
+    });
+  }
+
   if (!env.DB) return json({ error: 'Search service storage is not configured.' }, 503);
   const key = env.YOUTUBE_API_KEY;
   if (!key) return json({ error: 'Search service is not configured.' }, 503);
 
-  const url = new URL(request.url);
   const action = url.searchParams.get('action');
   const now = Date.now();
   let cacheKey;
