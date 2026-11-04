@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' https://www.youtube.com https://s.ytimg.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; img-src 'self' data: https://i.ytimg.com https://*.ytimg.com https://*.ggpht.com https://yt3.ggpht.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https:; media-src 'self' blob:;" />
+        content="default-src 'self'; script-src 'self' https://www.youtube.com https://s.ytimg.com https://cdn.jsdelivr.net; frame-src https://www.youtube.com https://www.youtube-nocookie.com; img-src 'self' data: https://i.ytimg.com https://*.ytimg.com https://*.ggpht.com https://yt3.ggpht.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https:; media-src 'self' blob:;" />
   <title>Resona</title>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/background.css" />
@@ -221,19 +221,21 @@
         <button id="showLogin" class="btn primary" type="button">Sign in</button>
         <button id="showSignup" class="btn ghost" type="button">Create account</button>
       </div>
-      <section id="loginPanel" class="account-form" aria-label="Sign in preview">
-        <label>Email address<input type="email" placeholder="you@example.com" autocomplete="email" disabled /></label>
-        <label>Password<input type="password" placeholder="Your password" autocomplete="current-password" disabled /></label>
-        <button class="btn primary account-submit" type="button" disabled>Sign in</button>
+      <section id="loginPanel" class="account-form" aria-label="Sign in">
+        <label>Email address<input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required /></label>
+        <label>Password<input id="loginPassword" type="password" placeholder="Your password" autocomplete="current-password" required /></label>
+        <button id="loginSubmit" class="btn primary account-submit" type="button">Sign in</button>
       </section>
-      <section id="signupPanel" class="account-form hidden" aria-label="Create account preview">
-        <label>Display name<input type="text" placeholder="What should we call you?" autocomplete="nickname" disabled /></label>
-        <label>Email address<input type="email" placeholder="you@example.com" autocomplete="email" disabled /></label>
-        <label>Password<input type="password" placeholder="Create a password" autocomplete="new-password" disabled /></label>
-        <button class="btn primary account-submit" type="button" disabled>Create account</button>
+      <section id="signupPanel" class="account-form hidden" aria-label="Create account">
+        <label>Display name<input id="signupName" type="text" placeholder="What should we call you?" autocomplete="nickname" required /></label>
+        <label>Email address<input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" required /></label>
+        <label>Password<input id="signupPassword" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required /></label>
+        <button id="signupSubmit" class="btn primary account-submit" type="button">Create account</button>
       </section>
-      <div class="account-coming-soon"><span class="account-status-dot"></span><div><strong>Accounts are coming soon</strong><p>We're setting up secure sign-in and cloud sync. Your current library stays on this device.</p></div></div>
-      <p class="account-legal">By continuing, you’ll be able to keep your Resona library synced across devices.</p>
+      <div id="accountSignedIn" class="account-coming-soon hidden"><span class="account-status-dot"></span><div><strong>Signed in</strong><p id="accountUserEmail"></p><button id="signOutBtn" class="btn ghost small" type="button">Sign out</button></div></div>
+      <div id="accountSignedOut" class="account-coming-soon"><span class="account-status-dot"></span><div><strong>Secure account access</strong><p>Your current library stays on this device until cloud sync is added.</p></div></div>
+      <p id="accountStatus" class="account-legal" role="status" aria-live="polite"></p>
+      <p class="account-legal">Signing in does not upload or merge your music data yet.</p>
     </div>
   </div>
 
@@ -317,6 +319,7 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/device-layout.js"></script>
   <script src="js/store.js"></script>
   <script src="js/youtube.js"></script>
