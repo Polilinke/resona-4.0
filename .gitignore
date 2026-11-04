@@ -3,5 +3,3 @@
 !.env.example
 node_modules/
 dist/
-.dev.vars*
-!.dev.vars.example
