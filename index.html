@@ -205,31 +205,35 @@
   <!-- Hidden holder for the official YouTube embedded player -->
   <div id="ytHolder"></div>
 
-  <!-- Account dialog -->
+  <!-- Dormant account UI: visual preview only; Supabase auth is not connected yet. -->
   <div id="accountDialog" class="modal hidden">
-    <div class="modal-card account-card">
-      <div class="row-between"><h3>Resona account</h3><button id="accountClose" class="btn ghost" type="button">Close</button></div>
-      <div id="accountSignedOut">
-        <div class="account-tabs"><button id="showLogin" class="btn primary" type="button">Sign in</button><button id="showSignup" class="btn ghost" type="button">Create account</button></div>
-        <form id="loginForm" class="account-form">
-          <label>Email address<input id="loginEmail" type="email" autocomplete="email" required maxlength="254" /></label>
-          <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required maxlength="128" /></label>
-          <button class="btn primary" type="submit">Sign in</button>
-        </form>
-        <form id="signupForm" class="account-form hidden">
-          <label>Display name<input id="signupName" type="text" autocomplete="nickname" required minlength="2" maxlength="40" /></label>
-          <label>Email address<input id="signupEmail" type="email" autocomplete="email" required maxlength="254" /></label>
-          <label>Password<input id="signupPassword" type="password" autocomplete="new-password" required minlength="10" maxlength="128" /></label>
-          <p class="hint">Use at least 10 characters. We'll email you a verification link.</p>
-          <button class="btn primary" type="submit">Create account</button>
-        </form>
+    <div class="modal-card account-card account-preview">
+      <div class="account-preview-top">
+        <div>
+          <div class="account-eyebrow">YOUR MUSIC. YOUR SPACE.</div>
+          <h2>Welcome to <span>Resona</span></h2>
+          <p class="hint">A home for your playlists, favourites and listening history.</p>
+        </div>
+        <button id="accountClose" class="btn ghost" type="button" aria-label="Close account window">✕</button>
       </div>
-      <div id="accountSignedIn" class="hidden">
-        <p class="hint">Signed in as</p><h2 id="accountDisplayName"></h2><p id="accountEmail" class="hint"></p>
-        <form id="profileForm" class="account-form"><label>Display name<input id="profileName" type="text" required minlength="2" maxlength="40" /></label><button class="btn" type="submit">Save display name</button></form>
-        <button id="accountLogout" class="btn danger" type="button">Sign out</button>
+      <div class="account-preview-art" aria-hidden="true"><div class="account-orbit"></div><div class="account-orbit account-orbit-two"></div><div class="account-note">R</div></div>
+      <div class="account-tabs">
+        <button id="showLogin" class="btn primary" type="button">Sign in</button>
+        <button id="showSignup" class="btn ghost" type="button">Create account</button>
       </div>
-      <p id="accountStatus" class="status" role="status" aria-live="polite"></p>
+      <section id="loginPanel" class="account-form" aria-label="Sign in preview">
+        <label>Email address<input type="email" placeholder="you@example.com" autocomplete="email" disabled /></label>
+        <label>Password<input type="password" placeholder="Your password" autocomplete="current-password" disabled /></label>
+        <button class="btn primary account-submit" type="button" disabled>Sign in</button>
+      </section>
+      <section id="signupPanel" class="account-form hidden" aria-label="Create account preview">
+        <label>Display name<input type="text" placeholder="What should we call you?" autocomplete="nickname" disabled /></label>
+        <label>Email address<input type="email" placeholder="you@example.com" autocomplete="email" disabled /></label>
+        <label>Password<input type="password" placeholder="Create a password" autocomplete="new-password" disabled /></label>
+        <button class="btn primary account-submit" type="button" disabled>Create account</button>
+      </section>
+      <div class="account-coming-soon"><span class="account-status-dot"></span><div><strong>Accounts are coming soon</strong><p>We're setting up secure sign-in and cloud sync. Your current library stays on this device.</p></div></div>
+      <p class="account-legal">By continuing, you’ll be able to keep your Resona library synced across devices.</p>
     </div>
   </div>
 
@@ -321,6 +325,6 @@
   <script src="js/features.js"></script>
   <script src="js/support-message.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/account-ui.js"></script>
 </body>
 </html>
