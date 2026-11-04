@@ -205,38 +205,45 @@
   <!-- Hidden holder for the official YouTube embedded player -->
   <div id="ytHolder"></div>
 
-  <!-- Resona account dialog -->
-  <div id="accountDialog" class="modal hidden">
-    <div class="modal-card account-card account-preview">
-      <div class="account-preview-top">
-        <div>
-          <div class="account-eyebrow">YOUR MUSIC. YOUR SPACE.</div>
-          <h2>Welcome to <span>Resona</span></h2>
-          <p class="hint">A home for your playlists, favourites and listening history.</p>
+  <!-- Resona account drawer -->
+  <div id="accountDialog" class="modal account-overlay hidden" aria-hidden="true">
+    <aside class="account-drawer" role="dialog" aria-modal="true" aria-labelledby="accountDrawerTitle">
+      <div class="account-drawer-head">
+        <div><div class="account-eyebrow">YOUR MUSIC. YOUR SPACE.</div><h2 id="accountDrawerTitle">Your <span>Resona</span> account</h2></div>
+        <button id="accountClose" class="btn ghost" type="button" aria-label="Close account">✕</button>
+      </div>
+      <section id="accountSignedOut">
+        <p class="account-intro">Sign in to manage your Resona profile.</p>
+        <div class="account-tabs">
+          <button id="showLogin" class="btn primary" type="button">Sign in</button>
+          <button id="showSignup" class="btn ghost" type="button">Create account</button>
         </div>
-        <button id="accountClose" class="btn ghost" type="button" aria-label="Close account window">✕</button>
-      </div>
-      <div class="account-preview-art" aria-hidden="true"><div class="account-orbit"></div><div class="account-orbit account-orbit-two"></div><div class="account-note">R</div></div>
-      <div class="account-tabs">
-        <button id="showLogin" class="btn primary" type="button">Sign in</button>
-        <button id="showSignup" class="btn ghost" type="button">Create account</button>
-      </div>
-      <section id="loginPanel" class="account-form" aria-label="Sign in">
-        <label>Email address<input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required /></label>
-        <label>Password<input id="loginPassword" type="password" placeholder="Your password" autocomplete="current-password" required /></label>
-        <button id="loginSubmit" class="btn primary account-submit" type="button">Sign in</button>
+        <section id="loginPanel" class="account-form" aria-label="Sign in">
+          <label>Email address<input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required /></label>
+          <label>Password<input id="loginPassword" type="password" placeholder="Your password" autocomplete="current-password" required /></label>
+          <button id="loginSubmit" class="btn primary account-submit" type="button">Sign in</button>
+        </section>
+        <section id="signupPanel" class="account-form hidden" aria-label="Create account">
+          <label>Display name<input id="signupName" type="text" placeholder="What should we call you?" autocomplete="nickname" required /></label>
+          <label>Email address<input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" required /></label>
+          <label>Password<input id="signupPassword" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required /></label>
+          <button id="signupSubmit" class="btn primary account-submit" type="button">Create account</button>
+        </section>
+        <p class="account-legal">Your music library is still stored on this device; cloud library sync is not live yet.</p>
       </section>
-      <section id="signupPanel" class="account-form hidden" aria-label="Create account">
-        <label>Display name<input id="signupName" type="text" placeholder="What should we call you?" autocomplete="nickname" required /></label>
-        <label>Email address<input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" required /></label>
-        <label>Password<input id="signupPassword" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required /></label>
-        <button id="signupSubmit" class="btn primary account-submit" type="button">Create account</button>
+      <section id="accountSignedIn" class="account-profile hidden">
+        <div class="account-profile-hero"><div class="account-avatar" id="accountAvatar">R</div><div><span class="account-online-dot"></span><span class="account-eyebrow">SIGNED IN</span><h3 id="accountProfileName">Listener</h3><p id="accountUserEmail" class="account-email"></p></div></div>
+        <div class="account-profile-fields">
+          <label>Display name<input id="profileDisplayName" type="text" maxlength="40" placeholder="Your display name" /></label>
+          <label>Bio <span class="account-field-hint">A little about your music taste</span><textarea id="profileBio" maxlength="180" rows="4" placeholder="What do you love listening to?"></textarea></label>
+          <div class="account-detail-row"><span>Account email</span><strong id="accountDetailEmail">—</strong></div>
+          <div class="account-detail-row"><span>Member since</span><strong id="accountMemberSince">—</strong></div>
+          <button id="saveProfileBtn" class="btn primary account-submit" type="button">Save profile</button>
+          <button id="signOutBtn" class="btn ghost account-signout" type="button">Sign out</button>
+        </div>
       </section>
-      <div id="accountSignedIn" class="account-coming-soon hidden"><span class="account-status-dot"></span><div><strong>Signed in</strong><p id="accountUserEmail"></p><button id="signOutBtn" class="btn ghost small" type="button">Sign out</button></div></div>
-      <div id="accountSignedOut" class="account-coming-soon"><span class="account-status-dot"></span><div><strong>Secure account access</strong><p>Your current library stays on this device until cloud sync is added.</p></div></div>
-      <p id="accountStatus" class="account-legal" role="status" aria-live="polite"></p>
-      <p class="account-legal">Signing in does not upload or merge your music data yet.</p>
-    </div>
+      <p id="accountStatus" class="account-status-message" role="status" aria-live="polite"></p>
+    </aside>
   </div>
 
   <!-- Settings dialog -->
