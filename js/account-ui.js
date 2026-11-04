@@ -53,7 +53,7 @@
       const config = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(config.error || `Account configuration failed (HTTP ${response.status}).`);
       if (!config.supabaseUrl || !config.supabaseAnonKey) throw new Error('Supabase URL or publishable key is missing in Vercel environment variables.');
-      const projectUrl = config.supabaseUrl.replace(/\\/rest\\/v1\\/?$/, '').replace(/\\/$/, '');
+      const projectUrl = config.supabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
       client = window.supabase.createClient(projectUrl, config.supabaseAnonKey, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
@@ -135,7 +135,7 @@
     const displayName = $('signupName').value.trim();
     const email = $('signupEmail').value.trim(), password = $('signupPassword').value;
     if (!displayName || !email || !password) return message('Complete your display name, email address and password.', 'error');
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return message('Enter a valid email address.', 'error');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return message('Enter a valid email address.', 'error');
     if (password.length < 8) return message('Your password must contain at least 8 characters.', 'error');
     const button = $('signupSubmit'); setBusy(button, true, 'Creating account…');
     message('Contacting Supabase…', 'info');
