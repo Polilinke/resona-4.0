@@ -977,3 +977,27 @@ html[data-device-layout="mobile"] .library-subnav-btn { border-radius:16px; }
 .account-form button { justify-self: start; }
 .account-card .status { margin: 14px 0 0; overflow-wrap: anywhere; }
 .account-card .status.error { color: var(--danger); }
+
+
+/* Dormant Resona account preview — UI only, no authentication requests. */
+.account-preview { position:relative; overflow:hidden; width:min(470px,calc(100vw - 30px)); padding:26px; }
+.account-preview-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; position:relative; z-index:1; }
+.account-eyebrow { color:var(--accent); font-size:10px; font-weight:800; letter-spacing:2.4px; margin-bottom:10px; }
+.account-preview-top h2 { margin:0 0 7px; font-size:27px; letter-spacing:-.8px; }
+.account-preview-top h2 span { background:linear-gradient(100deg,#75d5e1,#d4a078); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.account-preview-art { height:112px; position:relative; display:grid; place-items:center; margin:5px 0 14px; overflow:hidden; }
+.account-note { width:76px;height:76px;display:grid;place-items:center;border-radius:50%;font-size:35px;font-weight:800;color:#dff8fa;border:1px solid rgba(118,213,224,.5);background:radial-gradient(circle,rgba(95,196,211,.22),rgba(5,13,20,.4) 68%);box-shadow:0 0 38px rgba(103,207,224,.16),inset 0 0 22px rgba(103,207,224,.12); }
+.account-orbit { position:absolute;width:210px;height:72px;border:1px solid rgba(103,207,224,.22);border-radius:50%;transform:rotate(-17deg); }
+.account-orbit-two { width:250px;height:92px;border-color:rgba(200,143,98,.2);transform:rotate(17deg); }
+.account-preview .account-tabs { margin:8px 0 18px; padding:4px; border-radius:999px; background:rgba(0,0,0,.2); border:1px solid var(--panel-border); }
+.account-preview .account-tabs .btn { min-height:42px; }
+.account-preview .account-form { display:grid; gap:12px; }
+.account-preview .account-form label { display:grid; gap:7px; color:var(--muted); font-size:12px; }
+.account-preview .account-form input { width:100%; min-height:46px; }
+.account-preview .account-form input:disabled { opacity:.72; cursor:not-allowed; }
+.account-preview .account-submit { width:100%; justify-content:center; min-height:46px; opacity:.52; cursor:not-allowed; }
+.account-coming-soon { display:flex; align-items:flex-start; gap:11px; margin-top:20px; padding:13px 14px; border:1px solid rgba(103,207,224,.22); border-radius:17px; background:linear-gradient(110deg,rgba(103,207,224,.09),rgba(200,143,98,.07)); }
+.account-coming-soon strong { display:block; font-size:13px; margin-bottom:4px; }
+.account-coming-soon p,.account-legal { color:var(--muted); font-size:11px; line-height:1.55; margin:0; }
+.account-status-dot { width:8px;height:8px;flex:none;margin-top:4px;border-radius:50%;background:#d5a078;box-shadow:0 0 12px rgba(213,160,120,.55); }
+.account-legal { margin-top:13px; text-align:center; }
