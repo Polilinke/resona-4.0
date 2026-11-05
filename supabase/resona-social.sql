@@ -253,6 +253,7 @@ declare v_row public.resona_direct_messages;
 begin
   if auth.uid() is null then raise exception 'Sign in to send messages.'; end if;
   if char_length(v_body)<1 or char_length(v_body)>1000 then raise exception 'Messages must be 1–1000 characters.'; end if;
+  if (select count(*) from public.resona_direct_messages where sender_id=auth.uid() and created_at>now()-interval '15 seconds')>=8 then raise exception 'Please slow down before sending another message.'; end if;
   if not exists(select 1 from public.resona_friendships f where f.status='accepted'
     and ((f.requester_id=auth.uid() and f.addressee_id=p_friend_id)
       or (f.requester_id=p_friend_id and f.addressee_id=auth.uid())) then
