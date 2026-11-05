@@ -266,6 +266,7 @@
 
   // ---------- Home: popular music (1 quota unit, cached 24 hours) ----------
   async function showHome() {
+    renderDiscovery();
     state.searchRequestId++;
     state.searchSource = 'youtube';
     document.querySelectorAll('[data-search-source]').forEach(item => {
@@ -683,6 +684,7 @@
     state.audioMode = track.source === 'audius' || track.source === 'local-audio';
     if (state.audioMode && state.playerReady) state.player.pauseVideo();
     Store.addToHistory(track);
+    renderDiscovery();
     showNowPlaying(track);
 
     if (track.source === 'audius') {
@@ -803,6 +805,7 @@
       state.currentIndex = -1;
       state.currentTrack = track;
       Store.addToHistory(track);
+      renderDiscovery();
       showNowPlaying(track);
       ResonaAudio.setVolume(Number($('volumeSlider').value));
       $('audioSourceTitle').textContent = info.name;
