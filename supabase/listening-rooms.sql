@@ -225,13 +225,21 @@ $$;
 create or replace function public.leave_listening_room(p_room_id uuid)
 returns jsonb language plpgsql security definer set search_path = public
 as $$
-declare v_is_host boolean;
+declare
+  v_host_id uuid;
+  v_status text;
 begin
-  select host_id = auth.uid() into v_is_host from public.listening_rooms where id = p_room_id and status = 'active';
+  select host_id, status into v_host_id, v_status
+    from public.listening_rooms where id = p_room_id;
   if not found then return jsonb_build_object('closed',true); end if;
-  if v_is_host then
+  if v_status = 'closed' then
+    delete from public.listening_room_members where room_id = p_room_id and user_id = auth.uid();
+    return jsonb_build_object('closed',true);
+  end if;
+  if v_host_id = auth.uid() then
     update public.listening_rooms set status = 'closed', playback_state = 'paused',
       playback_updated_at = now() where id = p_room_id;
+    delete from public.listening_room_members where room_id = p_room_id and user_id = auth.uid();
     return jsonb_build_object('closed',true);
   end if;
   delete from public.listening_room_members where room_id = p_room_id and user_id = auth.uid();
