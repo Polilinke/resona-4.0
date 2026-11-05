@@ -1,7 +1,5 @@
 -- Resona Listening Rooms
 -- Run this file once in Supabase Dashboard -> SQL Editor.
-create extension if not exists pgcrypto;
-
 create table if not exists public.listening_rooms (
   id uuid primary key default gen_random_uuid(),
   invite_code text not null unique,
@@ -115,7 +113,7 @@ begin
   select coalesce(nullif(raw_user_meta_data->>'display_name',''), split_part(email,'@',1), 'Listener')
     into v_display from auth.users where id = auth.uid();
   loop
-    v_code := upper(substr(encode(gen_random_bytes(6), 'hex'), 1, 8));
+    v_code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
     exit when not exists (select 1 from public.listening_rooms where invite_code = v_code);
   end loop;
   insert into public.listening_rooms(invite_code, name, host_id)
