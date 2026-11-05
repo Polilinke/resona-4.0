@@ -278,6 +278,7 @@ declare v_name text;
 begin
   if auth.uid() is null or not public.is_listening_room_member(p_room_id) then raise exception 'Join the room before chatting.'; end if;
   if char_length(v_body)<1 or char_length(v_body)>1000 then raise exception 'Messages must be 1–1000 characters.'; end if;
+  if (select count(*) from public.resona_room_messages where user_id=auth.uid() and created_at>now()-interval '15 seconds')>=8 then raise exception 'Please wait a moment before sending more messages.'; end if;
   if not exists(select 1 from public.listening_rooms where id=p_room_id and status='active') then raise exception 'This room is closed.'; end if;
   select display_name into v_name from public.resona_profiles where user_id=auth.uid();
   delete from public.resona_room_messages where created_at < now()-interval '7 days';
