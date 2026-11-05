@@ -263,6 +263,7 @@
   }
   function renderQueue(rows) {
     queueRows = rows || [];
+    $('roomNextBtn').disabled = !hostMode() || activeRoom?.status !== 'active' || !queueRows.length;
     const box = $('roomQueue');
     box.replaceChildren();
     if (!rows.length) box.innerHTML = '<div class="rooms-empty">Approved tracks will appear here.</div>';
