@@ -476,6 +476,7 @@
     if (user?.id !== next?.id) {
       user = next;
       activeRoom = null; lastTrackKey = ''; audioEnabled = false;
+      window.dispatchEvent(new CustomEvent('resona:room-close'));
       if (channel && client) client.removeChannel(channel).catch(() => {});
       channel = null;
       if (document.getElementById('view-rooms')?.classList.contains('active')) open();
