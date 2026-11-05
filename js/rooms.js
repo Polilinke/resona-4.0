@@ -146,7 +146,7 @@
     try {
       if (!await requireUser()) return;
       const code = $('joinRoomCode').value.trim().toUpperCase();
-      if (!/^[A-F0-9]{8}$/.test(code)) throw new Error('Enter the 8-character room invite code.');
+      if (!/^[A-F0-9]{12}$/.test(code)) throw new Error('Enter the 12-character room invite code.');
       const { data, error } = await client.rpc('join_listening_room', { p_invite_code: code });
       if (error) throw error;
       $('joinRoomCode').value = '';
@@ -192,10 +192,8 @@
     if (activeRoom.status === 'closed') {
       $('roomClosedNotice').classList.remove('hidden');
       $('roomHostControls').classList.add('hidden');
-      $('roomSuggestBtn')?.setAttribute('disabled', 'disabled');
     } else {
       $('roomClosedNotice').classList.add('hidden');
-      $('roomSuggestBtn')?.removeAttribute('disabled');
     }
   }
   async function refreshRoom() {
