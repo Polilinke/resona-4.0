@@ -309,6 +309,14 @@
   }
   async function playQueueItem(id) {
     try {
+      const item = queueRows.find(row => row.id === id);
+      if (!item) throw new Error('That track is no longer in the room queue.');
+      // Start locally from the click gesture; the database update synchronises everyone else.
+      audioEnabled = true;
+      $('roomAudioEnableBtn').textContent = 'Room audio enabled';
+      $('roomAudioEnableBtn').disabled = true;
+      lastTrackKey = trackKey(item.track);
+      window.ResonaPlayback?.play(item.track, 0, true);
       const { error } = await client.rpc('play_listening_room_queue_item', {
         p_room_id: activeRoom.id, p_queue_item_id: id
       });
@@ -433,10 +441,12 @@
     if (!hostMode()) return;
     const playing = activeRoom.playback_state !== 'playing';
     const position = window.ResonaPlayback?.getPosition?.() ?? activeRoom.playback_position;
+    window.ResonaPlayback?.setState(playing, position);
     await setRoomPlayback(playing, position);
   });
   $('roomSeek').addEventListener('change', async event => {
     if (!hostMode()) return;
+    window.ResonaPlayback?.setState(activeRoom.playback_state === 'playing', Number(event.target.value));
     await setRoomPlayback(activeRoom.playback_state === 'playing', Number(event.target.value));
   });
   $('roomBackToLobbyBtn').addEventListener('click', async () => {
