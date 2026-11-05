@@ -797,6 +797,16 @@
     prev: playPrev
   });
 
+  // Subtle cursor-following light on interactive music surfaces.
+  document.addEventListener('pointermove', (event) => {
+    if (event.pointerType === 'touch') return;
+    const surface = event.target.closest('.track, .discovery-feature, .feature-card');
+    if (!surface) return;
+    const rect = surface.getBoundingClientRect();
+    surface.style.setProperty('--glow-x', (event.clientX - rect.left) + 'px');
+    surface.style.setProperty('--glow-y', (event.clientY - rect.top) + 'px');
+  }, { passive: true });
+
   // ---------- Start ----------
   applySettings();
   saveQueue();
