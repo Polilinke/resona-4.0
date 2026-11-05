@@ -1357,3 +1357,8 @@ body.pointer-active #cursorGlow { opacity: 1; }
 .eq-help-btn { width:20px;height:20px;font-size:11px; }
 .eq-help-popover { top:25px;width:min(290px,78vw);padding:11px 12px;font-size:10px; }
 @media(max-width:600px) { .provider-picker select { max-width:190px;font-size:10px; } }
+
+
+/* Jamendo attribution link required for every Jamendo track. */
+.track-source-credit { display:inline-block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.35;text-decoration:underline;text-decoration-color:rgba(var(--accent-rgb),.45);text-underline-offset:2px; }
+.track-source-credit:hover { color:var(--accent); }
