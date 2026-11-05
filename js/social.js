@@ -112,7 +112,6 @@
       data.forEach(p=>{
         const el=row({display_name:p.display_name,bio:p.bio},p.friendship_status==='friends'?'Already friends':p.friendship_status==='pending'?(p.request_direction==='sent'?'Request sent':'Request received'):(p.bio||'Resona listener'));
         if(p.friendship_status==='none') el.append(button('Add friend','btn small primary',()=>sendRequest(p.user_id)));
-        else if(p.friendship_status==='pending'&&p.request_direction==='received') el.append(button('Accept','btn small primary',()=>{const reqId=null;status('Open Friend requests to accept this request.','info');}));
         box.append(el);
       });
     } catch(e){status(e.message||'Could not search profiles.','error');}
