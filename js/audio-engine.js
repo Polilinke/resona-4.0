@@ -112,7 +112,7 @@
     return { name: file.name, size: file.size, type: file.type };
   }
   function loadUrl(url) {
-    if (!url || typeof url !== 'string') throw new Error('Audius did not provide a playable stream URL.');
+    if (!url || typeof url !== 'string') throw new Error('The selected provider did not provide a playable stream URL.');
     if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
     audio.pause();
     ensureGraph();
