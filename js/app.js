@@ -332,7 +332,16 @@
     }
 
     actions.append(
-      button('▶ Play', () => playFromList(opts.list || [track], track), 'btn small primary'),
+      button('▶ Play', () => {
+        if (track.source === 'local-audio') {
+          $('audioToolsDialog').classList.remove('hidden');
+          $('audioToolsDialog').setAttribute('aria-hidden', 'false');
+          $('audioToolsStatus').textContent = 'Choose the original file again to play this local track.';
+          $('audioFileInput').click();
+        } else {
+          playFromList(opts.list || [track], track);
+        }
+      }, 'btn small primary'),
       button('+ Queue', () => addToQueue(track), 'btn small'),
       button(Store.isSaved(track.id) ? '★ Saved' : '☆ Save', () => {
         if (Store.isSaved(track.id)) Store.removeTrack(track.id);
