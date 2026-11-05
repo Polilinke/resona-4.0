@@ -113,7 +113,7 @@ begin
   select coalesce(nullif(raw_user_meta_data->>'display_name',''), split_part(email,'@',1), 'Listener')
     into v_display from auth.users where id = auth.uid();
   loop
-    v_code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
+    v_code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12));
     exit when not exists (select 1 from public.listening_rooms where invite_code = v_code);
   end loop;
   insert into public.listening_rooms(invite_code, name, host_id)
@@ -152,6 +152,7 @@ declare v_source text;
 begin
   if not public.is_listening_room_member(p_room_id) then raise exception 'Join this room before suggesting a track.'; end if;
   if p_track is null or coalesce(p_track->>'title','') = '' then raise exception 'Track information is incomplete.'; end if;
+  if pg_column_size(p_track) > 20000 then raise exception 'Track details are too large to share.'; end if;
   v_source := coalesce(p_track->>'source','youtube');
   if v_source not in ('youtube','audius','archive','jamendo') then
     raise exception 'This track source cannot be shared in a room. Local files are only available on your device.';
@@ -178,6 +179,7 @@ begin
         reviewed_at = now(), reviewed_by = auth.uid()
     where id = p_suggestion_id returning * into v_row;
   if p_approve then
+    perform pg_advisory_xact_lock(hashtext(v_row.room_id::text));
     select coalesce(max(position),0) + 1 into v_next
       from public.listening_room_queue where room_id = v_row.room_id;
     insert into public.listening_room_queue(room_id,track,added_by,suggestion_id,position)
