@@ -77,11 +77,6 @@ drop policy if exists "Room members can view their rooms" on public.listening_ro
 create policy "Room members can view their rooms" on public.listening_rooms
 for select to authenticated using (public.is_listening_room_member(id));
 
-drop policy if exists "Only the host can update room playback" on public.listening_rooms;
-create policy "Only the host can update room playback" on public.listening_rooms
-for update to authenticated using (public.is_listening_room_host(id))
-with check (public.is_listening_room_host(id));
-
 drop policy if exists "Room members can view members" on public.listening_room_members;
 create policy "Room members can view members" on public.listening_room_members
 for select to authenticated using (public.is_listening_room_member(room_id));
@@ -268,7 +263,6 @@ grant execute on function public.leave_listening_room(uuid) to authenticated;
 
 grant select on public.listening_rooms, public.listening_room_members,
   public.listening_room_suggestions, public.listening_room_queue to authenticated;
-grant update on public.listening_rooms to authenticated;
 
 do $$
 begin
