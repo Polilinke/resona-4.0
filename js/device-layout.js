@@ -20,7 +20,6 @@
   try { saved = localStorage.getItem(STORAGE_KEY); } catch (_) {}
   if (saved === 'mobile' || saved === 'laptop') {
     root.dataset.deviceLayout = saved;
-    openBackgroundChooserIfNeeded();
   } else {
     openChooser();
   }
