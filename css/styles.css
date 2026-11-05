@@ -1228,3 +1228,26 @@ body { background: radial-gradient(ellipse at 72% 12%, rgba(116,91,190,.15), tra
  .discovery-actions .btn{font-size:12px;padding:8px 10px}
 }
 @media (prefers-reduced-motion:reduce) { .remix-button,.track:before {transition:none;} }
+
+
+/* Full-page cursor spotlight: follows the pointer like a soft pool of light */
+#cursorGlow {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    430px circle at var(--pointer-x, 50vw) var(--pointer-y, 50vh),
+    rgba(190, 145, 255, .17) 0%,
+    rgba(126, 108, 226, .10) 28%,
+    rgba(92, 112, 190, .045) 48%,
+    transparent 72%
+  );
+  transition: opacity .28s ease;
+  mix-blend-mode: screen;
+}
+body.pointer-active #cursorGlow { opacity: 1; }
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  #cursorGlow { display: none; }
+}
