@@ -162,6 +162,7 @@
         .select('*').eq('id', roomId).single();
       if (error) throw error;
       activeRoom = room;
+      window.dispatchEvent(new CustomEvent('resona:room-open', { detail: { room } }));
       lastTrackKey = '';
       showWorkspace();
       renderRoom();
@@ -388,6 +389,7 @@
       const { error } = await client.rpc('leave_listening_room', { p_room_id: activeRoom.id });
       if (error) throw error;
       activeRoom = null; lastTrackKey = ''; audioEnabled = false;
+      window.dispatchEvent(new CustomEvent('resona:room-close'));
       showLobby(); await loadMyRooms();
       setStatus('You left the room.', 'success');
     } catch (error) { setStatus(error.message || 'Could not leave the room.', 'error'); }
@@ -404,6 +406,11 @@
       setStatus('');
       showLobby();
       await loadMyRooms();
+      const inviteCode = new URLSearchParams(location.search).get('room');
+      if (inviteCode && /^[A-F0-9]{12}$/i.test(inviteCode)) {
+        $('joinRoomCode').value = inviteCode.toUpperCase();
+        setStatus('Room invite link detected. Sign in and select Join room to continue.', 'info');
+      }
     } catch (error) {
       showLobby();
       setStatus(error.message || 'Could not load Listening Rooms. Run the SQL setup in Supabase first.', 'error');
@@ -451,6 +458,7 @@
   $('roomBackToLobbyBtn').addEventListener('click', async () => {
     if (channel) { await client.removeChannel(channel); channel = null; }
     activeRoom = null; lastTrackKey = ''; audioEnabled = false;
+    window.dispatchEvent(new CustomEvent('resona:room-close'));
     showLobby(); await loadMyRooms().catch(error => setStatus(error.message, 'error'));
   });
 
