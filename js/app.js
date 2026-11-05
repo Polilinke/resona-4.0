@@ -265,6 +265,14 @@
 
   // ---------- Home: popular music (1 quota unit, cached 24 hours) ----------
   async function showHome() {
+    state.searchSource = 'youtube';
+    document.querySelectorAll('[data-search-source]').forEach(item => {
+      const active = item.dataset.searchSource === 'youtube';
+      item.classList.toggle('active', active);
+      item.setAttribute('aria-pressed', String(active));
+    });
+    officialOnlyToggle.disabled = false;
+    officialOnlyToggle.closest('.official-filter')?.classList.remove('source-filter-disabled');
     showView('search');
     const region = Store.getSettings().popularRegion || 'US';
     const cacheKey = 'popular:' + region;
@@ -673,6 +681,7 @@
     showNowPlaying(track);
 
     if (track.source === 'audius') {
+      state.pendingVideoId = null;
       try {
         const streamUrl = AudiusAPI.getStreamUrl(track.audiusId);
         ResonaAudio.loadUrl(streamUrl);
