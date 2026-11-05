@@ -69,11 +69,23 @@
     if (objectUrl) URL.revokeObjectURL(objectUrl);
     audio.pause();
     ensureGraph();
+    audio.removeAttribute('crossorigin');
     objectUrl = URL.createObjectURL(file);
     currentFile = file;
     audio.src = objectUrl;
     audio.load();
     return { name: file.name, size: file.size, type: file.type };
+  }
+  function loadUrl(url) {
+    if (!url || typeof url !== 'string') throw new Error('Audius did not provide a playable stream URL.');
+    if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+    audio.pause();
+    ensureGraph();
+    currentFile = null;
+    audio.crossOrigin = 'anonymous';
+    audio.src = url;
+    audio.load();
+    return { url };
   }
   async function play() {
     ensureGraph();
@@ -96,5 +108,5 @@
   audio.addEventListener('error', () => window.dispatchEvent(new CustomEvent('resona:audio-error', {
     detail: { message: 'This file could not be decoded or played by your browser.' }
   })));
-  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, applyPreset, getBands, onTrackEnded };
+  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, applyPreset, getBands, onTrackEnded };
 })();
