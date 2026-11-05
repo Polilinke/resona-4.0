@@ -11,6 +11,7 @@
   let lastTrackKey = '';
   let audioEnabled = false;
   let refreshing = false;
+  let queueRows = [];
 
   function escapeText(value) {
     return String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -180,6 +181,12 @@
     $('roomPlaybackLabel').textContent = activeRoom.current_track
       ? activeRoom.current_track.title + ' · ' + (activeRoom.playback_state === 'playing' ? 'Playing' : 'Paused')
       : 'Nothing playing yet';
+    $('roomPlayPauseBtn').textContent = activeRoom.playback_state === 'playing' ? 'Pause for everyone' : 'Play for everyone';
+    $('roomPlayPauseBtn').disabled = !activeRoom.current_track || activeRoom.status !== 'active';
+    $('roomNextBtn').disabled = !hostMode() || activeRoom.status !== 'active' || !queueRows.length;
+    const duration = Number(activeRoom.current_track?.duration) || 600;
+    $('roomSeek').max = String(Math.max(60, Math.ceil(duration)));
+    $('roomSeek').value = String(Math.min(Number(activeRoom.playback_position) || 0, Math.max(60, Math.ceil(duration))));
     $('roomAudioEnableBtn').textContent = audioEnabled ? 'Room audio enabled' : 'Enable room audio';
     $('roomAudioEnableBtn').disabled = audioEnabled;
     if (activeRoom.status === 'closed') {
@@ -257,6 +264,7 @@
     });
   }
   function renderQueue(rows) {
+    queueRows = rows || [];
     const box = $('roomQueue');
     box.replaceChildren();
     if (!rows.length) box.innerHTML = '<div class="rooms-empty">Approved tracks will appear here.</div>';
@@ -309,6 +317,16 @@
       await refreshRoom();
     } catch (error) { setStatus(error.message || 'Could not start room playback.', 'error'); }
   }
+  async function nextRoomTrack() {
+    if (!hostMode() || !queueRows.length) return;
+    const currentIndex = queueRows.findIndex(row => row.id === activeRoom.current_queue_item_id);
+    const next = queueRows[currentIndex + 1] || queueRows.find(row => row.id !== activeRoom.current_queue_item_id);
+    if (!next) {
+      setStatus('There are no other approved tracks in the shared queue.', 'info');
+      return;
+    }
+    await playQueueItem(next.id);
+  }
   async function setRoomPlayback(playing, position) {
     if (!hostMode() || !activeRoom?.current_track) return;
     try {
@@ -327,6 +345,9 @@
     const elapsed = room.playback_state === 'playing'
       ? Math.max(0, (Date.now() - new Date(room.playback_updated_at).getTime()) / 1000) : 0;
     const target = position + elapsed;
+    const duration = Number(room.current_track.duration) || 600;
+    $('roomSeek').max = String(Math.max(60, Math.ceil(duration)));
+    $('roomSeek').value = String(Math.min(target, Math.max(60, Math.ceil(duration))));
     if (!audioEnabled) {
       $('roomPlaybackLabel').textContent = room.current_track.title + ' · ' +
         (room.playback_state === 'playing' ? 'Playing in room — enable audio to hear it' : 'Paused');
@@ -407,6 +428,7 @@
   $('roomLeaveBtn').addEventListener('click', leaveRoom);
   $('roomCopyCodeBtn').addEventListener('click', copyInviteCode);
   $('roomAudioEnableBtn').addEventListener('click', enableRoomAudio);
+  $('roomNextBtn').addEventListener('click', nextRoomTrack);
   $('roomPlayPauseBtn').addEventListener('click', async () => {
     if (!hostMode()) return;
     const playing = activeRoom.playback_state !== 'playing';
