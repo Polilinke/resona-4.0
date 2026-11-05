@@ -797,15 +797,16 @@
     prev: playPrev
   });
 
-  // Subtle cursor-following light on interactive music surfaces.
+  // Full-page ambient spotlight follows the cursor, not just individual cards.
   document.addEventListener('pointermove', (event) => {
     if (event.pointerType === 'touch') return;
-    const surface = event.target.closest('.track, .discovery-feature, .feature-card');
-    if (!surface) return;
-    const rect = surface.getBoundingClientRect();
-    surface.style.setProperty('--glow-x', (event.clientX - rect.left) + 'px');
-    surface.style.setProperty('--glow-y', (event.clientY - rect.top) + 'px');
+    document.documentElement.style.setProperty('--pointer-x', event.clientX + 'px');
+    document.documentElement.style.setProperty('--pointer-y', event.clientY + 'px');
+    document.body.classList.add('pointer-active');
   }, { passive: true });
+  document.addEventListener('pointerleave', () => {
+    document.body.classList.remove('pointer-active');
+  });
 
   // ---------- Start ----------
   applySettings();
