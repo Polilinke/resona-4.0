@@ -781,7 +781,14 @@
   window.ResonaPlayback = {
     play(track, position = 0, playing = true) {
       if (!track || track.source === 'local-audio') return;
+      // Room playback must not overwrite a listener's personal queue.
+      const personalQueue = state.queue;
+      const personalIndex = state.currentIndex;
       playFromList([track], track);
+      state.queue = personalQueue;
+      state.currentIndex = personalIndex;
+      saveQueue();
+      renderQueue();
       window.setTimeout(() => this.setState(playing, position), 1200);
     },
     setState(playing, position = null) {
