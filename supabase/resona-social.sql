@@ -249,14 +249,14 @@ create or replace function public.send_resona_direct_message(p_friend_id uuid,p_
 returns jsonb language plpgsql security definer set search_path=public
 as $$
 declare v_body text:=trim(coalesce(p_body,''));
-declare v_row public.resona_direct_messages;
+ v_row public.resona_direct_messages;
 begin
   if auth.uid() is null then raise exception 'Sign in to send messages.'; end if;
   if char_length(v_body)<1 or char_length(v_body)>1000 then raise exception 'Messages must be 1–1000 characters.'; end if;
   if (select count(*) from public.resona_direct_messages where sender_id=auth.uid() and created_at>now()-interval '15 seconds')>=8 then raise exception 'Please slow down before sending another message.'; end if;
   if not exists(select 1 from public.resona_friendships f where f.status='accepted'
     and ((f.requester_id=auth.uid() and f.addressee_id=p_friend_id)
-      or (f.requester_id=p_friend_id and f.addressee_id=auth.uid())) then
+      or (f.requester_id=p_friend_id and f.addressee_id=auth.uid()))) then
     raise exception 'You can only message accepted friends.';
   end if;
   if exists(select 1 from public.resona_blocks b where
@@ -273,8 +273,8 @@ create or replace function public.send_resona_room_message(p_room_id uuid,p_body
 returns jsonb language plpgsql security definer set search_path=public
 as $$
 declare v_body text:=trim(coalesce(p_body,''));
-declare v_row public.resona_room_messages;
-declare v_name text;
+ v_row public.resona_room_messages;
+ v_name text;
 begin
   if auth.uid() is null or not public.is_listening_room_member(p_room_id) then raise exception 'Join the room before chatting.'; end if;
   if char_length(v_body)<1 or char_length(v_body)>1000 then raise exception 'Messages must be 1–1000 characters.'; end if;
@@ -328,8 +328,8 @@ create or replace function public.respond_resona_room_invite(p_invite_id uuid,p_
 returns jsonb language plpgsql security definer set search_path=public
 as $$
 declare v_row public.resona_room_invites;
-declare v_room public.listening_rooms;
-declare v_name text;
+ v_room public.listening_rooms;
+ v_name text;
 begin
   select * into v_row from public.resona_room_invites
     where id=p_invite_id and invitee_id=auth.uid() and status='pending' for update;
@@ -370,7 +370,7 @@ create or replace function public.purge_expired_resona_messages()
 returns integer language plpgsql security definer set search_path=public
 as $$
 declare v_direct_count integer;
-declare v_room_count integer;
+ v_room_count integer;
 begin
   delete from public.resona_direct_messages where created_at < now()-interval '7 days';
   get diagnostics v_direct_count = row_count;
