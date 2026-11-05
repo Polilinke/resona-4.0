@@ -12,7 +12,7 @@ function send(res, status, body) {
 
 function safeId(value) {
   const id = String(value || '');
-  return /^\\d{1,15}$/.test(id) ? id : '';
+  return /^\d{1,15}$/.test(id) ? id : '';
 }
 
 function mapTrack(track) {
