@@ -809,6 +809,35 @@
     $('audioToolsDialog').setAttribute('aria-hidden', 'true');
   });
   $('importAudioBtn').addEventListener('click', () => $('audioFileInput').click());
+  $('startTabCaptureBtn').addEventListener('click', async () => {
+    const startButton = $('startTabCaptureBtn');
+    startButton.disabled = true;
+    $('audioToolsStatus').textContent = 'Choose the Resona tab in your browser picker and enable Share tab audio.';
+    try {
+      ResonaAudio.pause();
+      await ResonaAudio.startTabCapture();
+      $('startTabCaptureBtn').textContent = 'Tab capture active';
+      $('stopTabCaptureBtn').disabled = false;
+      $('audioSourceTitle').textContent = 'Browser tab audio';
+      $('audioSourceMeta').textContent = 'Resona tab · Real-time EQ enabled';
+      $('audioToolsStatus').textContent = 'Tab audio is now routed through Resona EQ. Adjust Bass, Mids, Treble or Advanced bands while the tab plays.';
+      syncEqualizerControls();
+    } catch (err) {
+      $('audioToolsStatus').textContent = err.message || 'Could not capture tab audio.';
+      startButton.disabled = false;
+    }
+  });
+  $('stopTabCaptureBtn').addEventListener('click', () => ResonaAudio.stopTabCapture());
+  window.addEventListener('resona:tab-capture-start', () => {
+    $('startTabCaptureBtn').disabled = true;
+    $('stopTabCaptureBtn').disabled = false;
+  });
+  window.addEventListener('resona:tab-capture-stop', () => {
+    $('startTabCaptureBtn').disabled = false;
+    $('startTabCaptureBtn').textContent = 'Capture tab audio for EQ';
+    $('stopTabCaptureBtn').disabled = true;
+    $('audioToolsStatus').textContent = 'Tab capture stopped. Your browser tab audio is no longer routed through Resona EQ.';
+  });
   $('audioFileInput').addEventListener('change', async (event) => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
