@@ -135,8 +135,60 @@
       </div>
 
       <div id="view-rooms" class="view">
-        <h2>Listening rooms</h2>
-        <div class="feature-card"><h3>Listen together</h3><p>Shared playback rooms are planned, but aren't live yet. They need a small real-time server so friends can stay synchronised across devices.</p><p class="hint">Your current playlists and listening history remain private on this device.</p><button class="btn" disabled>Rooms coming soon</button></div>
+        <div class="rooms-page-heading">
+          <div><span class="rooms-kicker">LISTEN TOGETHER</span><h2>Listening rooms</h2><p>Private rooms, shared queues and host-approved music.</p></div>
+          <span class="rooms-live-mark"><i></i> REAL-TIME</span>
+        </div>
+        <div id="roomsStatus" class="rooms-status hidden" role="status" aria-live="polite"></div>
+        <section id="roomsSignedOut" class="rooms-panel hidden">
+          <div class="rooms-panel-icon">♫</div><h3>Your people. Your playlist.</h3>
+          <p>Sign in to create a private room or join friends with an invite code.</p>
+          <button class="btn primary" type="button" onclick="document.getElementById('accountBtn').click()">Sign in to Resona</button>
+        </section>
+        <section id="roomsLobby" class="hidden">
+          <div class="rooms-entry-grid">
+            <article class="rooms-panel rooms-create-panel">
+              <span class="rooms-kicker">START A SESSION</span><h3>Create a room</h3>
+              <p>You'll be the host. Every song suggestion needs your approval before it joins the queue.</p>
+              <label for="newRoomName">Room name</label>
+              <input id="newRoomName" maxlength="48" placeholder="e.g. Friday night mix" />
+              <button id="createRoomBtn" class="btn primary" type="button">Create private room</button>
+            </article>
+            <article class="rooms-panel">
+              <span class="rooms-kicker">GOT AN INVITE?</span><h3>Join a room</h3>
+              <p>Enter the 8-character code shared by the room host.</p>
+              <label for="joinRoomCode">Invite code</label>
+              <input id="joinRoomCode" maxlength="8" autocomplete="off" placeholder="A1B2C3D4" />
+              <button id="joinRoomBtn" class="btn" type="button">Join room</button>
+            </article>
+          </div>
+          <div class="rooms-list-heading"><h3>Your rooms</h3><button id="refreshRoomsBtn" class="btn ghost small" type="button">Refresh</button></div>
+          <div id="myRoomsList" class="my-rooms-list"><p class="rooms-muted">Your rooms will appear here.</p></div>
+        </section>
+        <section id="roomWorkspace" class="hidden">
+          <div class="room-topline">
+            <button id="roomBackToLobbyBtn" class="btn ghost small" type="button">← Your rooms</button>
+            <button id="roomLeaveBtn" class="btn ghost small" type="button">Leave room</button>
+          </div>
+          <div class="room-hero rooms-panel">
+            <div><span class="rooms-kicker">PRIVATE LISTENING SESSION</span><h3 id="roomName">Room</h3><p id="roomHostLabel">Host-moderated room</p></div>
+            <div class="room-invite"><span>INVITE CODE</span><strong id="roomInviteCode">--------</strong><button id="roomCopyCodeBtn" class="btn small" type="button">Copy code</button></div>
+          </div>
+          <div id="roomClosedNotice" class="rooms-status is-warning hidden">The host has closed this room. You can return to your rooms list.</div>
+          <div class="room-now-playing rooms-panel">
+            <div><span class="rooms-kicker">NOW PLAYING</span><strong id="roomPlaybackLabel">Nothing playing yet</strong></div>
+            <button id="roomAudioEnableBtn" class="btn primary" type="button">Enable room audio</button>
+          </div>
+          <div id="roomHostControls" class="room-host-controls rooms-panel hidden">
+            <div><span class="rooms-kicker">HOST CONTROLS</span><h4>Playback for everyone</h4></div>
+            <div class="room-host-control-row"><button id="roomPlayPauseBtn" class="btn primary" type="button">Play / Pause</button><label>Seek <input id="roomSeek" type="range" min="0" max="600" step="1" value="0" /></label></div>
+          </div>
+          <div class="room-members-panel rooms-panel"><div class="rooms-list-heading"><h4>In this room</h4><span><b id="roomMemberCount">0</b> listeners</span></div><div id="roomMembers" class="room-members"></div></div>
+          <div class="room-content-grid">
+            <section class="rooms-panel"><div class="rooms-list-heading"><div><span class="rooms-kicker">COMMUNITY PICKS</span><h4>Song suggestions <span class="room-count" id="roomPendingCount">0</span></h4></div></div><p id="roomSuggestHint" class="rooms-muted">Suggest tracks from search results. The host must approve them before they enter the shared queue.</p><div id="roomSuggestions" class="room-suggestions"></div></section>
+            <section class="rooms-panel"><div class="rooms-list-heading"><div><span class="rooms-kicker">HOST-APPROVED</span><h4>Shared queue</h4></div></div><div id="roomQueue" class="room-queue"></div></section>
+          </div>
+        </section>
       </div>
 
       <div id="view-queue" class="view">
@@ -424,5 +476,6 @@
   <script src="js/support-message.js"></script>
   <script src="js/app.js"></script>
   <script src="js/account-ui.js"></script>
+  <script src="js/rooms.js"></script>
 </body>
 </html>
