@@ -15,7 +15,8 @@
     pickerTrack: null,
     searchTimer: null,
     lastQuery: '',
-    searchSource: 'youtube'
+    searchSource: 'youtube',
+    searchRequestId: 0
   };
 
   // ---------- Settings, theme, accent, glass, album background ----------
@@ -265,6 +266,7 @@
 
   // ---------- Home: popular music (1 quota unit, cached 24 hours) ----------
   async function showHome() {
+    state.searchRequestId++;
     state.searchSource = 'youtube';
     document.querySelectorAll('[data-search-source]').forEach(item => {
       const active = item.dataset.searchSource === 'youtube';
@@ -302,6 +304,7 @@
   async function runSearch(query, force = false) {
     if (query === state.lastQuery && !force) return;
     state.lastQuery = query;
+    const requestId = ++state.searchRequestId;
     showView('search');
 
     const source = state.searchSource;
@@ -326,6 +329,7 @@
       const results = source === 'audius'
         ? await AudiusAPI.search(query)
         : await YouTubeAPI.search(query);
+      if (requestId !== state.searchRequestId || source !== state.searchSource) return;
       Store.setCachedSearch(cacheKey, results);
       state.rawResults = results;
       state.isSearch = true;
@@ -336,6 +340,7 @@
           ? (state.results.length ? `Showing ${state.results.length} likely official result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
           : (results.length ? `Showing all ${results.length} results for "${query}".` : `No results for "${query}".`));
     } catch (err) {
+      if (requestId !== state.searchRequestId || source !== state.searchSource) return;
       $('searchStatus').textContent = (source === 'audius' ? 'Audius search failed: ' : 'YouTube search failed: ') + err.message;
     }
     updateQuotaBadge();
@@ -360,7 +365,7 @@
     t.title = track.title;
     const a = document.createElement('div');
     a.className = 'track-artist';
-    a.textContent = track.artist;
+    a.textContent = track.source === 'audius' ? track.artist + ' · Audius' : track.artist;
     info.append(t, a);
 
     const actions = document.createElement('div');
