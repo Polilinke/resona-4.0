@@ -77,6 +77,7 @@
     if (name === 'playlists') renderPlaylists();
     if (name === 'history') renderHistory();
     if (name === 'queue') renderQueue();
+    if (name === 'rooms') window.ResonaRooms?.open();
   }
 
   // ---------- Shared API status ----------
@@ -419,6 +420,9 @@
       }, 'btn small'),
       button('Add to playlist', () => openPicker(track), 'btn small ghost')
     );
+    if (window.ResonaRooms?.isActive()) {
+      actions.append(button('Suggest to room', () => window.ResonaRooms.suggestTrack(track), 'btn small ghost'));
+    }
     if (opts.removable) {
       actions.append(button('Remove', () => opts.removable(track), 'btn small danger'));
     }
@@ -772,6 +776,37 @@
     if (st === 1) state.player.pauseVideo();
     else state.player.playVideo();
   }
+
+  // Small bridge used by Listening Rooms to keep each member's player aligned.
+  window.ResonaPlayback = {
+    play(track, position = 0, playing = true) {
+      if (!track || track.source === 'local-audio') return;
+      playFromList([track], track);
+      window.setTimeout(() => this.setState(playing, position), 1200);
+    },
+    setState(playing, position = null) {
+      if (!state.currentTrack) return;
+      if (position !== null && Number.isFinite(Number(position))) {
+        const target = Math.max(0, Number(position));
+        if (state.audioMode) ResonaAudio.seek(target);
+        else if (state.playerReady) state.player.seekTo(target, true);
+      }
+      if (state.audioMode) {
+        if (playing) ResonaAudio.play().catch(err => flashStatus('Room audio could not start: ' + err.message));
+        else ResonaAudio.pause();
+      } else if (state.playerReady) {
+        if (playing) state.player.playVideo();
+        else state.player.pauseVideo();
+      }
+    },
+    getPosition() {
+      try {
+        if (state.audioMode) return ResonaAudio.getTime();
+        if (state.playerReady) return state.player.getCurrentTime();
+      } catch (_) {}
+      return 0;
+    }
+  };
 
   function setPlayingUI(playing) {
     NowPlaying.setPlaying(playing);
