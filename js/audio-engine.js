@@ -90,6 +90,8 @@
   function getTime() { return Number.isFinite(audio.currentTime) ? audio.currentTime : 0; }
   function getDuration() { return Number.isFinite(audio.duration) ? audio.duration : 0; }
   function onTrackEnded(callback) { onEnded = typeof callback === 'function' ? callback : () => {}; }
+  audio.addEventListener('play', () => window.dispatchEvent(new Event('resona:audio-play')));
+  audio.addEventListener('pause', () => window.dispatchEvent(new Event('resona:audio-pause')));
   audio.addEventListener('ended', () => onEnded());
   audio.addEventListener('error', () => window.dispatchEvent(new CustomEvent('resona:audio-error', {
     detail: { message: 'This file could not be decoded or played by your browser.' }
