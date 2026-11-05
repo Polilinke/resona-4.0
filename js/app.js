@@ -220,7 +220,7 @@
 
   $('searchSourceSelect').addEventListener('change', (event) => {
     const source = event.target.value;
-    if (!['youtube', 'audius', 'archive'].includes(source) || source === state.searchSource) return;
+    if (!['youtube', 'audius', 'archive', 'jamendo'].includes(source) || source === state.searchSource) return;
     state.searchSource = source;
     officialOnlyToggle.disabled = source !== 'youtube';
     officialOnlyToggle.closest('.official-filter')?.classList.toggle('source-filter-disabled', source !== 'youtube');
@@ -235,7 +235,9 @@
         ? 'Search Audius for independent artists and tracks.'
         : source === 'archive'
           ? 'Search Internet Archive for public and archival audio recordings.'
-          : 'Search YouTube for music videos and official audio.';
+          : source === 'jamendo'
+            ? 'Search Jamendo for independently released Creative Commons music.'
+            : 'Search YouTube for music videos and official audio.';
     }
   });
 
@@ -308,9 +310,13 @@
       renderResults();
       $('searchStatus').textContent = source === 'audius'
         ? (state.results.length ? `Showing ${state.results.length} Audius result(s) for "${query}".` : `No Audius results for "${query}".`)
-        : (officialOnlyToggle.checked
-          ? (state.results.length ? `Showing ${state.results.length} likely official cached result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
-          : `Showing all ${state.results.length} cached results for "${query}".`);
+        : source === 'archive'
+          ? (state.results.length ? `Showing ${state.results.length} Archive recording(s) for "${query}".` : `No Archive recordings for "${query}".`)
+          : source === 'jamendo'
+            ? (state.results.length ? `Showing ${state.results.length} Jamendo tracks for "${query}".` : `No Jamendo tracks for "${query}".`)
+            : (officialOnlyToggle.checked
+              ? (state.results.length ? `Showing ${state.results.length} likely official cached result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
+              : `Showing all ${state.results.length} cached results for "${query}".`);
       return;
     }
 
@@ -318,13 +324,17 @@
       ? `Searching Audius for "${query}"…`
       : source === 'archive'
         ? `Searching Internet Archive for "${query}"…`
-        : `Searching YouTube for "${query}"…`;
+        : source === 'jamendo'
+          ? `Searching Jamendo for "${query}"…`
+          : `Searching YouTube for "${query}"…`;
     try {
       const results = source === 'audius'
         ? await AudiusAPI.search(query)
         : source === 'archive'
           ? await InternetArchiveAPI.search(query)
-          : await YouTubeAPI.search(query);
+          : source === 'jamendo'
+            ? await JamendoAPI.search(query)
+            : await YouTubeAPI.search(query);
       if (requestId !== state.searchRequestId || source !== state.searchSource) return;
       Store.setCachedSearch(cacheKey, results);
       state.rawResults = results;
@@ -334,12 +344,14 @@
         ? (results.length ? `Showing ${results.length} Audius result(s) for "${query}". EQ is available when the stream permits browser processing.` : `No Audius results for "${query}".`)
         : source === 'archive'
           ? (results.length ? `Showing ${results.length} playable Archive recording(s) for "${query}".` : `No playable Archive recordings found for "${query}".`)
-          : (officialOnlyToggle.checked
-          ? (state.results.length ? `Showing ${state.results.length} likely official result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
-          : (results.length ? `Showing all ${results.length} results for "${query}".` : `No results for "${query}".`));
+          : source === 'jamendo'
+            ? (results.length ? `Showing ${results.length} Jamendo tracks for "${query}". Each result links to its artist and licence details.` : `No Jamendo tracks found for "${query}".`)
+            : (officialOnlyToggle.checked
+              ? (state.results.length ? `Showing ${state.results.length} likely official result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
+              : (results.length ? `Showing all ${results.length} results for "${query}".` : `No results for "${query}".`));
     } catch (err) {
       if (requestId !== state.searchRequestId || source !== state.searchSource) return;
-      $('searchStatus').textContent = (source === 'audius' ? 'Audius search failed: ' : source === 'archive' ? 'Archive search failed: ' : 'YouTube search failed: ') + err.message;
+      $('searchStatus').textContent = (source === 'audius' ? 'Audius search failed: ' : source === 'archive' ? 'Archive search failed: ' : source === 'jamendo' ? 'Jamendo search failed: ' : 'YouTube search failed: ') + err.message;
     }
     updateQuotaBadge();
   }
@@ -363,8 +375,17 @@
     t.title = track.title;
     const a = document.createElement('div');
     a.className = 'track-artist';
-    a.textContent = track.artist + (track.source === 'audius' ? ' · Audius' : track.source === 'archive' ? ' · Archive' : '');
+    a.textContent = track.artist + (track.source === 'audius' ? ' · Audius' : track.source === 'archive' ? ' · Archive' : track.source === 'jamendo' ? ' · Jamendo' : '');
     info.append(t, a);
+    if (track.source === 'jamendo' && track.permalink) {
+      const credit = document.createElement('a');
+      credit.className = 'track-source-credit';
+      credit.href = track.permalink;
+      credit.target = '_blank';
+      credit.rel = 'noopener noreferrer';
+      credit.textContent = 'Jamendo · ' + (track.licenseName || 'Creative Commons licence');
+      info.append(credit);
+    }
 
     const actions = document.createElement('div');
     actions.className = 'track-actions';
@@ -678,13 +699,13 @@
     state.currentIndex = i;
     const track = state.queue[i];
     state.currentTrack = track;
-    state.audioMode = track.source === 'audius' || track.source === 'archive' || track.source === 'local-audio';
+    state.audioMode = track.source === 'audius' || track.source === 'archive' || track.source === 'jamendo' || track.source === 'local-audio';
     if (state.audioMode && state.playerReady) state.player.pauseVideo();
     Store.addToHistory(track);
     renderDiscovery();
     showNowPlaying(track);
 
-    if (track.source === 'audius' || track.source === 'archive') {
+    if (track.source === 'audius' || track.source === 'archive' || track.source === 'jamendo') {
       state.pendingVideoId = null;
       try {
         const streamUrl = track.source === 'audius'
@@ -693,8 +714,9 @@
         ResonaAudio.loadUrl(streamUrl);
         ResonaAudio.setVolume(Number($('volumeSlider').value));
         $('audioSourceTitle').textContent = track.title;
-        $('audioSourceMeta').textContent = (track.source === 'audius' ? 'Audius stream' : 'Internet Archive audio') + ' · Resona EQ enabled';
-        $('audioToolsStatus').textContent = 'Equalizer active for ' + (track.source === 'audius' ? 'Audius' : 'Archive') + ' playback.';
+        const sourceName = track.source === 'audius' ? 'Audius' : track.source === 'archive' ? 'Internet Archive' : 'Jamendo';
+        $('audioSourceMeta').textContent = sourceName + ' audio · Resona EQ enabled';
+        $('audioToolsStatus').textContent = 'Equalizer active for ' + sourceName + ' playback.';
         await ResonaAudio.play();
       } catch (err) {
         setPlayingUI(false);
