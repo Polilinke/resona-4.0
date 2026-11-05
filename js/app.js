@@ -92,6 +92,72 @@
     b.className = 'banner' + (kind === 'error' ? ' error' : '');
   }
 
+  // ---------- Search memory + discovery recommendation ----------
+  const SEARCH_MEMORY_KEY = 'resona-search-memory-v1';
+  function rememberSearchTracks(query, tracks) {
+    if (!query || !tracks?.length) return;
+    try {
+      const old = JSON.parse(localStorage.getItem(SEARCH_MEMORY_KEY) || '[]');
+      const entry = { query, at: Date.now(), tracks: tracks.slice(0, 12) };
+      const next = [entry, ...old.filter(x => x.query.toLowerCase() !== query.toLowerCase())].slice(0, 12);
+      localStorage.setItem(SEARCH_MEMORY_KEY, JSON.stringify(next));
+    } catch (_) {}
+  }
+  function getDiscoveryPool() {
+    try {
+      return JSON.parse(localStorage.getItem(SEARCH_MEMORY_KEY) || '[]')
+        .flatMap(x => x.tracks || [])
+        .filter((track, i, all) => track?.id && all.findIndex(t => t.id === track.id) === i);
+    } catch (_) { return []; }
+  }
+  function renderDiscovery() {
+    const host = $('discoveryFeature');
+    if (!host) return;
+    const pool = getDiscoveryPool();
+    if (!pool.length) {
+      host.innerHTML = '<div class="discovery-placeholder"><span class="placeholder-orbit">✳</span><div><strong>Your next favourite starts here.</strong><p>Search for a few artists or songs. Your picks will appear in this space.</p></div></div>';
+      return;
+    }
+    const track = pool[Math.floor(Math.random() * pool.length)];
+    host.replaceChildren();
+    const art = document.createElement('img');
+    art.className = 'discovery-art';
+    art.src = track.thumbnail || '';
+    art.alt = '';
+    const copy = document.createElement('div');
+    copy.className = 'discovery-copy';
+    const tag = document.createElement('span');
+    tag.className = 'discovery-tag';
+    tag.textContent = 'FROM YOUR SEARCHES';
+    const title = document.createElement('h2');
+    title.textContent = track.title || 'Recommended track';
+    const artist = document.createElement('p');
+    artist.textContent = track.artist || 'Unknown artist';
+    const actions = document.createElement('div');
+    actions.className = 'discovery-actions';
+    actions.append(
+      button('▶ Play pick', () => playFromList([track], track), 'btn primary'),
+      button('+ Queue', () => addToQueue(track), 'btn ghost'),
+      button('↻ Another pick', renderDiscovery, 'btn ghost')
+    );
+    copy.append(tag, title, artist, actions);
+    host.append(art, copy);
+  }
+  function remixDiscoveries() {
+    const pool = getDiscoveryPool();
+    if (pool.length < 2) {
+      flashStatus('Search for a few tracks first, then Remix your discoveries.');
+      return;
+    }
+    const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+    state.queue = shuffled;
+    saveQueue();
+    renderQueue();
+    playQueueIndex(0);
+    flashStatus('Your discoveries have been remixed.');
+  }
+  $('remixBtn')?.addEventListener('click', remixDiscoveries);
+
   // ---------- Search (Enter only, cached, quota-aware) ----------
   const officialOnlyToggle = $('officialOnlyToggle');
   officialOnlyToggle.checked = localStorage.getItem('deepflow-official-only') !== 'false';
