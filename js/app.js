@@ -14,7 +14,8 @@
     pendingVideoId: null,
     pickerTrack: null,
     searchTimer: null,
-    lastQuery: ''
+    lastQuery: '',
+    searchSource: 'youtube'
   };
 
   // ---------- Settings, theme, accent, glass, album background ----------
@@ -204,12 +205,42 @@
   officialOnlyToggle.addEventListener('change', () => {
     localStorage.setItem('deepflow-official-only', String(officialOnlyToggle.checked));
     renderResults();
+    if (state.searchSource === 'audius') {
+      $('searchStatus').textContent = 'Official-only filtering applies to YouTube results; Audius results are shown as provided by artists.';
+      return;
+    }
     if (state.isSearch) {
       const count = state.results.length;
       $('searchStatus').textContent = officialOnlyToggle.checked
         ? (count ? `Showing ${count} likely official music result(s).` : 'No likely official upload found. Turn off Official only to see all results.')
         : `Showing all ${count} search result(s).`;
     }
+  });
+
+  document.querySelectorAll('[data-search-source]').forEach(button => {
+    button.addEventListener('click', () => {
+      const source = button.dataset.searchSource;
+      if (!source || source === state.searchSource) return;
+      state.searchSource = source;
+      document.querySelectorAll('[data-search-source]').forEach(item => {
+        const active = item.dataset.searchSource === source;
+        item.classList.toggle('active', active);
+        item.setAttribute('aria-pressed', String(active));
+      });
+      officialOnlyToggle.disabled = source === 'audius';
+      officialOnlyToggle.closest('.official-filter')?.classList.toggle('source-filter-disabled', source === 'audius');
+      const query = $('searchInput').value.trim();
+      if (query.length >= 3) runSearch(query, true);
+      else {
+        state.rawResults = [];
+        state.results = [];
+        state.isSearch = false;
+        $('results').replaceChildren();
+        $('searchStatus').textContent = source === 'audius'
+          ? 'Search Audius for independent artists and tracks.'
+          : 'Search YouTube for music videos and official audio.';
+      }
+    });
   });
 
   $('searchInput').addEventListener('input', (e) => {
@@ -265,33 +296,39 @@
     state.lastQuery = query;
     showView('search');
 
-    const cached = Store.getCachedSearch(query);
+    const source = state.searchSource;
+    const cacheKey = source === 'audius' ? 'audius:' + query : query;
+    const cached = Store.getCachedSearch(cacheKey);
     if (cached) {
       state.rawResults = cached;
       state.isSearch = true;
       renderResults();
-      $('searchStatus').textContent = officialOnlyToggle.checked
-        ? (state.results.length ? `Showing ${state.results.length} likely official cached result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
-        : `Showing all ${state.results.length} cached results for "${query}".`;
+      $('searchStatus').textContent = source === 'audius'
+        ? (state.results.length ? `Showing ${state.results.length} Audius result(s) for "${query}".` : `No Audius results for "${query}".`)
+        : (officialOnlyToggle.checked
+          ? (state.results.length ? `Showing ${state.results.length} likely official cached result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
+          : `Showing all ${state.results.length} cached results for "${query}".`);
       return;
     }
 
-    $('searchStatus').textContent = `Searching for "${query}"…`;
+    $('searchStatus').textContent = source === 'audius'
+      ? `Searching Audius for "${query}"…`
+      : `Searching YouTube for "${query}"…`;
     try {
-      const results = await YouTubeAPI.search(query);
-      Store.setCachedSearch(query, results);
+      const results = source === 'audius'
+        ? await AudiusAPI.search(query)
+        : await YouTubeAPI.search(query);
+      Store.setCachedSearch(cacheKey, results);
       state.rawResults = results;
       state.isSearch = true;
       renderResults();
-      $('searchStatus').textContent = officialOnlyToggle.checked
-        ? (state.results.length ? `Showing ${state.results.length} likely official result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
-        : (results.length ? `Showing all ${results.length} results for "${query}".` : `No results for "${query}".`);
+      $('searchStatus').textContent = source === 'audius'
+        ? (results.length ? `Showing ${results.length} Audius result(s) for "${query}". These tracks support Resona's equalizer when their streams allow browser processing.` : `No Audius results for "${query}".`)
+        : (officialOnlyToggle.checked
+          ? (state.results.length ? `Showing ${state.results.length} likely official result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
+          : (results.length ? `Showing all ${results.length} results for "${query}".` : `No results for "${query}".`));
     } catch (err) {
-      if (err instanceof YouTubeAPI.QuotaExhaustedError) {
-        $('searchStatus').textContent = 'YouTube says the quota is used up. Fresh searches will resume after the daily reset.';
-      } else {
-        $('searchStatus').textContent = 'Search failed: ' + err.message;
-      }
+      $('searchStatus').textContent = (source === 'audius' ? 'Audius search failed: ' : 'YouTube search failed: ') + err.message;
     }
     updateQuotaBadge();
   }
@@ -402,7 +439,7 @@
   function renderResults() {
     const box = $('results');
     box.replaceChildren();
-    state.results = state.isSearch && officialOnlyToggle.checked
+    state.results = state.isSearch && state.searchSource === 'youtube' && officialOnlyToggle.checked
       ? getOfficialResults()
       : state.rawResults.slice();
     state.results.forEach(track => box.append(trackRow(track, { list: state.results })));
@@ -625,17 +662,40 @@
     if (e.data === 2) setPlayingUI(false);
   }
 
-  function playQueueIndex(i) {
+  async function playQueueIndex(i) {
     if (i < 0 || i >= state.queue.length) return;
     state.currentIndex = i;
-    state.audioMode = false;
-    ResonaAudio.stop();
     const track = state.queue[i];
     state.currentTrack = track;
+    state.audioMode = track.source === 'audius' || track.source === 'local-audio';
+    if (state.audioMode && state.playerReady) state.player.pauseVideo();
     Store.addToHistory(track);
     showNowPlaying(track);
-    if (state.playerReady) state.player.loadVideoById(track.id);
-    else state.pendingVideoId = track.id;
+
+    if (track.source === 'audius') {
+      try {
+        const streamUrl = AudiusAPI.getStreamUrl(track.audiusId);
+        ResonaAudio.loadUrl(streamUrl);
+        ResonaAudio.setVolume(Number($('volumeSlider').value));
+        $('audioSourceTitle').textContent = track.title;
+        $('audioSourceMeta').textContent = 'Audius stream · Resona EQ enabled';
+        $('audioToolsStatus').textContent = 'Equalizer active for Audius playback.';
+        await ResonaAudio.play();
+      } catch (err) {
+        setPlayingUI(false);
+        $('audioToolsStatus').textContent = 'Audius playback failed: ' + err.message;
+        flashStatus('Audius playback failed: ' + err.message);
+      }
+    } else if (track.source === 'local-audio') {
+      setPlayingUI(false);
+      $('audioToolsStatus').textContent = 'Re-import this local file to play it again.';
+      flashStatus('This local file needs to be imported again.');
+    } else {
+      state.audioMode = false;
+      ResonaAudio.stop();
+      if (state.playerReady) state.player.loadVideoById(track.id);
+      else state.pendingVideoId = track.id;
+    }
     renderQueue();
     refreshCurrent();
   }
@@ -787,7 +847,7 @@
   ResonaAudio.onTrackEnded(() => {
     if (!state.audioMode) return;
     $('audioToolsStatus').textContent = 'Track finished.';
-    if (state.queue.length) playQueueIndex(0);
+    if (state.currentIndex + 1 < state.queue.length) playNext();
     else setPlayingUI(false);
   });
   window.addEventListener('resona:audio-error', event => {
