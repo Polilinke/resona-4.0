@@ -87,6 +87,15 @@
     analyser.getByteFrequencyData(data);
     return Array.from(data);
   }
+  function getBassEnergy() {
+    if (!analyser) return 0;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    const upper = Math.min(8, data.length);
+    let total = 0;
+    for (let i = 1; i < upper; i++) total += data[i];
+    return upper > 1 ? total / ((upper - 1) * 255) : 0;
+  }
   function getBands() { return filters.length ? filters.map(filter => filter.gain.value) : readSettings(); }
   function loadFile(file) {
     if (!file || !(file.type.startsWith('audio/') || /.(mp3|wav|flac|m4a|aac|ogg|opus)$/i.test(file.name))) {
@@ -136,5 +145,5 @@
       ? 'This file could not be decoded or played by your browser.'
        : 'This remote audio stream could not be played. It may be unavailable or may not permit browser audio processing (CORS).' }
   })));
-  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, setSimpleBand, getSimpleBands, applyPreset, getBands, getFrequencyData, onTrackEnded };
+  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, setSimpleBand, getSimpleBands, applyPreset, getBands, getFrequencyData, getBassEnergy, onTrackEnded };
 })();
