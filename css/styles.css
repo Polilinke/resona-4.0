@@ -1270,3 +1270,30 @@ body.pointer-active #cursorGlow { opacity: 1; }
  .continue-next { width:100%;min-width:0;padding:14px 0 0;border-left:0;border-top:1px solid rgba(255,255,255,.11); }
  .continue-next-row b {max-width:240px;}
 }
+
+
+/* Resona Audio Lab — real-time equalizer */
+.eq-open-btn { min-width:46px;font-weight:800;letter-spacing:.04em;border:1px solid rgba(var(--accent-rgb),.42); }
+.audio-tools-card { width:min(720px,94vw);max-height:min(86vh,820px);overflow:auto; }
+.audio-tools-head { display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:8px; }
+.audio-tools-head h3 { margin:5px 0 0;font-size:25px; }
+.audio-tools-kicker { color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.2em; }
+.audio-tools-description { color:var(--muted);font-size:13px;line-height:1.55;margin:10px 0 18px; }
+.audio-source-row { display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 15px;border:1px solid var(--panel-border);border-radius:16px;background:rgba(var(--accent-rgb),.07); }
+.audio-source-row > div { min-width:0;display:grid;gap:4px; }
+.audio-source-row strong { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.audio-source-row span { color:var(--muted);font-size:11px; }
+.audio-eq-toolbar { display:flex;align-items:center;gap:12px;margin:20px 0 13px; }
+.audio-eq-toolbar label { color:var(--muted);font-size:12px;font-weight:700; }
+.audio-eq-toolbar select { min-width:170px; }
+.eq-bands { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 18px;padding:15px;border:1px solid var(--panel-border);border-radius:17px;background:rgba(0,0,0,.12); }
+.eq-band { display:grid;grid-template-columns:58px minmax(70px,1fr) 48px;align-items:center;gap:9px;min-width:0;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums; }
+.eq-band input { width:100%;min-width:0;accent-color:var(--accent); }
+.eq-band output { color:var(--text);text-align:right;font-size:10px; }
+.audio-tools-status { margin:14px 0 0;padding:10px 12px;border-radius:11px;background:rgba(var(--accent-rgb),.07);color:var(--muted);font-size:12px;line-height:1.45; }
+@media(max-width:600px) {
+  .audio-tools-card { padding:19px;width:96vw; }
+  .eq-bands { grid-template-columns:1fr;gap:8px; }
+  .audio-source-row { align-items:stretch;flex-direction:column; }
+  .audio-source-row .btn { width:100%; }
+}
