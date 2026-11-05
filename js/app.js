@@ -756,6 +756,7 @@
     NowPlaying.setPlaying(playing);
     $('playBtn').textContent = playing ? '❚❚' : '▶';
     $('visualizer').classList.toggle('active', playing);
+    $('visualizer').classList.toggle('audio-reactive', !!playing && !!state.audioMode);
   }
 
   function showNowPlaying(track) {
@@ -826,32 +827,55 @@
     document.querySelectorAll('[data-eq-band]').forEach(input => {
       const index = Number(input.dataset.eqBand);
       input.value = values[index] ?? 0;
-      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\.0$/, '') + ' dB';
+      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\\.0$/, '') + ' dB';
+    });
+    const simple = ResonaAudio.getSimpleBands();
+    document.querySelectorAll('[data-eq-simple]').forEach(input => {
+      input.value = simple[input.dataset.eqSimple] ?? 0;
+      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\\.0$/, '') + ' dB';
     });
   }
   document.querySelectorAll('[data-eq-band]').forEach(input => {
     input.addEventListener('input', () => {
       const index = Number(input.dataset.eqBand);
       ResonaAudio.setBand(index, Number(input.value));
-      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\.0$/, '') + ' dB';
+      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\\.0$/, '') + ' dB';
       $('eqPreset').value = 'custom';
+      syncEqualizerControls();
     });
+  });
+  document.querySelectorAll('[data-eq-simple]').forEach(input => {
+    input.addEventListener('input', () => {
+      ResonaAudio.setSimpleBand(input.dataset.eqSimple, Number(input.value));
+      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\\.0$/, '') + ' dB';
+      $('eqPreset').value = 'custom';
+      syncEqualizerControls();
+    });
+  });
+  $('eqAdvancedToggle').addEventListener('click', () => {
+    const panel = $('eqAdvancedPanel');
+    const open = panel.classList.toggle('hidden') === false;
+    $('eqAdvancedToggle').textContent = open ? 'Simple' : 'Advanced';
+    $('eqAdvancedToggle').setAttribute('aria-expanded', String(open));
+  });
+  $('eqHelpToggle').addEventListener('click', () => {
+    const panel = $('eqHelpPopover');
+    const open = panel.classList.toggle('hidden') === false;
+    $('eqHelpToggle').setAttribute('aria-expanded', String(open));
   });
   $('eqPreset').addEventListener('change', () => {
     if ($('eqPreset').value === 'custom') return;
     const values = ResonaAudio.applyPreset($('eqPreset').value);
     document.querySelectorAll('[data-eq-band]').forEach(input => {
       input.value = values[Number(input.dataset.eqBand)];
-      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\.0$/, '') + ' dB';
+      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\\.0$/, '') + ' dB';
     });
+    syncEqualizerControls();
   });
   $('eqReset').addEventListener('click', () => {
     $('eqPreset').value = 'flat';
-    const values = ResonaAudio.applyPreset('flat');
-    document.querySelectorAll('[data-eq-band]').forEach(input => {
-      input.value = values[Number(input.dataset.eqBand)];
-      input.parentElement.querySelector('output').textContent = '0 dB';
-    });
+    ResonaAudio.applyPreset('flat');
+    syncEqualizerControls();
   });
   $('audioToolsDialog').addEventListener('click', event => {
     if (event.target === $('audioToolsDialog')) {
@@ -859,8 +883,32 @@
       $('audioToolsDialog').setAttribute('aria-hidden', 'true');
     }
   });
-  window.addEventListener('resona:audio-play', () => { if (state.audioMode) setPlayingUI(true); });
-  window.addEventListener('resona:audio-pause', () => { if (state.audioMode) setPlayingUI(false); });
+  let visualizerFrame = 0;
+  function animateAudioVisualizer() {
+    if (!state.audioMode || !ResonaAudio.isPlaying()) {
+      $('visualizer').querySelectorAll('span').forEach(bar => { bar.style.height = ''; });
+      return;
+    }
+    const values = ResonaAudio.getFrequencyData();
+    const bars = $('visualizer').querySelectorAll('span');
+    bars.forEach((bar, index) => {
+      const bin = Math.min(values.length - 1, Math.floor(1 + Math.pow(index / Math.max(1, bars.length - 1), 1.65) * (values.length * 0.72)));
+      bar.style.height = (3 + ((values[bin] || 0) / 255) * 17) + 'px';
+    });
+    visualizerFrame = requestAnimationFrame(animateAudioVisualizer);
+  }
+  window.addEventListener('resona:audio-play', () => {
+    if (!state.audioMode) return;
+    setPlayingUI(true);
+    cancelAnimationFrame(visualizerFrame);
+    visualizerFrame = requestAnimationFrame(animateAudioVisualizer);
+  });
+  window.addEventListener('resona:audio-pause', () => {
+    if (!state.audioMode) return;
+    setPlayingUI(false);
+    cancelAnimationFrame(visualizerFrame);
+    $('visualizer').querySelectorAll('span').forEach(bar => { bar.style.height = ''; });
+  });
   ResonaAudio.onTrackEnded(() => {
     if (!state.audioMode) return;
     $('audioToolsStatus').textContent = 'Track finished.';
