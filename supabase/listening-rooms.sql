@@ -93,15 +93,7 @@ create policy "Room members can view suggestions" on public.listening_room_sugge
 for select to authenticated using (public.is_listening_room_member(room_id));
 
 drop policy if exists "Members can suggest tracks" on public.listening_room_suggestions;
-create policy "Members can suggest tracks" on public.listening_room_suggestions
-for insert to authenticated with check (
-  user_id = auth.uid() and public.is_listening_room_member(room_id)
-);
-
 drop policy if exists "Hosts can review suggestions" on public.listening_room_suggestions;
-create policy "Hosts can review suggestions" on public.listening_room_suggestions
-for update to authenticated using (public.is_listening_room_host(room_id))
-with check (public.is_listening_room_host(room_id));
 
 drop policy if exists "Room members can view shared queue" on public.listening_room_queue;
 create policy "Room members can view shared queue" on public.listening_room_queue
@@ -268,7 +260,6 @@ grant execute on function public.leave_listening_room(uuid) to authenticated;
 
 grant select on public.listening_rooms, public.listening_room_members,
   public.listening_room_suggestions, public.listening_room_queue to authenticated;
-grant insert, update on public.listening_room_suggestions to authenticated;
 grant update on public.listening_rooms to authenticated;
 
 do $$
