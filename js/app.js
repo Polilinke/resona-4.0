@@ -8,6 +8,7 @@
     queue: Store.getQueue(),
     currentIndex: -1,
     currentTrack: null,
+    audioMode: false,
     player: null,
     playerReady: false,
     pendingVideoId: null,
@@ -616,6 +617,8 @@
   function playQueueIndex(i) {
     if (i < 0 || i >= state.queue.length) return;
     state.currentIndex = i;
+    state.audioMode = false;
+    ResonaAudio.stop();
     const track = state.queue[i];
     state.currentTrack = track;
     Store.addToHistory(track);
@@ -649,7 +652,12 @@
   }
 
   function togglePlay() {
-    if (!state.playerReady || !state.currentTrack) return;
+    if (!state.currentTrack) return;
+    if (state.audioMode) {
+      ResonaAudio.toggle().catch(err => flashStatus('Audio playback failed: ' + err.message));
+      return;
+    }
+    if (!state.playerReady) return;
     const st = state.player.getPlayerState();
     if (st === 1) state.player.pauseVideo();
     else state.player.playVideo();
@@ -671,13 +679,105 @@
   }
 
   function applyVolume() {
-    if (state.playerReady) state.player.setVolume(Number($('volumeSlider').value));
+    const volume = Number($('volumeSlider').value);
+    ResonaAudio.setVolume(volume);
+    if (state.playerReady) state.player.setVolume(volume);
   }
 
   $('playBtn').addEventListener('click', togglePlay);
   $('nextBtn').addEventListener('click', playNext);
   $('prevBtn').addEventListener('click', playPrev);
   $('volumeSlider').addEventListener('input', applyVolume);
+  $('eqBtn').addEventListener('click', () => {
+    syncEqualizerControls();
+    $('audioToolsDialog').classList.remove('hidden');
+    $('audioToolsDialog').setAttribute('aria-hidden', 'false');
+  });
+  $('closeAudioTools').addEventListener('click', () => {
+    $('audioToolsDialog').classList.add('hidden');
+    $('audioToolsDialog').setAttribute('aria-hidden', 'true');
+  });
+  $('importAudioBtn').addEventListener('click', () => $('audioFileInput').click());
+  $('audioFileInput').addEventListener('change', async (event) => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    try {
+      if (state.playerReady) state.player.pauseVideo();
+      const info = ResonaAudio.loadFile(file);
+      const track = {
+        id: 'local-audio-' + Date.now(),
+        title: file.name.replace(/\.[^.]+$/, ''),
+        artist: 'Local audio file',
+        thumbnail: '',
+        source: 'local-audio',
+        fileName: file.name
+      };
+      state.audioMode = true;
+      state.currentIndex = -1;
+      state.currentTrack = track;
+      Store.addToHistory(track);
+      showNowPlaying(track);
+      ResonaAudio.setVolume(Number($('volumeSlider').value));
+      $('audioSourceTitle').textContent = info.name;
+      $('audioSourceMeta').textContent = 'Local file · ' + (info.type || 'audio file');
+      $('audioToolsStatus').textContent = 'Equalizer active for this local track.';
+      await ResonaAudio.play();
+      setPlayingUI(true);
+      flashStatus('Playing imported audio with Resona EQ.');
+      syncEqualizerControls();
+    } catch (err) {
+      $('audioToolsStatus').textContent = err.message || 'Could not open this audio file.';
+      flashStatus('Audio playback failed: ' + (err.message || 'unsupported file'));
+    }
+    event.target.value = '';
+  });
+  function syncEqualizerControls() {
+    const values = ResonaAudio.getBands();
+    document.querySelectorAll('[data-eq-band]').forEach(input => {
+      const index = Number(input.dataset.eqBand);
+      input.value = values[index] ?? 0;
+      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\.0$/, '') + ' dB';
+    });
+  }
+  document.querySelectorAll('[data-eq-band]').forEach(input => {
+    input.addEventListener('input', () => {
+      const index = Number(input.dataset.eqBand);
+      ResonaAudio.setBand(index, Number(input.value));
+      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\.0$/, '') + ' dB';
+      $('eqPreset').value = 'custom';
+    });
+  });
+  $('eqPreset').addEventListener('change', () => {
+    if ($('eqPreset').value === 'custom') return;
+    const values = ResonaAudio.applyPreset($('eqPreset').value);
+    document.querySelectorAll('[data-eq-band]').forEach(input => {
+      input.value = values[Number(input.dataset.eqBand)];
+      input.parentElement.querySelector('output').textContent = Number(input.value).toFixed(1).replace(/\.0$/, '') + ' dB';
+    });
+  });
+  $('eqReset').addEventListener('click', () => {
+    $('eqPreset').value = 'flat';
+    const values = ResonaAudio.applyPreset('flat');
+    document.querySelectorAll('[data-eq-band]').forEach(input => {
+      input.value = values[Number(input.dataset.eqBand)];
+      input.parentElement.querySelector('output').textContent = '0 dB';
+    });
+  });
+  $('audioToolsDialog').addEventListener('click', event => {
+    if (event.target === $('audioToolsDialog')) {
+      $('audioToolsDialog').classList.add('hidden');
+      $('audioToolsDialog').setAttribute('aria-hidden', 'true');
+    }
+  });
+  ResonaAudio.onTrackEnded(() => {
+    setPlayingUI(false);
+    $('audioToolsStatus').textContent = 'Track finished.';
+  });
+  window.addEventListener('resona:audio-error', event => {
+    $('audioToolsStatus').textContent = event.detail.message;
+    setPlayingUI(false);
+  });
+
 
   // ---------- Status helper ----------
   let statusTimer = null;
@@ -828,9 +928,9 @@
   });
 
   NowPlaying.init({
-    getTime: () => (state.playerReady ? state.player.getCurrentTime() : 0),
-    getDuration: () => (state.playerReady ? state.player.getDuration() : 0),
-    seek: (t) => { if (state.playerReady) state.player.seekTo(t, true); },
+    getTime: () => (state.audioMode ? ResonaAudio.getTime() : (state.playerReady ? state.player.getCurrentTime() : 0)),
+    getDuration: () => (state.audioMode ? ResonaAudio.getDuration() : (state.playerReady ? state.player.getDuration() : 0)),
+    seek: (t) => { if (state.audioMode) ResonaAudio.seek(t); else if (state.playerReady) state.player.seekTo(t, true); },
     toggle: togglePlay,
     next: playNext,
     prev: playPrev
