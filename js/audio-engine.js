@@ -14,7 +14,7 @@
   const audio = new Audio();
   audio.preload = 'metadata';
   audio.volume = 0.8;
-  let context = null, filters = [], source = null, objectUrl = null, onEnded = () => {}, currentFile = null;
+  let context = null, filters = [], source = null, analyser = null, objectUrl = null, onEnded = () => {}, currentFile = null;
 
   function readSettings() {
     try {
@@ -43,7 +43,11 @@
     });
     source.connect(filters[0]);
     for (let i = 0; i < filters.length - 1; i++) filters[i].connect(filters[i + 1]);
-    filters[filters.length - 1].connect(context.destination);
+    analyser = context.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.78;
+    filters[filters.length - 1].connect(analyser);
+    analyser.connect(context.destination);
   }
   function setBand(index, gain) {
     if (!Number.isInteger(index) || index < 0 || index >= FREQUENCIES.length) return;
@@ -60,6 +64,28 @@
     values.forEach((gain, index) => filters[index].gain.setTargetAtTime(gain, context.currentTime, 0.015));
     saveSettings(values);
     return values.slice();
+  }
+  const SIMPLE_GROUPS = { bass:[0,1,2], lowmid:[3,4], mid:[5,6], presence:[7], treble:[8,9] };
+  function setSimpleBand(name, gain) {
+    const indexes = SIMPLE_GROUPS[name];
+    if (!indexes) return;
+    ensureGraph();
+    const value = Math.max(-12, Math.min(12, Number(gain) || 0));
+    indexes.forEach(index => filters[index].gain.setTargetAtTime(value, context.currentTime, 0.015));
+    saveSettings(filters.map(filter => filter.gain.value));
+    return getSimpleBands();
+  }
+  function getSimpleBands() {
+    const values = getBands();
+    return Object.fromEntries(Object.entries(SIMPLE_GROUPS).map(([name, indexes]) => [
+      name, indexes.reduce((sum, index) => sum + values[index], 0) / indexes.length
+    ]));
+  }
+  function getFrequencyData() {
+    if (!analyser) return [];
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    return Array.from(data);
   }
   function getBands() { return filters.length ? filters.map(filter => filter.gain.value) : readSettings(); }
   function loadFile(file) {
@@ -110,5 +136,5 @@
       ? 'This file could not be decoded or played by your browser.'
       : 'Audius stream could not be played. It may be unavailable or may not permit browser audio processing (CORS).' }
   })));
-  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, applyPreset, getBands, onTrackEnded };
+  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, setSimpleBand, getSimpleBands, applyPreset, getBands, getFrequencyData, onTrackEnded };
 })();
