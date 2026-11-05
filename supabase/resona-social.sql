@@ -367,12 +367,14 @@ $$;
 create or replace function public.purge_expired_resona_messages()
 returns integer language plpgsql security definer set search_path=public
 as $$
-declare v_count integer;
+declare v_direct_count integer;
+declare v_room_count integer;
 begin
   delete from public.resona_direct_messages where created_at < now()-interval '7 days';
-  get diagnostics v_count = row_count;
+  get diagnostics v_direct_count = row_count;
   delete from public.resona_room_messages where created_at < now()-interval '7 days';
-  return v_count + (select count(*) from public.resona_room_messages where false);
+  get diagnostics v_room_count = row_count;
+  return v_direct_count + v_room_count;
 end;
 $$;
 
@@ -435,7 +437,7 @@ begin
   create extension if not exists pg_cron;
   if not exists(select 1 from cron.job where jobname='resona-purge-expired-messages') then
     perform cron.schedule('resona-purge-expired-messages','15 * * * *',
-      'delete from public.resona_direct_messages where created_at < now() - interval ''7 days''; delete from public.resona_room_messages where created_at < now() - interval ''7 days'';');
+      'select public.purge_expired_resona_messages();');
   end if;
 exception when others then
   raise notice 'pg_cron unavailable; expired messages remain hidden and are purged on new sends.';
