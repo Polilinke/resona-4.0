@@ -113,36 +113,75 @@
   function renderDiscovery() {
     const host = $('discoveryFeature');
     if (!host) return;
-    const pool = getDiscoveryPool();
-    if (!pool.length) {
-      host.innerHTML = '<div class="discovery-placeholder"><span class="placeholder-orbit">✳</span><div><strong>Your next favourite starts here.</strong><p>Search for a few artists or songs. Your picks will appear in this space.</p></div></div>';
+    const history = Store.getHistory();
+    const current = state.currentTrack || history[0] || null;
+    if (!current) {
+      host.innerHTML = '<div class="discovery-placeholder"><span class="placeholder-orbit">♫</span><div><strong>Nothing playing just yet.</strong><p>Play a track and your listening session will appear here.</p></div></div>';
       return;
     }
-    const track = pool[Math.floor(Math.random() * pool.length)];
+    const queueTracks = state.queue.slice(Math.max(state.currentIndex + 1, 0), state.currentIndex + 4);
+    const upNext = queueTracks.length ? queueTracks : history.filter(t => t.id !== current.id).slice(0, 3);
     host.replaceChildren();
     const art = document.createElement('img');
     art.className = 'discovery-art';
-    art.src = track.thumbnail || '';
+    art.src = current.thumbnail || '';
     art.alt = '';
     const copy = document.createElement('div');
     copy.className = 'discovery-copy';
     const tag = document.createElement('span');
     tag.className = 'discovery-tag';
-    tag.textContent = 'FROM YOUR SEARCHES';
+    tag.textContent = 'PICK UP WHERE YOU LEFT OFF';
     const title = document.createElement('h2');
-    title.textContent = track.title || 'Recommended track';
+    title.textContent = current.title || 'Your recent track';
     const artist = document.createElement('p');
-    artist.textContent = track.artist || 'Unknown artist';
+    artist.textContent = current.artist || 'Unknown artist';
     const actions = document.createElement('div');
     actions.className = 'discovery-actions';
     actions.append(
-      button('▶ Play pick', () => playFromList([track], track), 'btn primary'),
-      button('+ Queue', () => addToQueue(track), 'btn ghost'),
-      button('↻ Another pick', renderDiscovery, 'btn ghost')
+      button('▶ Continue playing', () => {
+        const idx = state.queue.findIndex(t => t.id === current.id);
+        if (idx >= 0) playQueueIndex(idx);
+        else playFromList([current], current);
+      }, 'btn primary'),
+      button('↻ Remix', remixDiscoveries, 'btn ghost')
     );
     copy.append(tag, title, artist, actions);
-    host.append(art, copy);
+    const next = document.createElement('aside');
+    next.className = 'continue-next';
+    const nextTitle = document.createElement('strong');
+    nextTitle.textContent = 'Up next for you';
+    next.append(nextTitle);
+    if (!upNext.length) {
+      const note = document.createElement('p');
+      note.className = 'continue-empty';
+      note.textContent = 'Your next tracks will show up here.';
+      next.append(note);
+    } else {
+      upNext.forEach(track => {
+        const row = document.createElement('button');
+        row.className = 'continue-next-row';
+        row.type = 'button';
+        const thumb = document.createElement('img');
+        thumb.src = track.thumbnail || '';
+        thumb.alt = '';
+        const details = document.createElement('span');
+        const name = document.createElement('b');
+        name.textContent = track.title || 'Untitled';
+        const by = document.createElement('small');
+        by.textContent = track.artist || 'Unknown artist';
+        details.append(name, by);
+        row.append(thumb, details);
+        row.addEventListener('click', () => {
+          const idx = state.queue.findIndex(t => t.id === track.id);
+          if (idx >= 0) playQueueIndex(idx);
+          else playFromList(upNext, track);
+        });
+        next.append(row);
+      });
+    }
+    host.append(art, copy, next);
   }
+
   function remixDiscoveries() {
     const pool = getDiscoveryPool();
     if (pool.length < 2) {
