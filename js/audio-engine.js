@@ -82,7 +82,7 @@
   }
   function pause() { audio.pause(); }
   function toggle() { return audio.paused ? play() : pause(); }
-  function stop() { audio.pause(); audio.currentTime = 0; }
+  function stop() { audio.pause(); if (audio.src) audio.currentTime = 0; }
   function seek(seconds) {
     if (Number.isFinite(seconds) && Number.isFinite(audio.duration)) audio.currentTime = Math.max(0, Math.min(audio.duration, seconds));
   }
