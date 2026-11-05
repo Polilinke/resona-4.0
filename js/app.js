@@ -206,8 +206,8 @@
   officialOnlyToggle.addEventListener('change', () => {
     localStorage.setItem('deepflow-official-only', String(officialOnlyToggle.checked));
     renderResults();
-    if (state.searchSource === 'audius') {
-      $('searchStatus').textContent = 'Official-only filtering applies to YouTube results; Audius results are shown as provided by artists.';
+    if (state.searchSource !== 'youtube') {
+      $('searchStatus').textContent = 'Official-only filtering applies to YouTube. Other providers show their catalogue results as supplied.';
       return;
     }
     if (state.isSearch) {
@@ -228,8 +228,8 @@
         item.classList.toggle('active', active);
         item.setAttribute('aria-pressed', String(active));
       });
-      officialOnlyToggle.disabled = source === 'audius';
-      officialOnlyToggle.closest('.official-filter')?.classList.toggle('source-filter-disabled', source === 'audius');
+      officialOnlyToggle.disabled = source !== 'youtube';
+      officialOnlyToggle.closest('.official-filter')?.classList.toggle('source-filter-disabled', source !== 'youtube');
       const query = $('searchInput').value.trim();
       if (query.length >= 3) runSearch(query, true);
       else {
@@ -239,7 +239,9 @@
         $('results').replaceChildren();
         $('searchStatus').textContent = source === 'audius'
           ? 'Search Audius for independent artists and tracks.'
-          : 'Search YouTube for music videos and official audio.';
+          : source === 'archive'
+            ? 'Search Internet Archive for public and archival audio recordings.'
+            : 'Search YouTube for music videos and official audio.';
       }
     });
   });
@@ -309,7 +311,7 @@
     showView('search');
 
     const source = state.searchSource;
-    const cacheKey = source === 'audius' ? 'audius:' + query : query;
+    const cacheKey = source === 'youtube' ? query : source + ':' + query;
     const cached = Store.getCachedSearch(cacheKey);
     if (cached) {
       state.rawResults = cached;
@@ -325,24 +327,30 @@
 
     $('searchStatus').textContent = source === 'audius'
       ? `Searching Audius for "${query}"…`
-      : `Searching YouTube for "${query}"…`;
+      : source === 'archive'
+        ? `Searching Internet Archive for "${query}"…`
+        : `Searching YouTube for "${query}"…`;
     try {
       const results = source === 'audius'
         ? await AudiusAPI.search(query)
-        : await YouTubeAPI.search(query);
+        : source === 'archive'
+          ? await InternetArchiveAPI.search(query)
+          : await YouTubeAPI.search(query);
       if (requestId !== state.searchRequestId || source !== state.searchSource) return;
       Store.setCachedSearch(cacheKey, results);
       state.rawResults = results;
       state.isSearch = true;
       renderResults();
       $('searchStatus').textContent = source === 'audius'
-        ? (results.length ? `Showing ${results.length} Audius result(s) for "${query}". These tracks support Resona's equalizer when their streams allow browser processing.` : `No Audius results for "${query}".`)
-        : (officialOnlyToggle.checked
+        ? (results.length ? `Showing ${results.length} Audius result(s) for "${query}". EQ is available when the stream permits browser processing.` : `No Audius results for "${query}".`)
+        : source === 'archive'
+          ? (results.length ? `Showing ${results.length} playable Archive recording(s) for "${query}".` : `No playable Archive recordings found for "${query}".`)
+          : (officialOnlyToggle.checked
           ? (state.results.length ? `Showing ${state.results.length} likely official result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
           : (results.length ? `Showing all ${results.length} results for "${query}".` : `No results for "${query}".`));
     } catch (err) {
       if (requestId !== state.searchRequestId || source !== state.searchSource) return;
-      $('searchStatus').textContent = (source === 'audius' ? 'Audius search failed: ' : 'YouTube search failed: ') + err.message;
+      $('searchStatus').textContent = (source === 'audius' ? 'Audius search failed: ' : source === 'archive' ? 'Archive search failed: ' : 'YouTube search failed: ') + err.message;
     }
     updateQuotaBadge();
   }
@@ -366,7 +374,7 @@
     t.title = track.title;
     const a = document.createElement('div');
     a.className = 'track-artist';
-    a.textContent = track.source === 'audius' ? track.artist + ' · Audius' : track.artist;
+    a.textContent = track.artist + (track.source === 'audius' ? ' · Audius' : track.source === 'archive' ? ' · Archive' : '');
     info.append(t, a);
 
     const actions = document.createElement('div');
@@ -681,26 +689,28 @@
     state.currentIndex = i;
     const track = state.queue[i];
     state.currentTrack = track;
-    state.audioMode = track.source === 'audius' || track.source === 'local-audio';
+    state.audioMode = track.source === 'audius' || track.source === 'archive' || track.source === 'local-audio';
     if (state.audioMode && state.playerReady) state.player.pauseVideo();
     Store.addToHistory(track);
     renderDiscovery();
     showNowPlaying(track);
 
-    if (track.source === 'audius') {
+    if (track.source === 'audius' || track.source === 'archive') {
       state.pendingVideoId = null;
       try {
-        const streamUrl = AudiusAPI.getStreamUrl(track.audiusId);
+        const streamUrl = track.source === 'audius'
+          ? AudiusAPI.getStreamUrl(track.audiusId)
+          : track.streamUrl;
         ResonaAudio.loadUrl(streamUrl);
         ResonaAudio.setVolume(Number($('volumeSlider').value));
         $('audioSourceTitle').textContent = track.title;
-        $('audioSourceMeta').textContent = 'Audius stream · Resona EQ enabled';
-        $('audioToolsStatus').textContent = 'Equalizer active for Audius playback.';
+        $('audioSourceMeta').textContent = (track.source === 'audius' ? 'Audius stream' : 'Internet Archive audio') + ' · Resona EQ enabled';
+        $('audioToolsStatus').textContent = 'Equalizer active for ' + (track.source === 'audius' ? 'Audius' : 'Archive') + ' playback.';
         await ResonaAudio.play();
       } catch (err) {
         setPlayingUI(false);
-        $('audioToolsStatus').textContent = 'Audius playback failed: ' + err.message;
-        flashStatus('Audius playback failed: ' + err.message);
+        $('audioToolsStatus').textContent = track.source + ' playback failed: ' + err.message;
+        flashStatus(track.source + ' playback failed: ' + err.message);
       }
     } else if (track.source === 'local-audio') {
       setPlayingUI(false);
