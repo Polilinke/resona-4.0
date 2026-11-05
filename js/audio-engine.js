@@ -106,7 +106,9 @@
   audio.addEventListener('pause', () => window.dispatchEvent(new Event('resona:audio-pause')));
   audio.addEventListener('ended', () => onEnded());
   audio.addEventListener('error', () => window.dispatchEvent(new CustomEvent('resona:audio-error', {
-    detail: { message: 'This file could not be decoded or played by your browser.' }
+    detail: { message: currentFile
+      ? 'This file could not be decoded or played by your browser.'
+      : 'Audius stream could not be played. It may be unavailable or may not permit browser audio processing (CORS).' }
   })));
   window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, applyPreset, getBands, onTrackEnded };
 })();
