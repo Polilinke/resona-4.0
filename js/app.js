@@ -564,7 +564,8 @@
 
   window.addEventListener('deepflow:queue-track', (e) => addToQueue(e.detail, true));
   window.addEventListener('deepflow:sleep-stop', () => {
-    if (state.playerReady && state.player) state.player.pauseVideo();
+    if (state.audioMode) ResonaAudio.pause();
+    else if (state.playerReady && state.player) state.player.pauseVideo();
     setPlayingUI(false);
     flashStatus('Sleep timer finished. Playback paused.');
     window.dispatchEvent(new Event('deepflow:sleep-ended'));
@@ -654,10 +655,12 @@
   function playNext() {
     SupportMessage.cancel();
     if (state.currentIndex + 1 < state.queue.length) playQueueIndex(state.currentIndex + 1);
+    else if (state.audioMode) { ResonaAudio.pause(); setPlayingUI(false); }
     else setPlayingUI(false);
   }
 
   function playPrev() {
+    if (state.audioMode) { ResonaAudio.seek(0); return; }
     if (state.currentIndex > 0) playQueueIndex(state.currentIndex - 1);
   }
 
@@ -782,8 +785,10 @@
   window.addEventListener('resona:audio-play', () => { if (state.audioMode) setPlayingUI(true); });
   window.addEventListener('resona:audio-pause', () => { if (state.audioMode) setPlayingUI(false); });
   ResonaAudio.onTrackEnded(() => {
-    if (state.audioMode) setPlayingUI(false);
+    if (!state.audioMode) return;
     $('audioToolsStatus').textContent = 'Track finished.';
+    if (state.queue.length) playQueueIndex(0);
+    else setPlayingUI(false);
   });
   window.addEventListener('resona:audio-error', event => {
     $('audioToolsStatus').textContent = event.detail.message;
