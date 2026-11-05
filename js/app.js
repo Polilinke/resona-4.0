@@ -769,8 +769,10 @@
       $('audioToolsDialog').setAttribute('aria-hidden', 'true');
     }
   });
+  window.addEventListener('resona:audio-play', () => { if (state.audioMode) setPlayingUI(true); });
+  window.addEventListener('resona:audio-pause', () => { if (state.audioMode) setPlayingUI(false); });
   ResonaAudio.onTrackEnded(() => {
-    setPlayingUI(false);
+    if (state.audioMode) setPlayingUI(false);
     $('audioToolsStatus').textContent = 'Track finished.';
   });
   window.addEventListener('resona:audio-error', event => {
