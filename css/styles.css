@@ -1066,3 +1066,113 @@ html[data-device-layout="mobile"] .library-subnav-btn { border-radius:16px; }
 .account-status-message[data-kind="success"]{color:#d6ffe3;background:#103b27;border:1px solid #43c878}
 .account-status-message[data-kind="error"]{color:#ffe0e0;background:#481d25;border:1px solid #ff666f}
 @media(max-width:600px){.account-drawer{width:100vw;padding:24px 20px}.account-overlay{padding:0}}
+
+
+/* Resona mobile refresh — larger type, touch targets and roomier layout. */
+html[data-device-layout="mobile"] {
+  --mobile-body-size:16px;
+  --mobile-small-size:14px;
+}
+html[data-device-layout="mobile"] body {
+  font-size:var(--mobile-body-size);
+  line-height:1.5;
+  grid-template-rows:auto minmax(0,1fr) auto auto;
+}
+html[data-device-layout="mobile"] .topbar {
+  gap:12px;
+  padding:14px 16px 13px;
+  margin:0 6px;
+  border-radius:0 0 26px 26px;
+}
+html[data-device-layout="mobile"] .brand { gap:11px; }
+html[data-device-layout="mobile"] .reactor { width:46px;height:46px; }
+html[data-device-layout="mobile"] .brand-text { font-size:19px;letter-spacing:3px; }
+html[data-device-layout="mobile"] .controls-top { gap:9px; }
+html[data-device-layout="mobile"] .controls-top .btn,
+html[data-device-layout="mobile"] .controls-top button { min-width:44px;min-height:44px;font-size:15px; }
+html[data-device-layout="mobile"] #searchInput {
+  min-height:52px;padding:13px 18px;font-size:17px;
+}
+html[data-device-layout="mobile"] .content {
+  padding:22px 16px 26px;
+  font-size:16px;
+  line-height:1.55;
+}
+html[data-device-layout="mobile"] .content h1,
+html[data-device-layout="mobile"] .content .page-title { font-size:clamp(25px,7vw,32px);line-height:1.18;letter-spacing:-.6px; }
+html[data-device-layout="mobile"] .content h2 { font-size:22px;line-height:1.25; }
+html[data-device-layout="mobile"] .content h3 { font-size:18px;line-height:1.3; }
+html[data-device-layout="mobile"] .content p,
+html[data-device-layout="mobile"] .content .hint,
+html[data-device-layout="mobile"] .content .muted { font-size:15px;line-height:1.55; }
+html[data-device-layout="mobile"] .content .btn,
+html[data-device-layout="mobile"] .content button { min-height:46px;font-size:14px;padding:11px 16px; }
+html[data-device-layout="mobile"] .track {
+  grid-template-columns:76px minmax(0,1fr);
+  gap:13px;padding:14px;margin-bottom:11px;
+}
+html[data-device-layout="mobile"] .track img { width:76px;height:76px; }
+html[data-device-layout="mobile"] .track-title { font-size:17px;line-height:1.3; }
+html[data-device-layout="mobile"] .track-artist { font-size:14px;line-height:1.4; }
+html[data-device-layout="mobile"] .feature-track { gap:12px;min-height:76px; }
+html[data-device-layout="mobile"] .feature-track img { width:68px;height:68px; }
+html[data-device-layout="mobile"] .sidebar {
+  grid-row:4;
+  width:calc(100% - 20px);
+  margin:0 10px max(10px,env(safe-area-inset-bottom));
+  padding:11px;
+  min-height:0;
+  height:auto;
+  gap:9px;
+  border-radius:26px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  box-shadow:0 -8px 32px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.12);
+}
+html[data-device-layout="mobile"] .sidebar .nav-btn {
+  min-height:54px;
+  padding:10px 8px;
+  gap:7px;
+  font-size:15px;
+  font-weight:700;
+  line-height:1.2;
+  border-radius:17px;
+}
+html[data-device-layout="mobile"] .library-subnav-btn {
+  min-height:48px;
+  padding:10px 7px;
+  font-size:14px;
+  font-weight:700;
+}
+html[data-device-layout="mobile"] .player {
+  grid-row:3;
+  min-height:96px;
+  height:auto;
+  padding:12px 15px;
+  gap:12px;
+  border-radius:24px;
+  margin:0 8px 9px;
+  grid-template-columns:minmax(0,1fr) auto;
+}
+html[data-device-layout="mobile"] .now-playing { min-width:0;gap:12px; }
+html[data-device-layout="mobile"] .np-thumb { width:62px;height:62px;flex:none; }
+html[data-device-layout="mobile"] .np-title { max-width:48vw;font-size:16px;line-height:1.25; }
+html[data-device-layout="mobile"] .np-artist { max-width:48vw;font-size:13px;line-height:1.3; }
+html[data-device-layout="mobile"] .transport .buttons { gap:8px; }
+html[data-device-layout="mobile"] .transport .btn.icon { width:44px;height:44px;font-size:17px; }
+html[data-device-layout="mobile"] input,
+html[data-device-layout="mobile"] select,
+html[data-device-layout="mobile"] textarea { font-size:16px;min-height:48px; }
+html[data-device-layout="mobile"] .modal-card { padding:22px;width:min(560px,94vw); }
+html[data-device-layout="mobile"] .account-drawer { padding:28px 23px max(28px,env(safe-area-inset-bottom)); }
+html[data-device-layout="mobile"] .account-drawer-head h2 { font-size:27px; }
+html[data-device-layout="mobile"] .account-drawer .account-form label,
+html[data-device-layout="mobile"] .account-profile-fields label { font-size:15px; }
+html[data-device-layout="mobile"] .account-status-message { font-size:15px;line-height:1.55; }
+@media(max-width:420px) {
+  html[data-device-layout="mobile"] .content { padding:19px 13px 24px; }
+  html[data-device-layout="mobile"] .sidebar { width:calc(100% - 16px);margin-inline:8px;padding:9px;gap:7px; }
+  html[data-device-layout="mobile"] .sidebar .nav-btn { min-height:52px;font-size:14px; }
+  html[data-device-layout="mobile"] .np-thumb { width:56px;height:56px; }
+  html[data-device-layout="mobile"] .np-title { font-size:15px; }
+  html[data-device-layout="mobile"] .transport .btn.icon { width:40px;height:40px; }
+}
