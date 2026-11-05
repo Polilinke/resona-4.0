@@ -84,10 +84,14 @@
           <div class="discovery-heading"><div><span class="discovery-kicker">YOUR SOUND, YOUR WAY</span><h1>Find your next <em>repeat.</em></h1><p>Fresh picks shaped by what you’ve been searching for.</p></div><button id="remixBtn" class="remix-button" type="button"><span class="remix-mark">⤨</span><span><strong>Remix</strong><small>Shuffle your discoveries</small></span></button></div>
           <div id="discoveryFeature" class="discovery-feature"><div class="discovery-placeholder">Search a few songs and Resona will start learning your sound.</div></div>
         </section>
-        <div class="search-source-switch" role="group" aria-label="Music search source">
-          <button class="search-source-btn active" data-search-source="youtube" type="button" aria-pressed="true">YouTube <span>Videos</span></button>
-          <button class="search-source-btn" data-search-source="audius" type="button" aria-pressed="false">Audius <span>EQ enabled</span></button>
-          <button class="search-source-btn" data-search-source="archive" type="button" aria-pressed="false">Archive <span>Open audio</span></button>
+        <div class="search-provider-row">
+          <label class="provider-picker" for="searchSourceSelect"><span>PROVIDER</span>
+            <select id="searchSourceSelect" aria-label="Choose music provider">
+              <option value="youtube">YouTube · Official music</option>
+              <option value="audius">Audius · Independent music</option>
+              <option value="archive">Internet Archive · Recordings</option>
+            </select>
+          </label>
         </div>
         <div class="search-filter-bar">
           <label class="official-filter"><input id="officialOnlyToggle" type="checkbox" checked /> <span>Official music only</span></label>
