@@ -831,11 +831,6 @@ html[data-device-layout="mobile"] .sidebar {
 .fresh-bg-control:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 900px) { .fresh-bg-control span:first-child { display: none; } }
 
-
-/* Resona background onboarding choice */
-#backgroundChoice .device-choice-card { width: min(520px, 100%); }
-#backgroundChoice .device-choice-actions .btn { min-height: 68px; }
-
 /* RESONA visual refresh: katana blue/bronze palette + rounded tinted glass */
 :root{--accent:#55dfff;--accent-rgb:85,223,255;--warm:#f0a064;--bg:#03070b;--panel:rgba(7,15,23,.58);--panel-border:rgba(145,207,224,.24);--text:#e8f5f8;--muted:#8da3ad;--radius:25px;--glass-blur:30px}
 [data-theme="light"]{--bg:#dce8ec;--panel:rgba(225,239,243,.68);--text:#14232b;--muted:#526c77}
