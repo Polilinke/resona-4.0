@@ -218,32 +218,25 @@
     }
   });
 
-  document.querySelectorAll('[data-search-source]').forEach(button => {
-    button.addEventListener('click', () => {
-      const source = button.dataset.searchSource;
-      if (!source || source === state.searchSource) return;
-      state.searchSource = source;
-      document.querySelectorAll('[data-search-source]').forEach(item => {
-        const active = item.dataset.searchSource === source;
-        item.classList.toggle('active', active);
-        item.setAttribute('aria-pressed', String(active));
-      });
-      officialOnlyToggle.disabled = source !== 'youtube';
-      officialOnlyToggle.closest('.official-filter')?.classList.toggle('source-filter-disabled', source !== 'youtube');
-      const query = $('searchInput').value.trim();
-      if (query.length >= 3) runSearch(query, true);
-      else {
-        state.rawResults = [];
-        state.results = [];
-        state.isSearch = false;
-        $('results').replaceChildren();
-        $('searchStatus').textContent = source === 'audius'
-          ? 'Search Audius for independent artists and tracks.'
-          : source === 'archive'
-            ? 'Search Internet Archive for public and archival audio recordings.'
-            : 'Search YouTube for music videos and official audio.';
-      }
-    });
+  $('searchSourceSelect').addEventListener('change', (event) => {
+    const source = event.target.value;
+    if (!['youtube', 'audius', 'archive'].includes(source) || source === state.searchSource) return;
+    state.searchSource = source;
+    officialOnlyToggle.disabled = source !== 'youtube';
+    officialOnlyToggle.closest('.official-filter')?.classList.toggle('source-filter-disabled', source !== 'youtube');
+    const query = $('searchInput').value.trim();
+    if (query.length >= 3) runSearch(query, true);
+    else {
+      state.rawResults = [];
+      state.results = [];
+      state.isSearch = false;
+      $('results').replaceChildren();
+      $('searchStatus').textContent = source === 'audius'
+        ? 'Search Audius for independent artists and tracks.'
+        : source === 'archive'
+          ? 'Search Internet Archive for public and archival audio recordings.'
+          : 'Search YouTube for music videos and official audio.';
+    }
   });
 
   $('searchInput').addEventListener('input', (e) => {
@@ -271,11 +264,7 @@
     renderDiscovery();
     state.searchRequestId++;
     state.searchSource = 'youtube';
-    document.querySelectorAll('[data-search-source]').forEach(item => {
-      const active = item.dataset.searchSource === 'youtube';
-      item.classList.toggle('active', active);
-      item.setAttribute('aria-pressed', String(active));
-    });
+    $('searchSourceSelect').value = 'youtube';
     officialOnlyToggle.disabled = false;
     officialOnlyToggle.closest('.official-filter')?.classList.remove('source-filter-disabled');
     showView('search');
@@ -900,7 +889,14 @@
       return;
     }
     const values = ResonaAudio.getFrequencyData();
+    const bassEnergy = ResonaAudio.getBassEnergy();
     const bars = $('visualizer').querySelectorAll('span');
+    if (bassEnergy > 0.58 && animateAudioVisualizer.lastBass < 0.48) {
+      const visualizer = $('visualizer');
+      visualizer.classList.add('beat-hit');
+      setTimeout(() => visualizer.classList.remove('beat-hit'), 115);
+    }
+    animateAudioVisualizer.lastBass = bassEnergy;
     bars.forEach((bar, index) => {
       const bin = Math.min(values.length - 1, Math.floor(1 + Math.pow(index / Math.max(1, bars.length - 1), 1.65) * (values.length * 0.72)));
       bar.style.height = (3 + ((values[bin] || 0) / 255) * 17) + 'px';
