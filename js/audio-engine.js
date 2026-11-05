@@ -44,8 +44,8 @@
     source.connect(filters[0]);
     for (let i = 0; i < filters.length - 1; i++) filters[i].connect(filters[i + 1]);
     analyser = context.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.78;
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.58;
     filters[filters.length - 1].connect(analyser);
     analyser.connect(context.destination);
   }
@@ -65,7 +65,7 @@
     saveSettings(values);
     return values.slice();
   }
-  const SIMPLE_GROUPS = { bass:[0,1,2], lowmid:[3,4], mid:[5,6], presence:[7], treble:[8,9] };
+  const SIMPLE_GROUPS = { bass:[0,1,2], mid:[3,4,5,6], treble:[7,8,9] };
   function setSimpleBand(name, gain) {
     const indexes = SIMPLE_GROUPS[name];
     if (!indexes) return;
@@ -134,7 +134,7 @@
   audio.addEventListener('error', () => window.dispatchEvent(new CustomEvent('resona:audio-error', {
     detail: { message: currentFile
       ? 'This file could not be decoded or played by your browser.'
-      : 'Audius stream could not be played. It may be unavailable or may not permit browser audio processing (CORS).' }
+       : 'This remote audio stream could not be played. It may be unavailable or may not permit browser audio processing (CORS).' }
   })));
   window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, setSimpleBand, getSimpleBands, applyPreset, getBands, getFrequencyData, onTrackEnded };
 })();
