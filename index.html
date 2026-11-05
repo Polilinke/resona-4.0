@@ -194,7 +194,18 @@
         </section>
       </div>
 
-      <div id="view-social" class="view"><h2>Resona Social</h2><div id="socialStatus" class="rooms-status hidden"></div><div id="socialWorkspace" class="social-layout"><section class="rooms-panel"><h3>Find friends</h3><input id="socialSearchInput" placeholder="Search display names"><button id="socialSearchBtn" class="btn">Search</button><div id="socialSearchResults"></div></section><section class="rooms-panel"><h3>Friends</h3><div id="socialFriendsList"></div></section><section class="rooms-panel"><h3>Requests</h3><div id="socialRequestsList"></div></section><section class="rooms-panel"><h3>Room invitations</h3><div id="socialInvitesList"></div></section><section class="rooms-panel"><h3>Messages</h3><div id="socialConversationsList"></div><div id="socialChatHeading"></div><div id="socialChatMessages"></div><form id="socialChatForm"><input id="socialChatInput" maxlength="1000" placeholder="Message a friend"><button class="btn">Send</button></form></section></div></div>
+      <div id="view-social" class="view">
+        <div class="social-page-heading"><div><span class="rooms-kicker">YOUR RESONA CIRCLE</span><h2>Social</h2><p>Find friends, chat privately and invite people to listen together.</p></div><span class="rooms-live-mark">FRIENDS ONLY</span></div>
+        <div id="socialStatus" class="rooms-status hidden" role="status" aria-live="polite"></div>
+        <section id="socialSignedOut" class="rooms-panel hidden"><h3>Your music circle starts here</h3><p>Sign in to find friends, chat privately and receive room invitations.</p><button id="socialSignInBtn" class="btn primary" type="button">Sign in to Resona</button></section>
+        <div id="socialWorkspace" class="social-layout hidden">
+          <section class="rooms-panel"><h3>Find friends</h3><div class="social-search-row"><input id="socialSearchInput" placeholder="Search display names" maxlength="60"><button id="socialSearchBtn" class="btn">Search</button></div><div id="socialSearchResults" class="social-list"></div></section>
+          <section class="rooms-panel"><h3>Friends <span id="socialFriendCount" class="room-count">0</span></h3><div id="socialFriendsList" class="social-list"></div></section>
+          <section class="rooms-panel"><h3>Friend requests</h3><div id="socialRequestsList" class="social-list"></div></section>
+          <section class="rooms-panel"><h3>Room invitations</h3><div id="socialInvitesList" class="social-list"></div></section>
+          <section class="rooms-panel social-messages-panel"><h3>Private messages <span class="rooms-muted">Friends only · 7 days</span></h3><div class="social-messages-layout"><div id="socialConversationsList" class="social-conversations-list"></div><div class="social-chat-pane"><div id="socialChatHeading" class="social-chat-heading">Select a friend</div><div id="socialChatMessages" class="social-chat-messages"></div><form id="socialChatForm" class="social-chat-form"><input id="socialChatInput" maxlength="1000" placeholder="Message your friend" disabled><button class="btn primary" type="submit" disabled>Send</button></form></div></div></section>
+        </div>
+      </div>
       <div id="view-queue" class="view">
         <div class="row-between">
           <h2>Queue</h2>
