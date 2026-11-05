@@ -169,8 +169,9 @@
         <section id="roomWorkspace" class="hidden">
           <div class="room-topline">
             <button id="roomBackToLobbyBtn" class="btn ghost small" type="button">← Your rooms</button>
-            <button id="roomLeaveBtn" class="btn ghost small" type="button">Leave room</button>
+            <div class="room-topline-actions"><button id="roomInviteFriendsBtn" class="btn small" type="button">Invite friends</button><button id="roomCopyLinkBtn" class="btn small" type="button">Copy invite link</button><button id="roomLeaveBtn" class="btn ghost small" type="button">Leave room</button></div>
           </div>
+          <section id="roomInviteFriendsPanel" class="rooms-panel room-invite-friends hidden"><div class="rooms-list-heading"><h4>Invite friends</h4><button id="roomInviteFriendsClose" class="btn ghost small" type="button">Close</button></div><div id="roomInviteFriendsList" class="social-friend-picker"></div></section>
           <div class="room-hero rooms-panel">
             <div><span class="rooms-kicker">PRIVATE LISTENING SESSION</span><h3 id="roomName">Room</h3><p id="roomHostLabel">Host-moderated room</p></div>
             <div class="room-invite"><span>INVITE CODE</span><strong id="roomInviteCode">--------</strong><button id="roomCopyCodeBtn" class="btn small" type="button">Copy code</button></div>
