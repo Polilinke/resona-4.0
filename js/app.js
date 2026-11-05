@@ -77,6 +77,7 @@
     if (name === 'playlists') renderPlaylists();
     if (name === 'history') renderHistory();
     if (name === 'queue') renderQueue();
+    if (name === 'search') renderResults();
     if (name === 'rooms') window.ResonaRooms?.open();
   }
 
