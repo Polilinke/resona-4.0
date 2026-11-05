@@ -1362,3 +1362,13 @@ body.pointer-active #cursorGlow { opacity: 1; }
 /* Jamendo attribution link required for every Jamendo track. */
 .track-source-credit { display:inline-block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.35;text-decoration:underline;text-decoration-color:rgba(var(--accent-rgb),.45);text-underline-offset:2px; }
 .track-source-credit:hover { color:var(--accent); }
+
+
+/* Browser tab audio capture controls for YouTube EQ */
+.tab-eq-capture { display:grid;gap:9px;margin-top:13px;padding:14px 15px;border:1px solid rgba(var(--accent-rgb),.34);border-radius:16px;background:rgba(var(--accent-rgb),.065); }
+.tab-eq-capture > div:first-child { display:grid;gap:4px; }
+.tab-eq-capture strong { color:var(--text);font-size:13px; }
+.tab-eq-capture span,.tab-eq-capture small { color:var(--muted);font-size:11px;line-height:1.45; }
+.tab-eq-actions { display:flex;gap:8px;flex-wrap:wrap; }
+.tab-eq-actions .btn:disabled { opacity:.45;cursor:not-allowed; }
+@media(max-width:600px) { .tab-eq-actions { display:grid;grid-template-columns:1fr; }.tab-eq-actions .btn { width:100%; } }
