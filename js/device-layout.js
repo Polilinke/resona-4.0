@@ -5,21 +5,11 @@
   const laptopButton = document.getElementById('chooseLaptop');
   const mobileButton = document.getElementById('chooseMobile');
   const changeButton = document.getElementById('changeDeviceLayoutBtn');
-  const backgroundChooser = document.getElementById('backgroundChoice');
-  const BACKGROUND_CHOICE_KEY = 'resona-background-choice';
-
-  function openBackgroundChooserIfNeeded() {
-    let choice = null;
-    try { choice = localStorage.getItem(BACKGROUND_CHOICE_KEY); } catch (_) {}
-    if (!choice && backgroundChooser) backgroundChooser.classList.remove('hidden');
-  }
-
   function applyLayout(layout) {
     const choice = layout === 'mobile' ? 'mobile' : 'laptop';
     root.dataset.deviceLayout = choice;
     try { localStorage.setItem(STORAGE_KEY, choice); } catch (_) {}
     if (chooser) chooser.classList.add('hidden');
-    openBackgroundChooserIfNeeded();
   }
 
   function openChooser() {
