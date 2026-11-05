@@ -1297,3 +1297,36 @@ body.pointer-active #cursorGlow { opacity: 1; }
   .audio-source-row { align-items:stretch;flex-direction:column; }
   .audio-source-row .btn { width:100%; }
 }
+
+
+/* Music source switch: YouTube vs Audius */
+.search-source-switch {
+  display:flex;align-items:center;gap:9px;margin:0 0 14px;
+}
+.search-source-btn {
+  display:inline-flex;align-items:center;gap:9px;padding:10px 16px;
+  border:1px solid var(--panel-border);border-radius:999px;
+  background:rgba(255,255,255,.035);color:var(--muted);
+  font:inherit;font-size:13px;font-weight:750;cursor:pointer;
+  transition:background .2s,border-color .2s,color .2s,transform .2s;
+}
+.search-source-btn span {
+  padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.06);
+  font-size:9px;letter-spacing:.04em;text-transform:uppercase;
+}
+.search-source-btn:hover { transform:translateY(-1px);border-color:rgba(var(--accent-rgb),.45);color:var(--text); }
+.search-source-btn.active {
+  color:var(--text);border-color:rgba(var(--accent-rgb),.62);
+  background:rgba(var(--accent-rgb),.13);
+  box-shadow:0 0 22px rgba(var(--accent-rgb),.09);
+}
+.search-source-btn[data-search-source="audius"].active span {
+  color:#b9a5ff;background:rgba(185,165,255,.13);
+}
+.official-filter.source-filter-disabled { opacity:.42; }
+.official-filter.source-filter-disabled input { cursor:not-allowed; }
+@media(max-width:600px) {
+  .search-source-switch { gap:7px; }
+  .search-source-btn { flex:1;justify-content:center;padding:11px 9px;font-size:12px; }
+  .search-source-btn span { font-size:8px; }
+}
