@@ -248,15 +248,35 @@ $$;
 create or replace function public.send_resona_direct_message(p_friend_id uuid,p_body text)
 returns jsonb language plpgsql security definer set search_path=public
 as $$
-declare v_body text:=trim(coalesce(p_body,''));
- v_row public.resona_direct_messages;
+declare
+  v_body text := trim(coalesce(p_body, ''));
+  v_row public.resona_direct_messages;
+  v_are_friends boolean;
 begin
-  if auth.uid() is null then raise exception 'Sign in to send messages.'; end if;
-  if char_length(v_body)<1 or char_length(v_body)>1000 then raise exception 'Messages must be 1–1000 characters.'; end if;
-  if (select count(*) from public.resona_direct_messages where sender_id=auth.uid() and created_at>now()-interval '15 seconds')>=8 then raise exception 'Please slow down before sending another message.'; end if;
-  if not exists(select 1 from public.resona_friendships f where f.status='accepted'
-    and ((f.requester_id=auth.uid() and f.addressee_id=p_friend_id)
-      or (f.requester_id=p_friend_id and f.addressee_id=auth.uid()))) then
+  if auth.uid() is null then
+    raise exception 'Sign in to send messages.';
+  end if;
+  if char_length(v_body) < 1 or char_length(v_body) > 1000 then
+    raise exception 'Messages must be 1–1000 characters.';
+  end if;
+  if (select count(*) from public.resona_direct_messages
+      where sender_id = auth.uid()
+        and created_at > now() - interval '15 seconds') >= 8 then
+    raise exception 'Please slow down before sending another message.';
+  end if;
+
+  select exists (
+    select 1
+    from public.resona_friendships f
+    where f.status = 'accepted'
+      and (
+        (f.requester_id = auth.uid() and f.addressee_id = p_friend_id)
+        or
+        (f.requester_id = p_friend_id and f.addressee_id = auth.uid())
+      )
+  ) into v_are_friends;
+
+  if not coalesce(v_are_friends, false) then
     raise exception 'You can only message accepted friends.';
   end if;
   if exists(select 1 from public.resona_blocks b where
