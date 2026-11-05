@@ -14,7 +14,7 @@
   const audio = new Audio();
   audio.preload = 'metadata';
   audio.volume = 0.8;
-  let context = null, filters = [], source = null, analyser = null, objectUrl = null, onEnded = () => {}, currentFile = null;
+  let context = null, filters = [], source = null, analyser = null, objectUrl = null, onEnded = () => {}, currentFile = null, tabCaptureStream = null, tabCaptureSource = null;
 
   function readSettings() {
     try {
@@ -97,6 +97,58 @@
     return upper > 1 ? total / ((upper - 1) * 255) : 0;
   }
   function getBands() { return filters.length ? filters.map(filter => filter.gain.value) : readSettings(); }
+  async function startTabCapture() {
+    if (tabCaptureStream) return { active: true };
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
+      throw new Error('Tab audio capture is not available in this browser. Try the latest Chrome or Edge on the Resona HTTPS site.');
+    }
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
+    } catch (err) {
+      if (err && err.name === 'NotAllowedError') throw new Error('Capture was cancelled. Choose the Resona browser tab and enable tab audio in the share picker.');
+      throw new Error(err && err.message ? err.message : 'Could not start tab audio capture.');
+    }
+    const audioTracks = stream.getAudioTracks();
+    if (!audioTracks.length) {
+      stream.getTracks().forEach(track => track.stop());
+      throw new Error('No tab audio was shared. In the browser picker, select the Resona tab and turn on “Share tab audio”.');
+    }
+    try {
+      ensureGraph();
+      if (context.state === 'suspended') await context.resume();
+      tabCaptureStream = stream;
+      tabCaptureSource = context.createMediaStreamSource(stream);
+      tabCaptureSource.connect(filters[0]);
+      audioTracks[0].addEventListener('ended', stopTabCapture, { once: true });
+      stream.getVideoTracks().forEach(track => {
+        track.addEventListener('ended', stopTabCapture, { once: true });
+      });
+      window.dispatchEvent(new Event('resona:tab-capture-start'));
+      return { active: true };
+    } catch (err) {
+      stream.getTracks().forEach(track => track.stop());
+      tabCaptureStream = null;
+      tabCaptureSource = null;
+      throw err;
+    }
+  }
+  function stopTabCapture() {
+    if (!tabCaptureStream && !tabCaptureSource) return;
+    const stream = tabCaptureStream;
+    const node = tabCaptureSource;
+    tabCaptureStream = null;
+    tabCaptureSource = null;
+    if (node) {
+      try { node.disconnect(); } catch (_) {}
+    }
+    if (stream) stream.getTracks().forEach(track => {
+      if (track.readyState !== 'ended') track.stop();
+    });
+    window.dispatchEvent(new Event('resona:tab-capture-stop'));
+  }
+  function isTabCapturing() { return !!tabCaptureStream; }
+
   function loadFile(file) {
     if (!file || !(file.type.startsWith('audio/') || /.(mp3|wav|flac|m4a|aac|ogg|opus)$/i.test(file.name))) {
       throw new Error('Choose a supported audio file.');
@@ -145,5 +197,5 @@
       ? 'This file could not be decoded or played by your browser.'
        : 'This remote audio stream could not be played. It may be unavailable or may not permit browser audio processing (CORS).' }
   })));
-  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, setSimpleBand, getSimpleBands, applyPreset, getBands, getFrequencyData, getBassEnergy, onTrackEnded };
+  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, startTabCapture, stopTabCapture, isTabCapturing, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, setSimpleBand, getSimpleBands, applyPreset, getBands, getFrequencyData, getBassEnergy, onTrackEnded };
 })();
