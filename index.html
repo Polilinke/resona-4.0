@@ -240,18 +240,44 @@
         </select>
         <button id="eqReset" class="btn ghost small" type="button">Reset</button>
       </div>
-      <div id="eqBands" class="eq-bands">
-        <label class="eq-band"><span>32 Hz</span><input data-eq-band="0" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>64 Hz</span><input data-eq-band="1" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>125 Hz</span><input data-eq-band="2" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>250 Hz</span><input data-eq-band="3" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>500 Hz</span><input data-eq-band="4" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>1 kHz</span><input data-eq-band="5" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>2 kHz</span><input data-eq-band="6" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>4 kHz</span><input data-eq-band="7" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>8 kHz</span><input data-eq-band="8" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
-        <label class="eq-band"><span>16 kHz</span><input data-eq-band="9" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+      <div class="eq-mode-row">
+        <span class="eq-mode-label">Equalizer controls</span>
+        <button id="eqAdvancedToggle" class="btn ghost small" type="button" aria-expanded="false">Advanced</button>
       </div>
+      <div id="eqSimpleBands" class="eq-simple-bands">
+        <label class="eq-simple-band"><span>Bass</span><small>Low-end depth</small><input data-eq-simple="bass" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+        <label class="eq-simple-band"><span>Low mids</span><small>Warmth and body</small><input data-eq-simple="lowmid" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+        <label class="eq-simple-band"><span>Mids</span><small>Vocals and instruments</small><input data-eq-simple="mid" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+        <label class="eq-simple-band"><span>Presence</span><small>Clarity and attack</small><input data-eq-simple="presence" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+        <label class="eq-simple-band"><span>Treble</span><small>High-end detail</small><input data-eq-simple="treble" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+      </div>
+      <section id="eqAdvancedPanel" class="eq-advanced-panel hidden">
+        <div class="eq-advanced-head">
+          <span>10-band frequency controls</span>
+          <button id="eqHelpToggle" class="eq-help-btn" type="button" aria-label="Explain frequency bands" title="What do these frequencies do?" aria-expanded="false">?</button>
+          <div id="eqHelpPopover" class="eq-help-popover hidden">
+            <strong>What each frequency changes</strong>
+            <p><b>32–64 Hz:</b> Sub-bass rumble and deep low-end.</p>
+            <p><b>125–250 Hz:</b> Bass weight, warmth and fullness.</p>
+            <p><b>500 Hz:</b> Body of instruments; too much can sound boxy.</p>
+            <p><b>1–2 kHz:</b> Vocal and instrument presence.</p>
+            <p><b>4 kHz:</b> Attack, clarity and detail.</p>
+            <p><b>8–16 kHz:</b> Brilliance, air and high-frequency sparkle.</p>
+          </div>
+        </div>
+        <div id="eqBands" class="eq-bands">
+          <label class="eq-band"><span>32 Hz</span><input data-eq-band="0" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>64 Hz</span><input data-eq-band="1" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>125 Hz</span><input data-eq-band="2" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>250 Hz</span><input data-eq-band="3" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>500 Hz</span><input data-eq-band="4" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>1 kHz</span><input data-eq-band="5" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>2 kHz</span><input data-eq-band="6" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>4 kHz</span><input data-eq-band="7" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>8 kHz</span><input data-eq-band="8" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+          <label class="eq-band"><span>16 kHz</span><input data-eq-band="9" type="range" min="-12" max="12" step="0.5" value="0"><output>0 dB</output></label>
+        </div>
+      </section>
       <p id="audioToolsStatus" class="audio-tools-status" role="status">Import a track to try the equalizer.</p>
     </div>
   </div>
