@@ -608,6 +608,7 @@
   };
 
   function onPlayerStateChange(e) {
+    if (state.audioMode) return;
     // YT.PlayerState: ENDED = 0, PLAYING = 1, PAUSED = 2
     if (e.data === 0) handleTrackEnded();
     if (e.data === 1) setPlayingUI(true);
