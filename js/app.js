@@ -1274,12 +1274,17 @@
     prev: playPrev
   });
 
-  // Theme-synced full-page cursor spotlight.
+  // Full-page cursor lighting: viewport coordinates cover every scroll position and section.
+  let spotlightFrame = 0;
   document.addEventListener('pointermove', (event) => {
     if (event.pointerType === 'touch') return;
-    document.documentElement.style.setProperty('--pointer-x', event.clientX + 'px');
-    document.documentElement.style.setProperty('--pointer-y', event.clientY + 'px');
-    document.body.classList.add('pointer-active');
+    if (spotlightFrame) cancelAnimationFrame(spotlightFrame);
+    spotlightFrame = requestAnimationFrame(() => {
+      document.documentElement.style.setProperty('--pointer-x', event.clientX + 'px');
+      document.documentElement.style.setProperty('--pointer-y', event.clientY + 'px');
+      document.body.classList.add('pointer-active');
+      spotlightFrame = 0;
+    });
   }, { passive: true });
   document.addEventListener('pointerleave', () => {
     document.body.classList.remove('pointer-active');
