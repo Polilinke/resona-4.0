@@ -152,7 +152,13 @@
       $('socialChatHeading').textContent=nameOf(friend);
       $('socialChatInput').disabled=false;
       $('socialChatForm').querySelector('button').disabled=false;
-      renderConversations((await profilesByIds((await client.from('resona_friendships').select('requester_id,addressee_id').eq('status','accepted').or('requester_id.eq.'+user.id+',addressee_id.eq.'+user.id)).data||[]).map(x=>x.requester_id===user.id?x.addressee_id:x.requester_id)).filter(Boolean));
+      const {data:friendships,error:friendshipsError}=await client.from('resona_friendships')
+        .select('requester_id,addressee_id').eq('status','accepted')
+        .or('requester_id.eq.'+user.id+',addressee_id.eq.'+user.id);
+      if(friendshipsError)throw friendshipsError;
+      const friendIds=(friendships||[]).map(x=>x.requester_id===user.id?x.addressee_id:x.requester_id).filter(Boolean);
+      const conversationProfiles=await profilesByIds(friendIds);
+      renderConversations(conversationProfiles);
       await loadDMs();
       if(dmChannel)await client.removeChannel(dmChannel);
       dmChannel=client.channel('resona-dm-'+[user.id,friend.user_id].sort().join('-'))
