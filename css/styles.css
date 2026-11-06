@@ -1964,3 +1964,106 @@ body.pointer-active #cursorGlow { opacity:.82 !important; }
 @media (hover:none), (prefers-reduced-motion:reduce) {
   #cursorGlow { display:none !important; }
 }
+
+
+/* Unified Theme Engine v2 — one palette for every surface and ambient light */
+:root {
+ --theme-page:color-mix(in srgb,var(--bg) 82%,var(--glass-tint) 18%);
+ --theme-page-deep:color-mix(in srgb,var(--bg) 90%,var(--glass-tint) 10%);
+ --theme-surface:color-mix(in srgb,var(--bg) 66%,var(--glass-tint) 34%);
+ --theme-surface-raised:color-mix(in srgb,var(--bg) 52%,var(--glass-tint) 48%);
+ --theme-line:color-mix(in srgb,var(--glass-edge) 42%,var(--accent) 18%,transparent);
+ --theme-text-strong:var(--text);
+ --theme-text-muted:var(--muted);
+}
+html,body {background:var(--theme-page)!important;color:var(--theme-text-strong)}
+body {background-color:var(--theme-page)!important}
+body:not(.video-on) #baseBg {
+ background:
+  radial-gradient(ellipse at 18% 8%,rgba(var(--glass-glow-rgb),.075),transparent 42%),
+  radial-gradient(ellipse at 88% 92%,rgba(var(--warm-rgb),.055),transparent 46%),
+  linear-gradient(145deg,var(--theme-page),var(--theme-page-deep))!important;
+ transition:background .35s ease;
+}
+body:not(.video-on) .hud-grid {
+ background-image:linear-gradient(rgba(var(--accent-rgb),.035) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(var(--accent-rgb),.035) 1px,transparent 1px)!important;
+}
+.topbar,.sidebar,.player,.track,.playlist-card,.insight-card,.feature-card,
+.wrapped-panel,.rooms-panel,.social-panel,.room-suggestion,.room-queue-item,
+.discovery-feature,.discovery-shell,.theme-studio,.modal-card,.account-panel,
+.settings-panel,.room-chat-panel,.social-card,.conversation-panel,.friend-panel {
+ color:var(--theme-text-strong);
+ background-color:var(--theme-surface);
+ border-color:var(--theme-line);
+ box-shadow:inset 0 1px 0 rgba(var(--glass-reflection-rgb),.13),
+ 0 14px 38px rgba(0,0,0,.17),0 0 22px rgba(var(--glass-glow-rgb),.07);
+}
+body.glass .topbar,body.glass .sidebar,body.glass .player,body.glass .track,
+body.glass .playlist-card,body.glass .insight-card,body.glass .feature-card,
+body.glass .wrapped-panel,body.glass .rooms-panel,body.glass .social-panel,
+body.glass .room-suggestion,body.glass .room-queue-item,body.glass .discovery-feature,
+body.glass .discovery-shell,body.glass .theme-studio,body.glass .modal-card,
+body.glass .account-panel,body.glass .settings-panel,body.glass .room-chat-panel,
+body.glass .social-card,body.glass .conversation-panel {
+ background:
+  linear-gradient(125deg,rgba(var(--glass-reflection-rgb),.10),transparent 48%),
+  linear-gradient(115deg,rgba(var(--accent-rgb),.08),rgba(var(--warm-rgb),.05)),
+  color-mix(in srgb,var(--glass-tint) 72%,var(--theme-page))!important;
+ border-color:var(--theme-line);
+ backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation));
+ -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+/* Global text hierarchy */
+body,body p,body li,body label,body h1,body h2,body h3,body h4,
+body strong,body b,body .track-title,body .song-title,body .playlist-title,
+body .room-title,body .friend-name,body .conversation-name,
+body .discovery-copy h2,body .discovery-heading h1,body .continue-next-row {
+ color:var(--theme-text-strong);
+}
+body small,body .hint,body .muted,body .artist,body .track-artist,
+body .track-meta,body .discovery-heading p,body .discovery-copy p,
+body .continue-next-row small,body .discovery-up-next,body .empty-state,
+body .setting-description,body .theme-studio-heading p {
+ color:var(--theme-text-muted)!important;
+}
+body a,body .accent-text,body .discovery-kicker,body .discovery-tag,
+body .theme-studio-kicker,body .discovery-heading h1 em {color:var(--accent)}
+body input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),
+body select,body textarea {
+ color:var(--theme-text-strong)!important;background:var(--theme-surface-raised)!important;
+ border-color:var(--theme-line)!important;
+}
+body input::placeholder,body textarea::placeholder {color:var(--theme-text-muted)!important;opacity:.9}
+body .btn:not(.primary):not(.danger),body .nav-btn:not(.active) {
+ color:var(--theme-text-strong);border-color:var(--theme-line);
+ background:color-mix(in srgb,var(--theme-surface-raised) 82%,transparent);
+}
+body .btn.primary,body .count {
+ color:var(--bg);background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 58%,var(--warm)));
+ border-color:var(--glass-edge);
+}
+.discovery-shell {
+ background:radial-gradient(ellipse at 94% 0%,rgba(var(--glass-glow-rgb),.10),transparent 48%),
+ linear-gradient(135deg,var(--theme-surface),var(--theme-page-deep))!important;
+ border-color:var(--theme-line)!important;
+}
+.discovery-feature {
+ background:radial-gradient(ellipse at 0% 100%,rgba(var(--warm-rgb),.08),transparent 52%),
+ radial-gradient(ellipse at 100% 0%,rgba(var(--glass-glow-rgb),.10),transparent 54%),
+ linear-gradient(118deg,var(--theme-surface-raised),var(--theme-surface))!important;
+ border-color:var(--theme-line)!important;
+}
+.discovery-copy h2 {color:var(--theme-text-strong)!important}
+/* Cursor lighting is a full-viewport overlay and uses only current palette colours. */
+#cursorGlow {
+ display:block!important;position:fixed!important;inset:0!important;z-index:3!important;
+ pointer-events:none!important;opacity:0!important;
+ background:radial-gradient(500px circle at var(--pointer-x,50vw) var(--pointer-y,50vh),
+ rgba(var(--glass-glow-rgb),.20) 0%,rgba(var(--accent-rgb),.105) 30%,
+ rgba(var(--warm-rgb),.045) 52%,transparent 74%)!important;
+ mix-blend-mode:screen;transition:opacity .22s ease,background .28s ease;
+}
+body.pointer-active #cursorGlow {opacity:.23!important}
+@media (hover:none) {#cursorGlow{display:none!important}}
+[data-theme=light] {color-scheme:light}
