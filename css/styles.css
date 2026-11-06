@@ -1933,3 +1933,10 @@ body.pointer-active #cursorGlow { opacity:.72; }
   background:color-mix(in srgb,var(--accent) 13%,var(--app-surface-raised));
   border-color:var(--glass-edge);
 }
+
+
+/* Remove the cursor-following violet bloom completely; no pointer-position colour wash. */
+#cursorGlow { display:none !important; }
+body.pointer-active #cursorGlow { display:none !important; }
+body { background:var(--app-background,var(--bg)) !important; }
+body:not(.video-on) #baseBg { background:var(--app-background,var(--bg)) !important; }
