@@ -63,7 +63,6 @@
     const s = Store.getSettings();
     document.documentElement.dataset.theme = s.theme;
     document.documentElement.dataset.accent = s.accent;
-    $('accentSelect').value = s.accent;
     applyThemeStudio(s);
     document.body.classList.toggle('glass', !!s.glass);
     const nowPlaying = $('npFull');
@@ -119,10 +118,6 @@
     applySettings();
   });
 
-  $('accentSelect').addEventListener('change', (e) => {
-    Store.saveSettings({ accent: e.target.value });
-    applySettings();
-  });
 
   $('fullscreenBtn').addEventListener('click', () => {
     if (window.desktop) window.desktop.toggleFullscreen();
@@ -1152,6 +1147,8 @@
   });
 
   // ---------- Settings dialog ----------
+  $('customizeBtn').addEventListener('click', () => $('settingsBtn').click());
+
   $('settingsBtn').addEventListener('click', () => {
     const s = Store.getSettings();
     $('sizeSelect').value = s.windowSize;
