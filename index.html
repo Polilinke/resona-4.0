@@ -436,8 +436,28 @@
       <label class="check-row"><input id="albumBgToggle" type="checkbox" /> Album artwork background</label>
       <label class="check-row"><input id="glassToggle" type="checkbox" /> Liquid glass — entire app (uses more GPU)</label>
       <label class="check-row"><input id="npGlassToggle" type="checkbox" /> Liquid glass — Now Playing lyrics only</label>
-      <label>Theme studio — custom accent <input id="customAccent" type="color" value="#22d3ee" /></label>
-      <label>Glass intensity <input id="glassIntensity" type="range" min="0" max="30" value="12" /></label>
+      <section class="theme-studio" aria-labelledby="themeStudioTitle">
+        <div class="theme-studio-heading">
+          <div><span class="theme-studio-kicker">APPEARANCE LAB</span><h3 id="themeStudioTitle">Theme Studio</h3><p>Build a palette that flows through the liquid glass.</p></div>
+          <button id="resetThemeStudio" class="btn ghost" type="button">Reset</button>
+        </div>
+        <div class="theme-preset-row" aria-label="Theme presets">
+          <button type="button" class="theme-preset" data-theme-preset="aurora"><i></i><span>Aurora</span></button>
+          <button type="button" class="theme-preset" data-theme-preset="ember"><i></i><span>Ember</span></button>
+          <button type="button" class="theme-preset" data-theme-preset="lavender"><i></i><span>Lavender</span></button>
+          <button type="button" class="theme-preset" data-theme-preset="mint"><i></i><span>Mint</span></button>
+        </div>
+        <div class="theme-color-grid">
+          <label class="theme-color-control"><span><b>Accent</b><small>Buttons, active states</small></span><input id="themeAccent" type="color" value="#67cfe0" /></label>
+          <label class="theme-color-control"><span><b>Secondary</b><small>Warm highlights</small></span><input id="themeSecondary" type="color" value="#c88f62" /></label>
+          <label class="theme-color-control"><span><b>Glass tint</b><small>Glass surface colour</small></span><input id="glassTint" type="color" value="#17313b" /></label>
+          <label class="theme-color-control"><span><b>Glass edge</b><small>Reflections and borders</small></span><input id="glassEdge" type="color" value="#a6dce5" /></label>
+          <label class="theme-color-control"><span><b>Glow</b><small>Ambient light colour</small></span><input id="glassGlow" type="color" value="#54c9df" /></label>
+        </div>
+        <div class="theme-slider-control"><label for="glassOpacity"><span><b>Glass tint strength</b><output id="glassOpacityValue">34%</output></span></label><input id="glassOpacity" type="range" min="8" max="72" value="34" /></div>
+        <div class="theme-slider-control"><label for="glassBlur"><span><b>Glass blur</b><output id="glassBlurValue">32px</output></span></label><input id="glassBlur" type="range" min="8" max="48" value="32" /></div>
+        <div class="theme-live-preview"><span class="theme-preview-orb"></span><div><b>Live glass preview</b><small>Your colours update across Resona as you adjust them.</small></div><span class="theme-preview-chip">RESONA</span></div>
+      </section>
       <p class="hint">DeepFlow AI / JARVIS connection: planned for a future secure server-side integration. Never paste a Gemini key into public browser code.</p>
       <div class="feature-card"><strong>Audio tools</strong><p class="hint">YouTube's embedded player keeps its audio isolated from browser audio processing. A true equalizer and audio-reactive visualizer need a supported direct audio source. The current visualizer is playback animation, not audio analysis.</p></div>
       <label>Background video (your own .mp4 file)
