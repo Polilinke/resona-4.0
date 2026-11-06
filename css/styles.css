@@ -1756,3 +1756,73 @@ select,textarea {
   --app-surface-raised:color-mix(in srgb,#eef4f8 32%,var(--glass-tint));
 }
 body.video-on #baseBg { background:transparent; }
+
+
+/* Theme Studio sync: discovery canvas and Continue Playing hub */
+html, body {
+  background-color:var(--app-background,var(--bg));
+}
+body:not(.video-on) #baseBg {
+  background:var(--app-background,var(--bg)) !important;
+}
+.discovery-shell {
+  background:
+    radial-gradient(ellipse at 100% 0%,rgba(var(--glass-glow-rgb),.20),transparent 48%),
+    radial-gradient(ellipse at 0% 100%,rgba(var(--warm-rgb),.13),transparent 52%),
+    linear-gradient(125deg,
+      color-mix(in srgb,var(--glass-tint) 74%,var(--app-background)),
+      color-mix(in srgb,var(--accent) 13%,var(--app-background)) 55%,
+      color-mix(in srgb,var(--glass-tint) 46%,var(--app-background))) !important;
+  border-color:var(--app-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(var(--glass-reflection-rgb),.22),
+    0 24px 70px rgba(0,0,0,.22),
+    0 0 34px rgba(var(--glass-glow-rgb),.09) !important;
+}
+.discovery-shell:before {
+  background:radial-gradient(circle,
+    rgba(var(--glass-glow-rgb),.28),
+    rgba(var(--accent-rgb),.10) 36%,
+    transparent 70%) !important;
+}
+.discovery-feature {
+  background:
+    radial-gradient(ellipse at 0% 50%,rgba(var(--warm-rgb),.19),transparent 55%),
+    radial-gradient(ellipse at 100% 0%,rgba(var(--glass-glow-rgb),.19),transparent 58%),
+    linear-gradient(112deg,
+      color-mix(in srgb,var(--warm) 13%,var(--app-surface)),
+      color-mix(in srgb,var(--glass-tint) 76%,var(--app-surface)) 52%,
+      color-mix(in srgb,var(--accent) 15%,var(--app-surface))) !important;
+  border-color:var(--app-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(var(--glass-reflection-rgb),.24),
+    0 18px 55px rgba(0,0,0,.22),
+    0 0 28px rgba(var(--glass-glow-rgb),.10) !important;
+  backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+.discovery-kicker,.discovery-tag,.discovery-heading h1 em {
+  color:var(--accent) !important;
+}
+.discovery-heading p,.discovery-copy p,
+.discovery-up-next,.discovery-next-list,
+.discovery-next-item span {
+  color:var(--muted);
+}
+.discovery-copy h2 {
+  color:var(--warm) !important;
+}
+.discovery-feature .btn.primary {
+  background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 62%,var(--warm))) !important;
+  color:var(--bg) !important;
+  border-color:var(--glass-edge) !important;
+}
+.discovery-feature .btn:not(.primary) {
+  background:color-mix(in srgb,var(--glass-tint) 62%,var(--app-surface)) !important;
+  color:var(--text) !important;
+  border-color:var(--app-border) !important;
+}
+.discovery-feature .discovery-next,
+.discovery-feature .discovery-up-next {
+  border-color:var(--app-border) !important;
+}
