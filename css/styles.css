@@ -1940,3 +1940,27 @@ body.pointer-active #cursorGlow { opacity:.72; }
 body.pointer-active #cursorGlow { display:none !important; }
 body { background:var(--app-background,var(--bg)) !important; }
 body:not(.video-on) #baseBg { background:var(--app-background,var(--bg)) !important; }
+
+
+/* Restore the cursor spotlight, fully driven by the active Theme Studio palette. */
+#cursorGlow {
+  display:block !important;
+  position:fixed;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  opacity:0;
+  background:radial-gradient(
+    460px circle at var(--pointer-x,50vw) var(--pointer-y,50vh),
+    rgba(var(--glass-glow-rgb),.20) 0%,
+    rgba(var(--accent-rgb),.12) 30%,
+    rgba(var(--warm-rgb),.055) 52%,
+    transparent 74%
+  ) !important;
+  mix-blend-mode:soft-light;
+  transition:opacity .28s ease;
+}
+body.pointer-active #cursorGlow { opacity:.82 !important; }
+@media (hover:none), (prefers-reduced-motion:reduce) {
+  #cursorGlow { display:none !important; }
+}
