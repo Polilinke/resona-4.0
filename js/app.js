@@ -23,13 +23,14 @@
   const DEFAULT_THEME_STUDIO = {
     themeAccent: '#67cfe0', themeSecondary: '#c88f62',
     glassTint: '#17313b', glassEdge: '#a6dce5', glassGlow: '#54c9df',
-    glassOpacity: 34, glassBlur: 32
+    glassReflection: '#ffffff', glassOpacity: 34, glassBlur: 32,
+    glassSaturation: 185, glassEdgeStrength: 34
   };
   const THEME_PRESETS = {
-    aurora: { themeAccent:'#67cfe0', themeSecondary:'#c88f62', glassTint:'#17313b', glassEdge:'#a6dce5', glassGlow:'#54c9df', glassOpacity:34, glassBlur:32 },
-    ember: { themeAccent:'#f0a36f', themeSecondary:'#e16e58', glassTint:'#39251f', glassEdge:'#f0bd91', glassGlow:'#ef8c58', glassOpacity:38, glassBlur:30 },
-    lavender: { themeAccent:'#b7a4f5', themeSecondary:'#e5a6c8', glassTint:'#28243d', glassEdge:'#d1c6ff', glassGlow:'#a995f2', glassOpacity:36, glassBlur:34 },
-    mint: { themeAccent:'#83d8b3', themeSecondary:'#a9d7cf', glassTint:'#18352f', glassEdge:'#b2e9d4', glassGlow:'#70d9b0', glassOpacity:32, glassBlur:30 }
+    aurora: { themeAccent:'#67cfe0', themeSecondary:'#c88f62', glassTint:'#17313b', glassEdge:'#a6dce5', glassGlow:'#54c9df', glassReflection:'#ffffff', glassOpacity:34, glassBlur:32, glassSaturation:185, glassEdgeStrength:34 },
+    ember: { themeAccent:'#f0a36f', themeSecondary:'#e16e58', glassTint:'#39251f', glassEdge:'#f0bd91', glassGlow:'#ef8c58', glassReflection:'#fff0df', glassOpacity:38, glassBlur:30, glassSaturation:175, glassEdgeStrength:42 },
+    lavender: { themeAccent:'#b7a4f5', themeSecondary:'#e5a6c8', glassTint:'#28243d', glassEdge:'#d1c6ff', glassGlow:'#a995f2', glassReflection:'#f5edff', glassOpacity:36, glassBlur:34, glassSaturation:195, glassEdgeStrength:38 },
+    mint: { themeAccent:'#83d8b3', themeSecondary:'#a9d7cf', glassTint:'#18352f', glassEdge:'#b2e9d4', glassGlow:'#70d9b0', glassReflection:'#effff8', glassOpacity:32, glassBlur:30, glassSaturation:190, glassEdgeStrength:32 }
   };
   function hexRgb(hex) {
     const clean = /^#[0-9a-f]{6}$/i.test(hex || '') ? hex : '#67cfe0';
@@ -48,8 +49,12 @@
     root.style.setProperty('--glass-edge-rgb', hexRgb(s.glassEdge));
     root.style.setProperty('--glass-glow', s.glassGlow);
     root.style.setProperty('--glass-glow-rgb', hexRgb(s.glassGlow));
+    root.style.setProperty('--glass-reflection', s.glassReflection);
+    root.style.setProperty('--glass-reflection-rgb', hexRgb(s.glassReflection));
     root.style.setProperty('--glass-opacity', Math.max(8, Math.min(72, Number(s.glassOpacity) || 34)) / 100);
     root.style.setProperty('--glass-blur', Math.max(8, Math.min(48, Number(s.glassBlur) || 32)) + 'px');
+    root.style.setProperty('--glass-saturation', Math.max(100, Math.min(260, Number(s.glassSaturation) || 185)) + '%');
+    root.style.setProperty('--glass-edge-strength', Math.max(5, Math.min(85, Number(s.glassEdgeStrength) || 34)) / 100);
   }
   function applySettings() {
     const s = Store.getSettings();
@@ -69,19 +74,34 @@
       glassTint: $('glassTint').value,
       glassEdge: $('glassEdge').value,
       glassGlow: $('glassGlow').value,
+      glassReflection: $('glassReflection').value,
       glassOpacity: Number($('glassOpacity').value),
-      glassBlur: Number($('glassBlur').value)
+      glassBlur: Number($('glassBlur').value),
+      glassSaturation: Number($('glassSaturation').value),
+      glassEdgeStrength: Number($('glassEdgeStrength').value)
     };
     Store.saveSettings(patch);
     applyThemeStudio(patch);
+    ['themeAccent','themeSecondary','glassTint','glassEdge','glassGlow','glassReflection'].forEach(id => {
+      const hex = $(id).value.toUpperCase();
+      const field = $(id + 'Hex');
+      if (field && field !== document.activeElement) field.value = hex;
+    });
     $('glassOpacityValue').textContent = patch.glassOpacity + '%';
     $('glassBlurValue').textContent = patch.glassBlur + 'px';
+    $('glassSaturationValue').textContent = patch.glassSaturation + '%';
+    $('glassEdgeStrengthValue').textContent = patch.glassEdgeStrength + '%';
   }
   function loadThemeStudioControls(settings) {
     const s = Object.assign({}, DEFAULT_THEME_STUDIO, settings || {});
     Object.keys(DEFAULT_THEME_STUDIO).forEach(key => { $(key).value = s[key]; });
     $('glassOpacityValue').textContent = s.glassOpacity + '%';
     $('glassBlurValue').textContent = s.glassBlur + 'px';
+    $('glassSaturationValue').textContent = s.glassSaturation + '%';
+    $('glassEdgeStrengthValue').textContent = s.glassEdgeStrength + '%';
+    ['themeAccent','themeSecondary','glassTint','glassEdge','glassGlow','glassReflection'].forEach(id => {
+      $(id + 'Hex').value = s[id].toUpperCase();
+    });
   }
 
   function updateAlbumBg() {
@@ -1157,9 +1177,30 @@
     applySettings();
   });
 
-  ['themeAccent','themeSecondary','glassTint','glassEdge','glassGlow','glassOpacity','glassBlur'].forEach(id => {
+  ['themeAccent','themeSecondary','glassTint','glassEdge','glassGlow','glassReflection','glassOpacity','glassBlur','glassSaturation','glassEdgeStrength'].forEach(id => {
     $(id).addEventListener('input', saveThemeStudioFromControls);
     $(id).addEventListener('change', saveThemeStudioFromControls);
+  });
+  ['themeAccent','themeSecondary','glassTint','glassEdge','glassGlow','glassReflection'].forEach(id => {
+    const field = $(id + 'Hex');
+    const applyHex = () => {
+      const value = field.value.trim();
+      if (/^#[0-9a-f]{6}$/i.test(value)) {
+        $(id).value = value;
+        saveThemeStudioFromControls();
+        field.setCustomValidity('');
+      } else {
+        field.setCustomValidity('Enter a 6-digit HEX colour, for example #67CFE0.');
+      }
+    };
+    field.addEventListener('input', applyHex);
+    field.addEventListener('change', () => {
+      applyHex();
+      if (!/^#[0-9a-f]{6}$/i.test(field.value.trim())) field.reportValidity();
+    });
+    field.addEventListener('keydown', event => {
+      if (event.key === 'Enter') { event.preventDefault(); applyHex(); field.blur(); }
+    });
   });
   document.querySelectorAll('[data-theme-preset]').forEach(button => {
     button.addEventListener('click', () => {
