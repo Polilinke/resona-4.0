@@ -1147,7 +1147,10 @@
   });
 
   // ---------- Settings dialog ----------
-  $('customizeBtn').addEventListener('click', () => $('settingsBtn').click());
+  $('customizeBtn').addEventListener('click', () => {
+    $('settingsBtn').click();
+    $('themeStudioTitle')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
 
   $('settingsBtn').addEventListener('click', () => {
     const s = Store.getSettings();
@@ -1271,16 +1274,7 @@
     prev: playPrev
   });
 
-  // Full-page ambient spotlight follows the cursor, not just individual cards.
-  document.addEventListener('pointermove', (event) => {
-    if (event.pointerType === 'touch') return;
-    document.documentElement.style.setProperty('--pointer-x', event.clientX + 'px');
-    document.documentElement.style.setProperty('--pointer-y', event.clientY + 'px');
-    document.body.classList.add('pointer-active');
-  }, { passive: true });
-  document.addEventListener('pointerleave', () => {
-    document.body.classList.remove('pointer-active');
-  });
+  // Full-page cursor spotlight removed; ambient colour comes from the selected theme only.
 
   // ---------- Start ----------
   applySettings();
