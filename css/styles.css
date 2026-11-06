@@ -2069,3 +2069,81 @@ body .btn.primary,body .count {
 body.pointer-active #cursorGlow {opacity:.48!important}
 @media (hover:none) {#cursorGlow{display:none!important}}
 [data-theme=light] {color-scheme:light}
+
+
+/* Desktop icon rail: expands only while hovered or keyboard-focused. */
+@media (min-width: 851px) {
+  .layout {
+    grid-template-columns:76px minmax(0,1fr);
+    transition:grid-template-columns .26s cubic-bezier(.2,.8,.2,1);
+  }
+  .layout:has(> .sidebar:hover),
+  .layout:has(> .sidebar:focus-within) {
+    grid-template-columns:224px minmax(0,1fr);
+  }
+  .sidebar {
+    width:76px;
+    min-width:0;
+    overflow:hidden;
+    padding:14px 10px;
+    gap:8px;
+    transition:width .26s cubic-bezier(.2,.8,.2,1),padding .26s ease,
+      background .25s ease,box-shadow .25s ease;
+    z-index:8;
+  }
+  .layout:has(> .sidebar:hover) .sidebar,
+  .layout:has(> .sidebar:focus-within) .sidebar {
+    width:224px;
+    padding:14px;
+    box-shadow:18px 0 42px rgba(0,0,0,.22);
+  }
+  .sidebar .nav-btn {
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    min-width:0;
+    min-height:46px;
+    padding:9px 11px;
+    white-space:nowrap;
+    overflow:hidden;
+    border-radius:14px;
+    text-align:left;
+  }
+  .sidebar .nav-icon {
+    display:grid;
+    place-items:center;
+    flex:0 0 32px;
+    width:32px;
+    height:32px;
+    font-size:21px;
+    line-height:1;
+    color:var(--accent);
+    border-radius:10px;
+    background:color-mix(in srgb,var(--accent) 10%,transparent);
+  }
+  .sidebar .nav-label {
+    opacity:0;
+    width:0;
+    overflow:hidden;
+    transform:translateX(-5px);
+    transition:opacity .16s ease,transform .22s ease,width .22s ease;
+  }
+  .layout:has(> .sidebar:hover) .sidebar .nav-label,
+  .layout:has(> .sidebar:focus-within) .sidebar .nav-label {
+    opacity:1;
+    width:auto;
+    transform:translateX(0);
+  }
+  .sidebar .count { margin-left:auto; }
+  .sidebar .sidebar-spacer { min-height:18px; }
+  .sidebar .nav-btn.small { font-size:12px; }
+  .sidebar .nav-btn.active .nav-icon {
+    color:var(--accent);
+    background:color-mix(in srgb,var(--accent) 20%,transparent);
+    box-shadow:0 0 18px color-mix(in srgb,var(--accent) 22%,transparent);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .layout,.sidebar,.sidebar .nav-label {transition:none!important}
+}
