@@ -20,15 +20,68 @@
   };
 
   // ---------- Settings, theme, accent, glass, album background ----------
+  const DEFAULT_THEME_STUDIO = {
+    themeAccent: '#67cfe0', themeSecondary: '#c88f62',
+    glassTint: '#17313b', glassEdge: '#a6dce5', glassGlow: '#54c9df',
+    glassOpacity: 34, glassBlur: 32
+  };
+  const THEME_PRESETS = {
+    aurora: { themeAccent:'#67cfe0', themeSecondary:'#c88f62', glassTint:'#17313b', glassEdge:'#a6dce5', glassGlow:'#54c9df', glassOpacity:34, glassBlur:32 },
+    ember: { themeAccent:'#f0a36f', themeSecondary:'#e16e58', glassTint:'#39251f', glassEdge:'#f0bd91', glassGlow:'#ef8c58', glassOpacity:38, glassBlur:30 },
+    lavender: { themeAccent:'#b7a4f5', themeSecondary:'#e5a6c8', glassTint:'#28243d', glassEdge:'#d1c6ff', glassGlow:'#a995f2', glassOpacity:36, glassBlur:34 },
+    mint: { themeAccent:'#83d8b3', themeSecondary:'#a9d7cf', glassTint:'#18352f', glassEdge:'#b2e9d4', glassGlow:'#70d9b0', glassOpacity:32, glassBlur:30 }
+  };
+  function hexRgb(hex) {
+    const clean = /^#[0-9a-f]{6}$/i.test(hex || '') ? hex : '#67cfe0';
+    return [1, 3, 5].map(i => parseInt(clean.slice(i, i + 2), 16)).join(', ');
+  }
+  function applyThemeStudio(settings) {
+    const s = Object.assign({}, DEFAULT_THEME_STUDIO, settings || {});
+    const root = document.documentElement;
+    root.style.setProperty('--accent', s.themeAccent);
+    root.style.setProperty('--accent-rgb', hexRgb(s.themeAccent));
+    root.style.setProperty('--warm', s.themeSecondary);
+    root.style.setProperty('--warm-rgb', hexRgb(s.themeSecondary));
+    root.style.setProperty('--glass-tint', s.glassTint);
+    root.style.setProperty('--glass-tint-rgb', hexRgb(s.glassTint));
+    root.style.setProperty('--glass-edge', s.glassEdge);
+    root.style.setProperty('--glass-edge-rgb', hexRgb(s.glassEdge));
+    root.style.setProperty('--glass-glow', s.glassGlow);
+    root.style.setProperty('--glass-glow-rgb', hexRgb(s.glassGlow));
+    root.style.setProperty('--glass-opacity', Math.max(8, Math.min(72, Number(s.glassOpacity) || 34)) / 100);
+    root.style.setProperty('--glass-blur', Math.max(8, Math.min(48, Number(s.glassBlur) || 32)) + 'px');
+  }
   function applySettings() {
     const s = Store.getSettings();
     document.documentElement.dataset.theme = s.theme;
     document.documentElement.dataset.accent = s.accent;
     $('accentSelect').value = s.accent;
+    applyThemeStudio(s);
     document.body.classList.toggle('glass', !!s.glass);
     const nowPlaying = $('npFull');
     if (nowPlaying) nowPlaying.classList.toggle('lyrics-glass', !!s.npGlass);
     updateAlbumBg();
+  }
+  function saveThemeStudioFromControls() {
+    const patch = {
+      themeAccent: $('themeAccent').value,
+      themeSecondary: $('themeSecondary').value,
+      glassTint: $('glassTint').value,
+      glassEdge: $('glassEdge').value,
+      glassGlow: $('glassGlow').value,
+      glassOpacity: Number($('glassOpacity').value),
+      glassBlur: Number($('glassBlur').value)
+    };
+    Store.saveSettings(patch);
+    applyThemeStudio(patch);
+    $('glassOpacityValue').textContent = patch.glassOpacity + '%';
+    $('glassBlurValue').textContent = patch.glassBlur + 'px';
+  }
+  function loadThemeStudioControls(settings) {
+    const s = Object.assign({}, DEFAULT_THEME_STUDIO, settings || {});
+    Object.keys(DEFAULT_THEME_STUDIO).forEach(key => { $(key).value = s[key]; });
+    $('glassOpacityValue').textContent = s.glassOpacity + '%';
+    $('glassBlurValue').textContent = s.glassBlur + 'px';
   }
 
   function updateAlbumBg() {
@@ -1083,8 +1136,7 @@
     $('albumBgToggle').checked = !!s.albumBg;
     $('glassToggle').checked = !!s.glass;
     $('npGlassToggle').checked = !!s.npGlass;
-    $('customAccent').value = s.customAccent || '#22d3ee';
-    $('glassIntensity').value = s.glassIntensity || 12;
+    loadThemeStudioControls(s);
     $('bgEnabled').checked = !!s.bgEnabled;
     $('freshBgToggle').checked = !!s.bgEnabled;
     $('settingsDialog').classList.remove('hidden');
@@ -1105,13 +1157,28 @@
     applySettings();
   });
 
+  ['themeAccent','themeSecondary','glassTint','glassEdge','glassGlow','glassOpacity','glassBlur'].forEach(id => {
+    $(id).addEventListener('input', saveThemeStudioFromControls);
+    $(id).addEventListener('change', saveThemeStudioFromControls);
+  });
+  document.querySelectorAll('[data-theme-preset]').forEach(button => {
+    button.addEventListener('click', () => {
+      loadThemeStudioControls(THEME_PRESETS[button.dataset.themePreset]);
+      saveThemeStudioFromControls();
+      document.querySelectorAll('[data-theme-preset]').forEach(item => item.classList.toggle('active', item === button));
+    });
+  });
+  $('resetThemeStudio').addEventListener('click', () => {
+    loadThemeStudioControls(DEFAULT_THEME_STUDIO);
+    saveThemeStudioFromControls();
+    document.querySelectorAll('[data-theme-preset]').forEach(item => item.classList.remove('active'));
+  });
+
   $('closeSettingsBtn').addEventListener('click', () => {
     const size = $('sizeSelect').value;
     Store.saveSettings({
       windowSize: size,
-      popularRegion: $('regionSelect').value,
-      customAccent: $('customAccent').value,
-      glassIntensity: Number($('glassIntensity').value)
+      popularRegion: $('regionSelect').value
     });
     if (window.desktop) {
       const [w, h] = size.split('x').map(Number);
