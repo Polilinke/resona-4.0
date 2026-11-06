@@ -127,3 +127,7 @@ body.video-on .modal {
 body.video-on .modal-card {
   background: rgba(0, 0, 0, 0.8) !important;
 }
+
+
+/* Keep the video-background mode intentional; normal palette mode follows Theme Studio. */
+body:not(.video-on) #baseBg { background:var(--app-background,var(--bg)); }
