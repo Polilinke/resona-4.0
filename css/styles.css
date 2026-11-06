@@ -2054,11 +2054,18 @@ body .btn.primary,body .count {
 #cursorGlow {
  display:block!important;position:fixed!important;inset:0!important;z-index:3!important;
  pointer-events:none!important;opacity:0!important;
- background:radial-gradient(500px circle at var(--pointer-x,50vw) var(--pointer-y,50vh),
- rgba(var(--glass-glow-rgb),.20) 0%,rgba(var(--accent-rgb),.105) 30%,
- rgba(var(--warm-rgb),.045) 52%,transparent 74%)!important;
- mix-blend-mode:screen;transition:opacity .22s ease,background .28s ease;
+ background:
+  radial-gradient(620px circle at var(--pointer-x,50vw) var(--pointer-y,50vh),
+   rgba(var(--glass-glow-rgb),.34) 0%,
+   rgba(var(--accent-rgb),.20) 29%,
+   rgba(var(--warm-rgb),.10) 51%,
+   transparent 76%),
+  radial-gradient(230px circle at var(--pointer-x,50vw) var(--pointer-y,50vh),
+   rgba(var(--glass-reflection-rgb),.13),transparent 78%)!important;
+ mix-blend-mode:screen;
+ filter:blur(2px) brightness(1.18);
+ transition:opacity .18s ease,background .28s ease;
 }
-body.pointer-active #cursorGlow {opacity:.23!important}
+body.pointer-active #cursorGlow {opacity:.48!important}
 @media (hover:none) {#cursorGlow{display:none!important}}
 [data-theme=light] {color-scheme:light}
