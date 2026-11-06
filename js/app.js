@@ -45,6 +45,9 @@
     root.style.setProperty('--warm-rgb', hexRgb(s.themeSecondary));
     root.style.setProperty('--glass-tint', s.glassTint);
     root.style.setProperty('--glass-tint-rgb', hexRgb(s.glassTint));
+    root.style.setProperty('--app-background', 'color-mix(in srgb, var(--bg) 78%, ' + s.glassTint + ')');
+    root.style.setProperty('--app-surface', 'color-mix(in srgb, var(--bg) 48%, ' + s.glassTint + ')');
+    root.style.setProperty('--app-surface-raised', 'color-mix(in srgb, var(--bg) 30%, ' + s.glassTint + ')');
     root.style.setProperty('--glass-edge', s.glassEdge);
     root.style.setProperty('--glass-edge-rgb', hexRgb(s.glassEdge));
     root.style.setProperty('--glass-glow', s.glassGlow);
