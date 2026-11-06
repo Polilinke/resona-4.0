@@ -1898,3 +1898,38 @@ body:not(.video-on) #baseBg {
 .remix-button:hover {
   background:color-mix(in srgb,var(--accent) 14%,var(--app-surface-raised)) !important;
 }
+
+
+/* Replace the old fixed violet cursor bloom with the live Theme Studio glow */
+#cursorGlow {
+  background:radial-gradient(
+    420px circle at var(--pointer-x,50vw) var(--pointer-y,50vh),
+    rgba(var(--glass-glow-rgb),.12) 0%,
+    rgba(var(--accent-rgb),.075) 32%,
+    rgba(var(--warm-rgb),.035) 54%,
+    transparent 74%
+  ) !important;
+  mix-blend-mode:soft-light;
+  opacity:0;
+}
+body.pointer-active #cursorGlow { opacity:.72; }
+
+/* Header Customize action replaces the one-click accent dropdown */
+.customize-btn {
+  min-width:112px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  color:var(--text);
+  border-color:var(--app-border);
+  background:color-mix(in srgb,var(--app-surface-raised) 72%,transparent);
+}
+.customize-btn > span {
+  color:var(--accent);
+  font-size:16px;
+}
+.customize-btn:hover {
+  background:color-mix(in srgb,var(--accent) 13%,var(--app-surface-raised));
+  border-color:var(--glass-edge);
+}
