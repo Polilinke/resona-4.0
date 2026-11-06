@@ -448,14 +448,17 @@
           <button type="button" class="theme-preset" data-theme-preset="mint"><i></i><span>Mint</span></button>
         </div>
         <div class="theme-color-grid">
-          <label class="theme-color-control"><span><b>Accent</b><small>Buttons, active states</small></span><input id="themeAccent" type="color" value="#67cfe0" /></label>
-          <label class="theme-color-control"><span><b>Secondary</b><small>Warm highlights</small></span><input id="themeSecondary" type="color" value="#c88f62" /></label>
-          <label class="theme-color-control"><span><b>Glass tint</b><small>Glass surface colour</small></span><input id="glassTint" type="color" value="#17313b" /></label>
-          <label class="theme-color-control"><span><b>Glass edge</b><small>Reflections and borders</small></span><input id="glassEdge" type="color" value="#a6dce5" /></label>
-          <label class="theme-color-control"><span><b>Glow</b><small>Ambient light colour</small></span><input id="glassGlow" type="color" value="#54c9df" /></label>
+          <label class="theme-color-control"><span><b>Accent</b><small>Buttons and active states</small><input id="themeAccentHex" class="theme-hex-input" value="#67CFE0" maxlength="7" spellcheck="false" aria-label="Accent HEX value" /></span><input id="themeAccent" type="color" value="#67cfe0" /></label>
+          <label class="theme-color-control"><span><b>Secondary</b><small>Warm highlights</small><input id="themeSecondaryHex" class="theme-hex-input" value="#C88F62" maxlength="7" spellcheck="false" aria-label="Secondary HEX value" /></span><input id="themeSecondary" type="color" value="#c88f62" /></label>
+          <label class="theme-color-control"><span><b>Glass tint</b><small>Main glass surface</small><input id="glassTintHex" class="theme-hex-input" value="#17313B" maxlength="7" spellcheck="false" aria-label="Glass tint HEX value" /></span><input id="glassTint" type="color" value="#17313b" /></label>
+          <label class="theme-color-control"><span><b>Glass edge</b><small>Rim and border colour</small><input id="glassEdgeHex" class="theme-hex-input" value="#A6DCE5" maxlength="7" spellcheck="false" aria-label="Glass edge HEX value" /></span><input id="glassEdge" type="color" value="#a6dce5" /></label>
+          <label class="theme-color-control"><span><b>Glow</b><small>Ambient light colour</small><input id="glassGlowHex" class="theme-hex-input" value="#54C9DF" maxlength="7" spellcheck="false" aria-label="Glow HEX value" /></span><input id="glassGlow" type="color" value="#54c9df" /></label>
+          <label class="theme-color-control"><span><b>Reflection</b><small>Top sheen across glass</small><input id="glassReflectionHex" class="theme-hex-input" value="#FFFFFF" maxlength="7" spellcheck="false" aria-label="Reflection HEX value" /></span><input id="glassReflection" type="color" value="#ffffff" /></label>
         </div>
         <div class="theme-slider-control"><label for="glassOpacity"><span><b>Glass tint strength</b><output id="glassOpacityValue">34%</output></span></label><input id="glassOpacity" type="range" min="8" max="72" value="34" /></div>
         <div class="theme-slider-control"><label for="glassBlur"><span><b>Glass blur</b><output id="glassBlurValue">32px</output></span></label><input id="glassBlur" type="range" min="8" max="48" value="32" /></div>
+        <div class="theme-slider-control"><label for="glassSaturation"><span><b>Glass saturation</b><output id="glassSaturationValue">185%</output></span></label><input id="glassSaturation" type="range" min="100" max="260" value="185" /></div>
+        <div class="theme-slider-control"><label for="glassEdgeStrength"><span><b>Edge intensity</b><output id="glassEdgeStrengthValue">34%</output></span></label><input id="glassEdgeStrength" type="range" min="5" max="85" value="34" /></div>
         <div class="theme-live-preview"><span class="theme-preview-orb"></span><div><b>Live glass preview</b><small>Your colours update across Resona as you adjust them.</small></div><span class="theme-preview-chip">RESONA</span></div>
       </section>
       <p class="hint">DeepFlow AI / JARVIS connection: planned for a future secure server-side integration. Never paste a Gemini key into public browser code.</p>
