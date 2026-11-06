@@ -1935,12 +1935,7 @@ body.pointer-active #cursorGlow { opacity:.72; }
 }
 
 
-/* Remove the cursor-following violet bloom completely; no pointer-position colour wash. */
-#cursorGlow { display:none !important; }
-body.pointer-active #cursorGlow { display:none !important; }
-body { background:var(--app-background,var(--bg)) !important; }
-body:not(.video-on) #baseBg { background:var(--app-background,var(--bg)) !important; }
-
+/* Previous spotlight-disable override removed; the unified theme engine owns this layer. */
 
 /* Restore the cursor spotlight, fully driven by the active Theme Studio palette. */
 #cursorGlow {
