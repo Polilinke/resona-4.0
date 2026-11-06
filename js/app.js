@@ -1238,33 +1238,6 @@
     flashStatus('Search cache cleared.');
   });
 
-  // ---------- Backup ----------
-  $('exportBtn').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(Store.exportAll(), null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `deepflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  $('importBtn').addEventListener('click', () => $('importFile').click());
-  $('importFile').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      Store.importAll(JSON.parse(await file.text()));
-      state.queue = Store.getQueue();
-      saveQueue();
-      flashStatus('Backup imported.');
-      refreshCurrent();
-    } catch (err) {
-      flashStatus('Import failed: ' + err.message);
-    }
-    e.target.value = '';
-  });
-
   NowPlaying.init({
     getTime: () => (state.audioMode ? ResonaAudio.getTime() : (state.playerReady ? state.player.getCurrentTime() : 0)),
     getDuration: () => (state.audioMode ? ResonaAudio.getDuration() : (state.playerReady ? state.player.getDuration() : 0)),
