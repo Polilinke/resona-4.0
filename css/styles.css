@@ -1826,3 +1826,75 @@ body:not(.video-on) #baseBg {
 .discovery-feature .discovery-up-next {
   border-color:var(--app-border) !important;
 }
+
+
+/* Discovery palette + readable text pass */
+body:not(.video-on) #baseBg {
+  background:
+    radial-gradient(ellipse at 12% 8%,rgba(var(--glass-glow-rgb),.10),transparent 42%),
+    radial-gradient(ellipse at 88% 88%,rgba(var(--warm-rgb),.08),transparent 46%),
+    var(--app-background,var(--bg)) !important;
+}
+.discovery-shell {
+  color:var(--text) !important;
+  background:
+    radial-gradient(ellipse at 92% 0%,rgba(var(--glass-glow-rgb),.13),transparent 48%),
+    linear-gradient(135deg,
+      color-mix(in srgb,var(--glass-tint) 58%,var(--app-background)),
+      color-mix(in srgb,var(--app-surface) 78%,var(--accent) 7%) 54%,
+      color-mix(in srgb,var(--app-background) 72%,var(--warm) 8%)) !important;
+  border-color:color-mix(in srgb,var(--glass-edge) 34%,var(--app-border)) !important;
+}
+.discovery-feature {
+  color:var(--text) !important;
+  background:
+    radial-gradient(ellipse at 0% 100%,rgba(var(--warm-rgb),.10),transparent 52%),
+    radial-gradient(ellipse at 100% 0%,rgba(var(--glass-glow-rgb),.12),transparent 54%),
+    linear-gradient(118deg,
+      color-mix(in srgb,var(--app-surface) 78%,var(--glass-tint)),
+      color-mix(in srgb,var(--app-surface-raised) 82%,var(--accent) 8%) 55%,
+      color-mix(in srgb,var(--app-surface) 82%,var(--warm) 7%)) !important;
+  border-color:color-mix(in srgb,var(--glass-edge) 36%,var(--app-border)) !important;
+}
+.discovery-heading h1,
+.discovery-copy h2,
+.discovery-placeholder strong,
+.continue-next > strong,
+.continue-next-row b {
+  color:var(--text) !important;
+}
+.discovery-heading p,
+.discovery-copy p,
+.discovery-placeholder,
+.discovery-placeholder p,
+.continue-next-row small,
+.continue-empty {
+  color:var(--muted) !important;
+}
+.discovery-kicker,
+.discovery-tag,
+.discovery-heading h1 em {
+  color:var(--accent) !important;
+}
+.continue-next {
+  border-left-color:var(--app-border) !important;
+}
+.continue-next-row {
+  color:var(--text) !important;
+}
+.continue-next-row:hover {
+  background:color-mix(in srgb,var(--accent) 12%,transparent) !important;
+}
+.discovery-feature .btn.primary {
+  color:var(--bg) !important;
+}
+.discovery-feature .btn.ghost,
+.remix-button {
+  color:var(--text) !important;
+  background:color-mix(in srgb,var(--app-surface-raised) 76%,var(--glass-tint)) !important;
+  border-color:var(--app-border) !important;
+}
+.discovery-feature .btn.ghost:hover,
+.remix-button:hover {
+  background:color-mix(in srgb,var(--accent) 14%,var(--app-surface-raised)) !important;
+}
