@@ -2056,17 +2056,17 @@ body .btn.primary,body .count {
  pointer-events:none!important;opacity:0!important;
  background:
   radial-gradient(620px circle at var(--pointer-x,50vw) var(--pointer-y,50vh),
-   rgba(var(--glass-glow-rgb),.34) 0%,
-   rgba(var(--accent-rgb),.20) 29%,
-   rgba(var(--warm-rgb),.10) 51%,
+   rgba(var(--glass-glow-rgb),.32) 0%,
+   rgba(var(--accent-rgb),.19) 29%,
+   rgba(var(--warm-rgb),.095) 51%,
    transparent 76%),
   radial-gradient(230px circle at var(--pointer-x,50vw) var(--pointer-y,50vh),
-   rgba(var(--glass-reflection-rgb),.13),transparent 78%)!important;
+   rgba(var(--glass-reflection-rgb),.12),transparent 78%)!important;
  mix-blend-mode:screen;
- filter:blur(2px) brightness(1.18);
+ filter:blur(2px) brightness(1.14);
  transition:opacity .18s ease,background .28s ease;
 }
-body.pointer-active #cursorGlow {opacity:.48!important}
+body.pointer-active #cursorGlow {opacity:.45!important}
 @media (hover:none) {#cursorGlow{display:none!important}}
 [data-theme=light] {color-scheme:light}
 
