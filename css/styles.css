@@ -2565,3 +2565,100 @@ html[data-device-layout="mobile"] .track-title-viewport.is-overflowing .track-ti
   outline-offset:6px;
   border-radius:8px;
 }
+
+
+/* A little more spring across Resona: lively, but still restrained. */
+:root {
+  --resona-spring: cubic-bezier(.2, 1.55, .42, 1);
+  --resona-smooth: cubic-bezier(.22, .8, .24, 1);
+}
+button, .btn, .nav-btn, .track-more-item, .playlist-menu-item {
+  transition:
+    transform 220ms var(--resona-spring),
+    background-color 180ms var(--resona-smooth),
+    border-color 180ms ease,
+    box-shadow 220ms var(--resona-smooth),
+    color 180ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:hover:not(:disabled), .nav-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.025);
+}
+.btn:active:not(:disabled), .nav-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(.94);
+  transition-duration: 90ms;
+}
+.track {
+  transition:
+    transform 260ms var(--resona-spring),
+    border-color 200ms ease,
+    box-shadow 240ms var(--resona-smooth),
+    background-color 200ms ease;
+}
+.track:hover {
+  transform: translateY(-3px) scale(1.006);
+  box-shadow: 0 9px 24px rgba(0,0,0,.2);
+}
+.track-play-btn {
+  transition: transform 260ms var(--resona-spring), box-shadow 220ms ease, background-color 180ms ease;
+}
+.track-play-btn:hover {
+  transform: translateY(-2px) scale(1.09) rotate(-3deg);
+  box-shadow: 0 5px 16px rgba(var(--accent-rgb),.25);
+}
+.track-play-btn:active { transform: scale(.9) rotate(2deg); }
+
+/* Three-dot controls get their own tiny bounce and playful menu entrance. */
+.track-more-btn, .playlist-menu-button {
+  transform-origin: center;
+  transition:
+    transform 280ms var(--resona-spring),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 220ms ease;
+}
+.track-more-btn:hover, .playlist-menu-button:hover {
+  transform: translateY(-2px) scale(1.13) rotate(7deg);
+  background: rgba(var(--accent-rgb),.2);
+  border-color: var(--accent);
+  box-shadow: 0 4px 15px rgba(var(--accent-rgb),.2);
+}
+.track-more-btn:active, .playlist-menu-button:active {
+  transform: scale(.88) rotate(-8deg);
+}
+.track-more-btn[aria-expanded="true"], .playlist-menu-button[aria-expanded="true"] {
+  transform: rotate(90deg) scale(1.08);
+  background: rgba(var(--accent-rgb),.2);
+  border-color: var(--accent);
+}
+.track-more-menu {
+  transform-origin: right center;
+  animation: resona-menu-pop 260ms var(--resona-spring) both;
+}
+.playlist-actions-menu {
+  transform-origin: top right;
+  animation: resona-menu-pop 260ms var(--resona-spring) both;
+}
+.track-more-item:hover, .playlist-menu-item:hover {
+  transform: translateX(3px);
+}
+.playlist-card {
+  transition: transform 260ms var(--resona-spring), box-shadow 220ms ease, border-color 180ms ease;
+}
+.playlist-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 24px rgba(0,0,0,.18);
+  border-color: rgba(var(--accent-rgb),.55);
+}
+@keyframes resona-menu-pop {
+  from { opacity: 0; transform: translateX(7px) scale(.92); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
