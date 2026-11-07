@@ -493,7 +493,8 @@
       actions.append(button('Remove', () => opts.removable(track), 'btn small danger'));
     }
 
-    row.append(img, info, actions);
+    info.append(copy, actions);
+    row.append(img, info);
     return row;
   }
 
