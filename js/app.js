@@ -466,7 +466,10 @@
     const closeMenu = () => {
       moreMenu.remove();
       moreButton.setAttribute('aria-expanded', 'false');
-      if (window.__resonaActiveTrackMenu === moreMenu) window.__resonaActiveTrackMenu = null;
+      if (window.__resonaActiveTrackMenu === moreMenu) {
+        window.__resonaActiveTrackMenu = null;
+        window.__resonaActiveTrackMenuButton = null;
+      }
     };
     const addQueueButton = button('Add to queue', () => {
       addToQueue(track);
