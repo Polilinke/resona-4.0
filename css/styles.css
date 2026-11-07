@@ -2662,3 +2662,86 @@ button, .btn, .nav-btn, .track-more-item, .playlist-menu-item {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Track rows: use the wide centre area for real metadata and a quiet waveform. */
+.track-info {
+  grid-template-columns: minmax(190px, .9fr) minmax(220px, 1.1fr) auto;
+  gap: 18px;
+}
+.track-meta {
+  min-width: 0;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 10px;
+  border-left: 1px solid rgba(var(--glass-edge-rgb), .16);
+  border-right: 1px solid rgba(var(--glass-edge-rgb), .12);
+}
+.track-meta-details {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.track-album {
+  min-width: 0;
+  max-width: 190px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.track-duration {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.track-waveform {
+  flex: 0 1 150px;
+  min-width: 70px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  opacity: .62;
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.track-waveform i {
+  display: block;
+  width: 3px;
+  height: var(--wave-height, 8px);
+  flex: 0 0 3px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, var(--accent), var(--warm));
+  transform-origin: center;
+  transition: height 220ms ease, opacity 220ms ease;
+}
+.track:hover .track-waveform { opacity: .95; }
+.track:hover .track-waveform i:nth-child(3n) { height: calc(var(--wave-height, 8px) * 1.18); }
+.track.playing .track-waveform { opacity: 1; }
+.track.playing .track-waveform i { animation: track-wave-pulse 900ms ease-in-out infinite alternate; }
+.track.playing .track-waveform i:nth-child(3n) { animation-delay: -420ms; }
+.track.playing .track-waveform i:nth-child(4n) { animation-delay: -650ms; }
+@keyframes track-wave-pulse {
+  from { transform: scaleY(.62); }
+  to { transform: scaleY(1.12); }
+}
+@media (max-width: 1050px) and (min-width: 851px) {
+  .track-info { grid-template-columns: minmax(150px, 1fr) minmax(130px, .7fr) auto; gap: 10px; }
+  .track-meta { gap: 8px; padding: 0 7px; }
+  .track-waveform { flex-basis: 85px; gap: 2px; }
+  .track-waveform i { width: 2px; flex-basis: 2px; }
+  .track-album { max-width: 110px; }
+}
+@media (max-width: 850px) {
+  .track-info { grid-template-columns: minmax(0,1fr) auto; }
+  .track-meta { display: none; }
+}
+html[data-device-layout="mobile"] .track-info { grid-template-columns: minmax(0,1fr) auto; }
+html[data-device-layout="mobile"] .track-meta { display: none; }
