@@ -377,16 +377,13 @@
     if (cached) {
       state.rawResults = cached;
       state.isSearch = true;
+      renderDiscovery();
       renderResults();
       $('searchStatus').textContent = source === 'audius'
         ? (state.results.length ? `Showing ${state.results.length} Audius result(s) for "${query}".` : `No Audius results for "${query}".`)
-        : source === 'archive'
-          ? (state.results.length ? `Showing ${state.results.length} Archive recording(s) for "${query}".` : `No Archive recordings for "${query}".`)
-          : source === 'jamendo'
-            ? (state.results.length ? `Showing ${state.results.length} Jamendo tracks for "${query}".` : `No Jamendo tracks for "${query}".`)
-            : (officialOnlyToggle.checked
-              ? (state.results.length ? `Showing ${state.results.length} likely official cached result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
-              : `Showing all ${state.results.length} cached results for "${query}".`);
+        : (officialOnlyToggle.checked
+          ? (state.results.length ? `Showing ${state.results.length} likely official cached result(s) for "${query}".` : 'No likely official upload found. Turn off Official only to see all results.')
+          : `Showing all ${state.results.length} cached results for "${query}".`);
       return;
     }
 
@@ -432,15 +429,6 @@
     a.className = 'track-artist';
     a.textContent = track.artist + (track.source === 'audius' ? ' · Audius' : '');
     info.append(t, a);
-    if (track.source === 'jamendo' && track.permalink) {
-      const credit = document.createElement('a');
-      credit.className = 'track-source-credit';
-      credit.href = track.permalink;
-      credit.target = '_blank';
-      credit.rel = 'noopener noreferrer';
-      credit.textContent = 'Jamendo · ' + (track.licenseName || 'Creative Commons licence');
-      info.append(credit);
-    }
 
     const actions = document.createElement('div');
     actions.className = 'track-actions';
