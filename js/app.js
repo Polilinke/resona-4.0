@@ -137,9 +137,6 @@
       const activeName = mobileLayout && librarySection ? 'playlists' : name;
       b.classList.toggle('active', b.dataset.view === activeName);
     });
-    document.querySelectorAll('.library-subnav-btn[data-library-view]').forEach(b => {
-      b.classList.toggle('active', b.dataset.libraryView === name);
-    });
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
     if (name === 'playlists') renderPlaylists();
     if (name === 'history') renderHistory();
@@ -1106,7 +1103,6 @@
     const active = document.querySelector('.view.active');
     if (!active) return;
     if (active.id === 'view-search') renderResults();
-    if (active.id === 'view-library') renderLibrary();
     if (active.id === 'view-playlists') renderPlaylists();
     if (active.id === 'view-history') renderHistory();
     if (active.id === 'view-queue') renderQueue();
