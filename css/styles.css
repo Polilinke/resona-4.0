@@ -2737,11 +2737,11 @@ button, .btn, .nav-btn, .track-more-item, .playlist-menu-item {
 .track:hover .track-waveform i { opacity: 1; }
 .track.playing .track-waveform { opacity: 1; }
 .track.playing .track-waveform i { filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), .5)); }
-.track-waveform i:nth-child(5n + 1) { --wave-speed: 560ms; animation-delay: -180ms; }
-.track-waveform i:nth-child(5n + 2) { --wave-speed: 760ms; animation-delay: -520ms; }
-.track-waveform i:nth-child(5n + 3) { --wave-speed: 640ms; animation-delay: -330ms; }
-.track-waveform i:nth-child(5n + 4) { --wave-speed: 880ms; animation-delay: -710ms; }
-.track-waveform i:nth-child(5n) { --wave-speed: 690ms; animation-delay: -90ms; }
+.track-waveform i:nth-child(5n + 1) { --wave-speed: 900ms; animation-delay: -180ms; }
+.track-waveform i:nth-child(5n + 2) { --wave-speed: 1200ms; animation-delay: -520ms; }
+.track-waveform i:nth-child(5n + 3) { --wave-speed: 1020ms; animation-delay: -330ms; }
+.track-waveform i:nth-child(5n + 4) { --wave-speed: 1380ms; animation-delay: -710ms; }
+.track-waveform i:nth-child(5n) { --wave-speed: 1080ms; animation-delay: -90ms; }
 @keyframes track-wave-dance {
   0% { transform: scaleY(.08); }
   22% { transform: scaleY(1.72); }
