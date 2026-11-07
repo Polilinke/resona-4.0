@@ -450,6 +450,9 @@
     if (!hoverPreviewReady || !hoverPreviewPlayer) return;
     try {
       hoverPreviewPlayer.loadVideoById({ videoId: String(track.id), startSeconds: 0 });
+      // Explicitly request playback so the preview does not wait for the YouTube
+      // player's on-screen Start control. Browser autoplay policy may still block it. 
+      hoverPreviewPlayer.playVideo();
     } catch (_) {
       host.querySelector('.hover-preview-message').textContent = 'This upload could not be previewed.';
     }
@@ -1034,7 +1037,7 @@
     hoverPreviewPlayer = new YT.Player('hoverPreviewPlayer', {
       width: '200',
       height: '200',
-      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, controls: 1 },
+      playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0 },
       events: {
         onReady: () => {
           hoverPreviewReady = true;
