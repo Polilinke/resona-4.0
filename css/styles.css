@@ -2424,3 +2424,29 @@ body.pointer-active #cursorGlow {opacity:.42!important}
 html[data-device-layout="mobile"] .track-actions { grid-column: auto; justify-content: flex-end; gap: 7px; }
 html[data-device-layout="mobile"] .track-play-btn,
 html[data-device-layout="mobile"] .track-more-btn { min-height: 42px; }
+
+/* Song title, play and overflow actions stay together beside the artwork. */
+.track { grid-template-columns: 96px minmax(0,1fr); overflow: visible; }
+.track-info { min-width:0; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; }
+.track-copy { min-width:0; overflow:hidden; }
+.track-title-viewport { min-width:0; overflow:hidden; white-space:nowrap; position:relative; }
+.track-title { display:inline-block; max-width:100%; white-space:nowrap; text-overflow:clip; overflow:visible; }
+.track-title-viewport.is-overflowing .track-title { max-width:none; animation:resona-title-marquee 9s ease-in-out infinite alternate; }
+@keyframes resona-title-marquee { from { transform:translateX(0); } to { transform:translateX(calc(-1 * var(--title-overflow))); } }
+.track-artist { overflow:hidden; text-overflow:ellipsis; }
+.track-actions { flex:0 0 auto; flex-wrap:nowrap; align-items:center; }
+.track-more-menu { position:fixed !important; z-index:10000 !important; }
+.track:has(.track-more-menu:not([hidden])) { z-index:1000; }
+html[data-device-layout="mobile"] .track { grid-template-columns:64px minmax(0,1fr); }
+html[data-device-layout="mobile"] .track-info { grid-template-columns:minmax(0,1fr) auto; gap:6px; }
+html[data-device-layout="mobile"] .track-actions { grid-column:auto; justify-content:flex-end; gap:5px; }
+html[data-device-layout="mobile"] .track-play-btn,
+html[data-device-layout="mobile"] .track-more-btn { min-width:32px; min-height:36px; padding:6px 8px; }
+html[data-device-layout="mobile"] .track-title { font-size:14px; line-height:1.3; }
+@media (max-width:390px) {
+  html[data-device-layout="mobile"] .track { grid-template-columns:56px minmax(0,1fr); gap:8px; }
+  html[data-device-layout="mobile"] .track img { width:56px; height:56px; }
+  html[data-device-layout="mobile"] .track-info { gap:4px; }
+  html[data-device-layout="mobile"] .track-play-btn,
+  html[data-device-layout="mobile"] .track-more-btn { min-width:29px; padding:5px 6px; }
+}
