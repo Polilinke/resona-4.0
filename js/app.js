@@ -424,6 +424,7 @@
     host.setAttribute('aria-label', 'YouTube hover preview');
     host.innerHTML = '<div class="hover-preview-heading"><span class="hover-preview-label">QUICK PREVIEW</span><button type="button" class="hover-preview-close" aria-label="Close preview">×</button></div><div class="hover-preview-title"></div><div class="hover-preview-player" id="hoverPreviewPlayer"></div><div class="hover-preview-message" role="status" aria-live="polite"></div>';
     host.querySelector('.hover-preview-close').addEventListener('click', stopHoverPreview);
+    host.addEventListener('mouseleave', clearHoverPlay);
     document.body.append(host);
     hoverPreviewHost = host;
     return host;
@@ -494,7 +495,11 @@
           startHoverPreview(track);
         }, 1500);
       });
-      row.addEventListener('mouseleave', clearHoverPlay);
+      row.addEventListener('mouseleave', (event) => {
+        // Moving from a song row into its floating preview should not cancel playback.
+        if (event.relatedTarget && hoverPreviewHost?.contains(event.relatedTarget)) return;
+        clearHoverPlay();
+      });
     }
 
     const img = document.createElement('img');
