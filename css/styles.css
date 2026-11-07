@@ -2457,7 +2457,8 @@ html[data-device-layout="mobile"] .track-title-viewport.is-overflowing .track-ti
 /* Rebuilt track actions popover: rendered under body, never inside clipped song rows. */
 .track-more-menu {
   position: fixed !important;
-  inset: auto !important;
+  right: auto !important;
+  bottom: auto !important;
   z-index: 2147483000 !important;
   display: grid !important;
   width: 180px;
@@ -2544,4 +2545,23 @@ html[data-device-layout="mobile"] .track-title-viewport.is-overflowing .track-ti
   .playlist-actions-menu { right:0; }
   .picker-create-panel { grid-template-columns:1fr; }
   .picker-create-panel .btn { width:100%;min-height:44px; }
+}
+
+
+/* Home branding is a real navigation control, styled exactly like the original wordmark. */
+.brand-home {
+  appearance:none;
+  border:0;
+  padding:0;
+  margin:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  cursor:pointer;
+  text-align:left;
+}
+.brand-home:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:6px;
+  border-radius:8px;
 }
