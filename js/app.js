@@ -501,6 +501,7 @@
       // Render the menu at document level so song rows and scroll containers cannot clip it.
       document.body.appendChild(moreMenu);
       window.__resonaActiveTrackMenu = moreMenu;
+      window.__resonaActiveTrackMenuButton = moreButton;
       moreButton.setAttribute('aria-expanded', 'true');
       const rect = moreButton.getBoundingClientRect();
       const menuWidth = moreMenu.offsetWidth || 180;
@@ -512,6 +513,33 @@
       moreMenu.style.visibility = 'visible';
     });
     moreMenu.addEventListener('click', event => event.stopPropagation());
+    if (!window.__resonaTrackMenuDismissBound) {
+      window.__resonaTrackMenuDismissBound = true;
+      document.addEventListener('pointerdown', event => {
+        const menu = window.__resonaActiveTrackMenu;
+        const trigger = window.__resonaActiveTrackMenuButton;
+        if (menu && !menu.contains(event.target) && !trigger?.contains(event.target)) {
+          menu.remove();
+          trigger?.setAttribute('aria-expanded', 'false');
+          window.__resonaActiveTrackMenu = null;
+          window.__resonaActiveTrackMenuButton = null;
+        }
+      });
+      const dismissTrackMenu = () => {
+        const menu = window.__resonaActiveTrackMenu;
+        const trigger = window.__resonaActiveTrackMenuButton;
+        if (!menu) return;
+        menu.remove();
+        trigger?.setAttribute('aria-expanded', 'false');
+        window.__resonaActiveTrackMenu = null;
+        window.__resonaActiveTrackMenuButton = null;
+      };
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') dismissTrackMenu();
+      });
+      window.addEventListener('resize', dismissTrackMenu);
+      window.addEventListener('scroll', dismissTrackMenu, true);
+    }
     moreWrap.append(moreButton);
     actions.append(moreWrap);
     if (opts.removable) {
