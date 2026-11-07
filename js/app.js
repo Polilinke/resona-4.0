@@ -422,7 +422,7 @@
     host.id = 'hoverPreviewCard';
     host.className = 'hover-preview-card';
     host.setAttribute('aria-label', 'YouTube hover preview');
-    host.innerHTML = '<div class="hover-preview-heading"><span class="hover-preview-label">QUICK PREVIEW</span><button type="button" class="hover-preview-close" aria-label="Close preview">×</button></div><div class="hover-preview-title"></div><div class="hover-preview-player" id="hoverPreviewPlayer"></div>';
+    host.innerHTML = '<div class="hover-preview-heading"><span class="hover-preview-label">QUICK PREVIEW</span><button type="button" class="hover-preview-close" aria-label="Close preview">×</button></div><div class="hover-preview-title"></div><div class="hover-preview-player" id="hoverPreviewPlayer"></div><div class="hover-preview-message" role="status" aria-live="polite"></div>';
     host.querySelector('.hover-preview-close').addEventListener('click', stopHoverPreview);
     document.body.append(host);
     hoverPreviewHost = host;
@@ -444,12 +444,13 @@
     host.querySelector('.hover-preview-title').textContent =
       (track.title || 'Preview') + (track.artist ? ' · ' + track.artist : '');
     host.classList.add('is-visible');
+    host.querySelector('.hover-preview-message').textContent = '';
     hoverPreviewTrack = track;
     if (!hoverPreviewReady || !hoverPreviewPlayer) return;
     try {
       hoverPreviewPlayer.loadVideoById({ videoId: String(track.id), startSeconds: 0 });
     } catch (_) {
-      host.classList.remove('is-visible');
+      host.querySelector('.hover-preview-message').textContent = 'This upload could not be previewed.';
     }
   }
 
@@ -1036,8 +1037,20 @@
             try { hoverPreviewPlayer.loadVideoById({ videoId: String(hoverPreviewTrack.id), startSeconds: 0 }); } catch (_) {}
           }
         },
-        onError: () => {
-          if (hoverPreviewHost) hoverPreviewHost.classList.remove('is-visible');
+        onError: (e) => {
+          if (!hoverPreviewHost) return;
+          const messages = {
+            2: 'This video has an invalid ID.',
+            5: 'This upload is not supported by the embedded player.',
+            100: 'This video is unavailable, private, or removed.',
+            101: 'The uploader does not allow embedded playback.',
+            150: 'The uploader does not allow embedded playback.',
+            153: 'YouTube could not verify this player configuration.'
+          };
+          const message = messages[e.data] || 'YouTube could not play this preview.';
+          const messageNode = hoverPreviewHost.querySelector('.hover-preview-message');
+          if (messageNode) messageNode.textContent = message;
+          // Keep the preview card open so the failure is clear instead of flashing closed.
         }
       }
     });
