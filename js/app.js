@@ -465,7 +465,7 @@
         const rect = moreButton.getBoundingClientRect();
         const menuWidth = 180;
         const menuHeight = moreMenu.scrollHeight || 90;
-        const left = Math.max(8, Math.min(window.innerWidth - menuWidth - 8, rect.right - menuWidth));
+        const left = Math.max(8, rect.left - menuWidth - 8);
         const top = rect.bottom + menuHeight + 10 <= window.innerHeight
           ? rect.bottom + 6
           : Math.max(8, rect.top - menuHeight - 6);
