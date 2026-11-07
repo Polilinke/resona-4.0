@@ -2985,3 +2985,30 @@ html[data-device-layout="mobile"] .track-meta { display: none; }
   }
   html[data-device-layout="mobile"] .track-waveform { display: none; }
 }
+
+
+/* HOVER PREVIEW MINI — keep the YouTube viewport compliant, trim the surrounding chrome. */
+.hover-preview-card {
+  right: 14px;
+  bottom: 104px;
+  width: 212px;
+  padding: 5px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.4),0 0 14px rgba(var(--accent-rgb),.1);
+}
+.hover-preview-heading { gap: 5px; margin-bottom: 3px; }
+.hover-preview-label { font-size: 8px; letter-spacing: .13em; }
+.hover-preview-close { width: 22px; height: 22px; border-radius: 7px; font-size: 16px; }
+.hover-preview-title { margin: 0 0 4px; font-size: 10px; line-height: 1.2; }
+.hover-preview-player { width: 200px; height: 200px; border-radius: 8px; }
+.hover-preview-player iframe { width: 200px!important; height: 200px!important; }
+.hover-preview-message { margin-top: 4px; font-size: 9px; line-height: 1.25; }
+@media(max-width:600px) {
+  .hover-preview-card {
+    right: 8px;
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    width: 212px;
+    padding: 5px;
+  }
+  .hover-preview-player,.hover-preview-player iframe { width: 200px!important; height: 200px!important; }
+}
