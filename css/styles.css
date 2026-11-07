@@ -2159,3 +2159,6 @@ body.pointer-active #cursorGlow {opacity:.42!important}
 #discoveryFeature.search-results-mode .track-list { width: 100%; }
 #discoveryFeature.search-results-mode .status { margin: 0 0 14px; }
 #discoveryFeature.search-results-mode .track { width: 100%; }
+
+.discovery-shell:has(.discovery-feature.search-results-mode) .discovery-heading { display: none; }
+.discovery-shell:has(.discovery-feature.search-results-mode) { padding-top: clamp(14px, 2vw, 22px); }
