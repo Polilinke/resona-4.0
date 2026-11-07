@@ -2801,6 +2801,10 @@ html[data-device-layout="mobile"] .track-meta { display: none; }
   pointer-events: auto;
   transform: translateY(0) scale(1);
 }
+/* Keep the floating preview from stealing the pointer from the song row. */
+.hover-preview-card { pointer-events: none !important; }
+.hover-preview-message { margin-top:8px;color:var(--muted);font-size:10px;line-height:1.4; }
+
 .hover-preview-heading { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px; }
 .hover-preview-label { color:var(--accent);font-size:9px;font-weight:800;letter-spacing:.16em; }
 .hover-preview-close { width:25px;height:25px;border:0;border-radius:8px;background:rgba(255,255,255,.07);color:var(--text);font-size:18px;line-height:1;cursor:pointer; }
