@@ -2704,7 +2704,7 @@ button, .btn, .nav-btn, .track-more-item, .playlist-menu-item {
 .track-waveform {
   flex: 0 1 150px;
   min-width: 70px;
-  height: 28px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2743,10 +2743,11 @@ button, .btn, .nav-btn, .track-more-item, .playlist-menu-item {
 .track-waveform i:nth-child(5n + 4) { --wave-speed: 880ms; animation-delay: -710ms; }
 .track-waveform i:nth-child(5n) { --wave-speed: 690ms; animation-delay: -90ms; }
 @keyframes track-wave-dance {
-  0% { transform: scaleY(.28); }
-  35% { transform: scaleY(1.12); }
-  70% { transform: scaleY(.48); }
-  100% { transform: scaleY(.92); }
+  0% { transform: scaleY(.08); }
+  22% { transform: scaleY(1.72); }
+  48% { transform: scaleY(.18); }
+  73% { transform: scaleY(1.95); }
+  100% { transform: scaleY(.12); }
 }
 @media (max-width: 1050px) and (min-width: 851px) {
   .track-info { grid-template-columns: minmax(150px, 1fr) minmax(130px, .7fr) auto; gap: 10px; }
