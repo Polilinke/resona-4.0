@@ -2410,3 +2410,17 @@ body.pointer-active #cursorGlow {opacity:.42!important}
   html[data-device-layout="mobile"] .sidebar .nav-btn { flex-basis: 57px; min-width: 57px; }
   html[data-device-layout="mobile"] .player { left: 7px; right: 7px; }
 }
+
+
+/* Compact song actions: play inline, secondary actions in the overflow menu. */
+.track-actions { align-items: center; flex-wrap: nowrap; }
+.track-play-btn { min-width: 40px; min-height: 38px; padding: 8px 12px; }
+.track-more-wrap { position: relative; flex: 0 0 auto; }
+.track-more-btn { min-width: 38px; min-height: 38px; padding: 5px 10px; font-size: 21px; line-height: 1; }
+.track-more-menu { position: absolute; z-index: 40; top: calc(100% + 7px); right: 0; min-width: 166px; display: grid; gap: 3px; padding: 6px; border: 1px solid var(--panel-border); border-radius: 13px; background: var(--panel, #071522); box-shadow: 0 12px 32px rgba(0,0,0,.35); }
+.track-more-menu[hidden] { display: none; }
+.track-more-item { width: 100%; padding: 10px 11px; border: 0; border-radius: 8px; background: transparent; color: var(--text); text-align: left; cursor: pointer; font: inherit; font-size: 12px; }
+.track-more-item:hover { background: rgba(var(--accent-rgb),.13); }
+html[data-device-layout="mobile"] .track-actions { grid-column: auto; justify-content: flex-end; gap: 7px; }
+html[data-device-layout="mobile"] .track-play-btn,
+html[data-device-layout="mobile"] .track-more-btn { min-height: 42px; }
