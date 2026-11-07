@@ -464,6 +464,17 @@
       document.querySelectorAll('.track-more-menu').forEach(menu => { menu.hidden = true; });
       moreMenu.hidden = !willOpen;
       moreButton.setAttribute('aria-expanded', String(willOpen));
+      if (willOpen) {
+        const rect = moreButton.getBoundingClientRect();
+        const menuWidth = 180;
+        const menuHeight = moreMenu.scrollHeight || 90;
+        const left = Math.max(8, Math.min(window.innerWidth - menuWidth - 8, rect.right - menuWidth));
+        const top = rect.bottom + menuHeight + 10 <= window.innerHeight
+          ? rect.bottom + 6
+          : Math.max(8, rect.top - menuHeight - 6);
+        moreMenu.style.left = left + 'px';
+        moreMenu.style.top = top + 'px';
+      }
     }, 'btn small track-more-btn');
     moreButton.setAttribute('aria-label', 'More song actions');
     moreButton.setAttribute('aria-expanded', 'false');
