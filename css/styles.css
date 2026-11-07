@@ -2504,3 +2504,44 @@ html[data-device-layout="mobile"] .track-title-viewport.is-overflowing .track-ti
     font-size: 13px;
   }
 }
+
+
+/* Playlist management: cover art, compact overflow menu and create-in-picker flow. */
+.playlist-head { display:flex; align-items:center; gap:14px; min-width:0; }
+.playlist-cover {
+  width:76px;height:76px;flex:0 0 76px;object-fit:cover;border-radius:15px;
+  background:linear-gradient(135deg,rgba(var(--accent-rgb),.28),rgba(var(--warm-rgb),.22));
+  border:1px solid rgba(var(--glass-edge-rgb),.3);
+}
+.playlist-cover.is-empty { background:linear-gradient(135deg,rgba(var(--accent-rgb),.28),rgba(var(--warm-rgb),.22)); }
+.playlist-heading { min-width:0;flex:1; }
+.playlist-heading h3 { margin:0 0 5px;overflow-wrap:anywhere; }
+.playlist-track-count { color:var(--muted);font-size:12px; }
+.playlist-card-actions { display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap; }
+.playlist-menu-wrap { position:relative;flex:0 0 auto; }
+.playlist-menu-button { min-width:38px;min-height:38px;font-size:21px;line-height:1;padding:5px 10px; }
+.playlist-actions-menu {
+  position:absolute;right:0;top:calc(100% + 7px);z-index:120;
+  width:184px;padding:6px;display:grid;gap:3px;
+  border:1px solid rgba(var(--glass-edge-rgb),.42);border-radius:13px;
+  background:color-mix(in srgb,var(--panel,#071522) 88%,var(--glass-tint,#17313b));
+  box-shadow:0 14px 38px rgba(0,0,0,.42);
+  backdrop-filter:blur(20px) saturate(150%);
+}
+.playlist-actions-menu[hidden] { display:none!important; }
+.playlist-menu-item { width:100%;min-height:40px;padding:9px 11px;border:0;border-radius:8px;background:transparent;color:var(--text);text-align:left;font:inherit;font-size:13px;cursor:pointer; }
+.playlist-menu-item:hover { background:rgba(var(--accent-rgb),.14); }
+.playlist-menu-item.danger { color:#ff8585; }
+.picker-create-panel { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--panel-border); }
+.picker-create-panel input { min-width:0;width:100%; }
+.picker-empty-note { margin:4px 0 10px;color:var(--muted);font-size:13px;line-height:1.5; }
+.picker-playlist-option { width:100%;justify-content:flex-start;text-align:left;margin:4px 0; }
+@media(max-width:850px) {
+  .playlist-head { align-items:flex-start;flex-wrap:wrap; }
+  .playlist-cover { width:64px;height:64px;flex-basis:64px; }
+  .playlist-heading { min-width:calc(100% - 90px); }
+  .playlist-card-actions { width:100%;justify-content:flex-start; }
+  .playlist-actions-menu { right:0; }
+  .picker-create-panel { grid-template-columns:1fr; }
+  .picker-create-panel .btn { width:100%;min-height:44px; }
+}
