@@ -408,15 +408,59 @@
     updateQuotaBadge();
   }
 
-  // ---------- Hover-to-play (only while the player is idle) ----------
+  // ---------- YouTube hover preview (separate from the main player) ----------
   let hoverPlayTimer = null;
   let hoverPlayRow = null;
+  let hoverPreviewPlayer = null;
+  let hoverPreviewReady = false;
+  let hoverPreviewHost = null;
+  let hoverPreviewTrack = null;
+
+  function ensureHoverPreviewHost() {
+    if (hoverPreviewHost) return hoverPreviewHost;
+    const host = document.createElement('section');
+    host.id = 'hoverPreviewCard';
+    host.className = 'hover-preview-card';
+    host.setAttribute('aria-label', 'YouTube hover preview');
+    host.innerHTML = '<div class="hover-preview-heading"><span class="hover-preview-label">QUICK PREVIEW</span><button type="button" class="hover-preview-close" aria-label="Close preview">×</button></div><div class="hover-preview-title"></div><div class="hover-preview-player" id="hoverPreviewPlayer"></div>';
+    host.querySelector('.hover-preview-close').addEventListener('click', stopHoverPreview);
+    document.body.append(host);
+    hoverPreviewHost = host;
+    return host;
+  }
+
+  function stopHoverPreview() {
+    if (hoverPreviewPlayer && hoverPreviewReady) {
+      try { hoverPreviewPlayer.stopVideo(); } catch (_) {}
+    }
+    hoverPreviewTrack = null;
+    if (hoverPreviewHost) hoverPreviewHost.classList.remove('is-visible');
+  }
+
+  function startHoverPreview(track) {
+    if (!track || track.source === 'audius' || track.source === 'local-audio' || !track.id) return;
+    if (isPlaybackActive()) return;
+    const host = ensureHoverPreviewHost();
+    host.querySelector('.hover-preview-title').textContent =
+      (track.title || 'Preview') + (track.artist ? ' · ' + track.artist : '');
+    host.classList.add('is-visible');
+    hoverPreviewTrack = track;
+    if (!hoverPreviewReady || !hoverPreviewPlayer) return;
+    try {
+      hoverPreviewPlayer.loadVideoById({ videoId: String(track.id), startSeconds: 0 });
+    } catch (_) {
+      host.classList.remove('is-visible');
+    }
+  }
+
   function clearHoverPlay() {
     if (hoverPlayTimer) clearTimeout(hoverPlayTimer);
     hoverPlayTimer = null;
     if (hoverPlayRow) hoverPlayRow.classList.remove('hover-play-pending');
     hoverPlayRow = null;
+    stopHoverPreview();
   }
+
   function isPlaybackActive() {
     if (window.ResonaAudio?.isPlaying?.()) return true;
     if (state.playerReady && state.player) {
@@ -432,19 +476,21 @@
     row.className = 'track';
     if (state.currentTrack && state.currentTrack.id === track.id) row.classList.add('playing');
 
-    // Hovering a song for 1.5 seconds starts normal playback, but never
-    // interrupts a track that is already playing. Touch devices are unaffected.
-    if (track.source !== 'local-audio') {
-      row.addEventListener('mouseenter', event => {
-        if (event.pointerType === 'touch' || isPlaybackActive()) return;
+    // A 1.5-second hover starts an independent YouTube preview only.
+    // It never changes the queue, history, current track or main player.
+    if (track.source === 'youtube' || (!track.source && track.id)) {
+      row.addEventListener('mouseenter', () => {
+        if (isPlaybackActive()) return;
         clearHoverPlay();
         hoverPlayRow = row;
         row.classList.add('hover-play-pending');
         hoverPlayTimer = setTimeout(() => {
           const targetRow = hoverPlayRow;
-          clearHoverPlay();
+          hoverPlayTimer = null;
+          if (hoverPlayRow) hoverPlayRow.classList.remove('hover-play-pending');
+          hoverPlayRow = null;
           if (!targetRow || !targetRow.isConnected || isPlaybackActive()) return;
-          playFromList(opts.list || [track], track);
+          startHoverPreview(track);
         }, 1500);
       });
       row.addEventListener('mouseleave', clearHoverPlay);
@@ -978,6 +1024,23 @@
   }
 
   window.onYouTubeIframeAPIReady = function () {
+    ensureHoverPreviewHost();
+    hoverPreviewPlayer = new YT.Player('hoverPreviewPlayer', {
+      width: '200',
+      height: '200',
+      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, controls: 1 },
+      events: {
+        onReady: () => {
+          hoverPreviewReady = true;
+          if (hoverPreviewTrack && !isPlaybackActive()) {
+            try { hoverPreviewPlayer.loadVideoById({ videoId: String(hoverPreviewTrack.id), startSeconds: 0 }); } catch (_) {}
+          }
+        },
+        onError: () => {
+          if (hoverPreviewHost) hoverPreviewHost.classList.remove('is-visible');
+        }
+      }
+    });
     state.player = new YT.Player('ytHolder', {
       width: '200',
       height: '113',
@@ -1009,6 +1072,7 @@
   };
 
   function onPlayerStateChange(e) {
+    if (e.data === 1) stopHoverPreview();
     if (state.audioMode) return;
     // YT.PlayerState: ENDED = 0, PLAYING = 1, PAUSED = 2
     if (e.data === 0) handleTrackEnded();
