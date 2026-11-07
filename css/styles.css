@@ -2147,3 +2147,15 @@ body.pointer-active #cursorGlow {opacity:.42!important}
 @media (prefers-reduced-motion:reduce) {
   .layout,.sidebar,.sidebar .nav-label {transition:none!important}
 }
+
+
+/* Search results take over the home feature card while a query is active. */
+#discoveryFeature.search-results-mode {
+  display: block;
+  min-height: 0;
+  padding: clamp(14px, 2vw, 24px);
+  align-items: initial;
+}
+#discoveryFeature.search-results-mode .track-list { width: 100%; }
+#discoveryFeature.search-results-mode .status { margin: 0 0 14px; }
+#discoveryFeature.search-results-mode .track { width: 100%; }
