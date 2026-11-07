@@ -456,47 +456,63 @@
 
     const moreWrap = document.createElement('div');
     moreWrap.className = 'track-more-wrap';
-    const moreButton = button('⋯', () => {
-      const willOpen = moreMenu.hidden;
-      document.querySelectorAll('.track-more-menu').forEach(menu => { menu.hidden = true; });
-      moreMenu.hidden = !willOpen;
-      moreButton.setAttribute('aria-expanded', String(willOpen));
-      if (willOpen) {
-        const rect = moreButton.getBoundingClientRect();
-        const menuWidth = 180;
-        const menuHeight = moreMenu.scrollHeight || 90;
-        const left = Math.max(8, rect.left - menuWidth - 8);
-        const top = rect.bottom + menuHeight + 10 <= window.innerHeight
-          ? rect.bottom + 6
-          : Math.max(8, rect.top - menuHeight - 6);
-        moreMenu.style.left = left + 'px';
-        moreMenu.style.top = top + 'px';
-      }
-    }, 'btn small track-more-btn');
+    const moreButton = button('⋯', () => {}, 'btn small track-more-btn');
     moreButton.setAttribute('aria-label', 'More song actions');
     moreButton.setAttribute('aria-expanded', 'false');
     const moreMenu = document.createElement('div');
     moreMenu.className = 'track-more-menu';
-    moreMenu.hidden = true;
+    moreMenu.setAttribute('role', 'menu');
+
+    const closeMenu = () => {
+      moreMenu.remove();
+      moreButton.setAttribute('aria-expanded', 'false');
+      if (window.__resonaActiveTrackMenu === moreMenu) window.__resonaActiveTrackMenu = null;
+    };
     const addQueueButton = button('Add to queue', () => {
       addToQueue(track);
-      moreMenu.hidden = true;
-      moreButton.setAttribute('aria-expanded', 'false');
+      closeMenu();
     }, 'track-more-item');
+    addQueueButton.setAttribute('role', 'menuitem');
     const playlistButton = button('Add to playlist', () => {
-      moreMenu.hidden = true;
-      moreButton.setAttribute('aria-expanded', 'false');
+      closeMenu();
       openPicker(track);
     }, 'track-more-item');
+    playlistButton.setAttribute('role', 'menuitem');
     moreMenu.append(addQueueButton, playlistButton);
     if (window.ResonaRooms?.isActive()) {
-      moreMenu.append(button('Suggest to room', () => {
-        moreMenu.hidden = true;
-        moreButton.setAttribute('aria-expanded', 'false');
+      const suggestButton = button('Suggest to room', () => {
+        closeMenu();
         window.ResonaRooms.suggestTrack(track);
-      }, 'track-more-item'));
+      }, 'track-more-item');
+      suggestButton.setAttribute('role', 'menuitem');
+      moreMenu.append(suggestButton);
     }
-    moreWrap.append(moreButton, moreMenu);
+
+    moreButton.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (window.__resonaActiveTrackMenu === moreMenu) {
+        closeMenu();
+        return;
+      }
+      document.querySelectorAll('.track-more-menu').forEach(menu => menu.remove());
+      document.querySelectorAll('.track-more-btn[aria-expanded="true"]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+
+      // Render the menu at document level so song rows and scroll containers cannot clip it.
+      document.body.appendChild(moreMenu);
+      window.__resonaActiveTrackMenu = moreMenu;
+      moreButton.setAttribute('aria-expanded', 'true');
+      const rect = moreButton.getBoundingClientRect();
+      const menuWidth = moreMenu.offsetWidth || 180;
+      const menuHeight = moreMenu.offsetHeight || 96;
+      const left = Math.max(8, rect.left - menuWidth - 10);
+      const top = Math.max(8, Math.min(window.innerHeight - menuHeight - 8, rect.top - 2));
+      moreMenu.style.left = left + 'px';
+      moreMenu.style.top = top + 'px';
+      moreMenu.style.visibility = 'visible';
+    });
+    moreMenu.addEventListener('click', event => event.stopPropagation());
+    moreWrap.append(moreButton);
     actions.append(moreWrap);
     if (opts.removable) {
       actions.append(button('Remove', () => opts.removable(track), 'btn small danger'));
