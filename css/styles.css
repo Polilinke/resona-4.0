@@ -2811,3 +2811,175 @@ html[data-device-layout="mobile"] .track-meta { display: none; }
   .hover-preview-card { right:10px;bottom:calc(92px + env(safe-area-inset-bottom));width:214px;padding:7px; }
   .hover-preview-player,.hover-preview-player iframe { width:200px!important;height:200px!important; }
 }
+
+
+/* MOBILE SIMPLIFY — quieter hierarchy, less chrome, same features. */
+@media (max-width: 850px) {
+  html[data-device-layout="mobile"] .topbar {
+    gap: 8px 10px;
+    padding: max(10px,env(safe-area-inset-top)) 13px 10px;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 5px 18px rgba(0,0,0,.12);
+  }
+  html[data-device-layout="mobile"] .reactor { width: 30px; height: 30px; flex-basis: 30px; }
+  html[data-device-layout="mobile"] .brand-text { font-size: 15px; letter-spacing: 2px; }
+  html[data-device-layout="mobile"] #searchInput {
+    min-height: 44px;
+    border-radius: 13px;
+    box-shadow: none;
+  }
+  html[data-device-layout="mobile"] .controls-top { gap: 4px; }
+  html[data-device-layout="mobile"] .controls-top #accountBtn,
+  html[data-device-layout="mobile"] .controls-top #settingsBtn {
+    min-width: 38px;
+    min-height: 38px;
+    padding: 6px 8px;
+    border-radius: 12px;
+  }
+  html[data-device-layout="mobile"] .content {
+    padding: 13px 12px calc(158px + env(safe-area-inset-bottom));
+  }
+
+  /* One clear home heading instead of several competing feature panels. */
+  html[data-device-layout="mobile"] .discovery-shell {
+    padding: 13px 2px 8px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  html[data-device-layout="mobile"] .discovery-kicker,
+  html[data-device-layout="mobile"] .discovery-heading p,
+  html[data-device-layout="mobile"] .remix-button,
+  html[data-device-layout="mobile"] .discovery-feature {
+    display: none !important;
+  }
+  html[data-device-layout="mobile"] .discovery-heading {
+    display: block;
+    margin: 0 0 8px;
+  }
+  html[data-device-layout="mobile"] .discovery-heading h1 {
+    margin: 0;
+    font-size: clamp(23px,6vw,28px);
+    line-height: 1.2;
+    letter-spacing: -.035em;
+  }
+  html[data-device-layout="mobile"] .search-provider-row {
+    display: flex;
+    justify-content: flex-start;
+    margin: 2px 0 7px;
+  }
+  html[data-device-layout="mobile"] .provider-picker {
+    width: auto;
+    min-height: 34px;
+    padding: 5px 9px;
+    gap: 7px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.035);
+    box-shadow: none;
+  }
+  html[data-device-layout="mobile"] .provider-picker span {
+    font-size: 9px;
+    letter-spacing: .08em;
+  }
+  html[data-device-layout="mobile"] .provider-picker select {
+    max-width: 190px;
+    min-height: 28px;
+    font-size: 11px;
+  }
+  html[data-device-layout="mobile"] .search-filter-bar {
+    align-items: center;
+    gap: 5px;
+    margin: 0 0 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  html[data-device-layout="mobile"] .search-filter-bar .hint { display: none; }
+  html[data-device-layout="mobile"] .official-filter { font-size: 11px; }
+
+  /* Keep every destination, but let the icons do the work on a phone. */
+  html[data-device-layout="mobile"] .sidebar {
+    left: 10px;
+    right: 10px;
+    bottom: max(8px,env(safe-area-inset-bottom));
+    height: 58px;
+    min-height: 58px;
+    max-height: 58px;
+    padding: 5px 7px;
+    gap: 2px;
+    justify-content: space-around;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    backdrop-filter: blur(18px) saturate(135%);
+    -webkit-backdrop-filter: blur(18px) saturate(135%);
+  }
+  html[data-device-layout="mobile"] .sidebar .nav-btn {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 46px;
+    height: 46px;
+    padding: 4px 2px;
+    border-radius: 12px;
+  }
+  html[data-device-layout="mobile"] .sidebar .nav-btn .nav-icon { font-size: 20px; }
+  html[data-device-layout="mobile"] .sidebar .nav-btn .nav-label { display: none; }
+  html[data-device-layout="mobile"] .sidebar .nav-btn .count { top: 0; right: 2px; }
+  html[data-device-layout="mobile"] .player {
+    left: 10px;
+    right: 10px;
+    bottom: calc(73px + env(safe-area-inset-bottom));
+    height: 58px;
+    min-height: 58px;
+    padding: 5px 8px;
+    border-radius: 15px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.2);
+    backdrop-filter: blur(18px) saturate(135%);
+    -webkit-backdrop-filter: blur(18px) saturate(135%);
+  }
+  html[data-device-layout="mobile"] .np-thumb { width: 42px; height: 42px; flex-basis: 42px; }
+  html[data-device-layout="mobile"] .np-title { font-size: 12px; }
+  html[data-device-layout="mobile"] .np-artist { font-size: 10px; }
+  html[data-device-layout="mobile"] .transport .btn.icon { width: 35px; height: 35px; }
+
+  /* Song rows become quieter and more compact without removing play or more. */
+  html[data-device-layout="mobile"] .track {
+    grid-template-columns: 52px minmax(0,1fr) auto;
+    gap: 9px;
+    padding: 9px 7px;
+    border-radius: 13px;
+    background: rgba(255,255,255,.025);
+    box-shadow: none;
+  }
+  html[data-device-layout="mobile"] .track img {
+    width: 52px;
+    height: 52px;
+    border-radius: 9px;
+  }
+  html[data-device-layout="mobile"] .track-info {
+    min-width: 0;
+    grid-template-columns: minmax(0,1fr);
+    gap: 3px;
+  }
+  html[data-device-layout="mobile"] .track-title { font-size: 13px; }
+  html[data-device-layout="mobile"] .track-artist { font-size: 11px; }
+  html[data-device-layout="mobile"] .track-actions {
+    grid-column: auto;
+    gap: 3px;
+    align-self: center;
+  }
+  html[data-device-layout="mobile"] .track-play-btn,
+  html[data-device-layout="mobile"] .track-more-btn {
+    min-width: 32px;
+    min-height: 34px;
+    padding: 5px 7px;
+  }
+  html[data-device-layout="mobile"] .track:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  html[data-device-layout="mobile"] .track-waveform { display: none; }
+}
