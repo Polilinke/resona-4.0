@@ -507,10 +507,14 @@
       window.__resonaActiveTrackMenuButton = moreButton;
       moreButton.setAttribute('aria-expanded', 'true');
       const rect = moreButton.getBoundingClientRect();
-      const menuWidth = moreMenu.offsetWidth || 180;
+      const gap = 7;
       const menuHeight = moreMenu.offsetHeight || 96;
-      const left = Math.max(8, rect.left - menuWidth - 10);
+      const availableLeft = Math.max(120, rect.left - gap - 8);
+      const menuWidth = Math.min(180, availableLeft);
+      const left = rect.left - gap - menuWidth;
       const top = Math.max(8, Math.min(window.innerHeight - menuHeight - 8, rect.top - 2));
+      moreMenu.style.width = menuWidth + 'px';
+      moreMenu.style.minWidth = menuWidth + 'px';
       moreMenu.style.left = left + 'px';
       moreMenu.style.top = top + 'px';
       moreMenu.style.visibility = 'visible';
@@ -629,7 +633,7 @@
     const c = $('playlistsContainer');
     c.replaceChildren();
     const pls = Store.getPlaylists();
-    if (!pls.length) return c.append(emptyNote('No playlists yet. Create one above.'));
+    if (!pls.length) return c.append(emptyNote('No playlists yet. Create your first playlist above.'));
 
     pls.forEach(pl => {
       const card = document.createElement('div');
@@ -637,26 +641,88 @@
 
       const head = document.createElement('div');
       head.className = 'playlist-head';
+      const cover = document.createElement('img');
+      cover.className = 'playlist-cover';
+      cover.alt = '';
+      cover.src = pl.cover || pl.tracks?.[0]?.thumbnail || '';
+      if (!cover.src) cover.classList.add('is-empty');
+      const heading = document.createElement('div');
+      heading.className = 'playlist-heading';
       const h = document.createElement('h3');
-      h.textContent = `${pl.name} (${pl.tracks.length})`;
-      head.append(h);
+      h.textContent = pl.name;
+      const count = document.createElement('span');
+      count.className = 'playlist-track-count';
+      count.textContent = `${pl.tracks.length} ${pl.tracks.length === 1 ? 'song' : 'songs'}`;
+      heading.append(h, count);
 
       const acts = document.createElement('div');
-      acts.className = 'row';
+      acts.className = 'playlist-card-actions';
       acts.append(
         button('▶ Play all', () => pl.tracks.length && playFromList(pl.tracks, pl.tracks[0]), 'btn small primary'),
-        button('Queue all', () => { pl.tracks.forEach(t => addToQueue(t, true)); renderQueue(); }, 'btn small'),
-        button('Rename', () => {
+        button('Queue all', () => { pl.tracks.forEach(t => addToQueue(t, true)); renderQueue(); }, 'btn small')
+      );
+
+      const menuWrap = document.createElement('div');
+      menuWrap.className = 'playlist-menu-wrap';
+      const menuButton = button('⋯', () => {
+        const opening = menu.hidden;
+        document.querySelectorAll('.playlist-actions-menu').forEach(m => { m.hidden = true; });
+        menu.hidden = !opening;
+        menuButton.setAttribute('aria-expanded', String(opening));
+      }, 'btn small playlist-menu-button');
+      menuButton.setAttribute('aria-label', 'Playlist options');
+      menuButton.setAttribute('aria-expanded', 'false');
+      const menu = document.createElement('div');
+      menu.className = 'playlist-actions-menu';
+      menu.hidden = true;
+      menu.append(
+        button('Rename playlist', () => {
           const name = prompt('New name for playlist:', pl.name);
           if (name && name.trim()) { Store.renamePlaylist(pl.id, name); renderPlaylists(); }
-        }, 'btn small ghost'),
-        button('Delete', () => {
+        }, 'playlist-menu-item'),
+        button('Change cover', () => coverInput.click(), 'playlist-menu-item'),
+        button('Delete playlist', () => {
           if (confirm(`Delete playlist "${pl.name}"? Saved tracks in your library are not affected.`)) {
-            Store.deletePlaylist(pl.id); renderPlaylists();
+            Store.deletePlaylist(pl.id);
+            renderPlaylists();
           }
-        }, 'btn small danger')
+        }, 'playlist-menu-item danger')
       );
-      head.append(acts);
+      menuWrap.append(menuButton, menu);
+      const coverInput = document.createElement('input');
+      coverInput.type = 'file';
+      coverInput.accept = 'image/*';
+      coverInput.hidden = true;
+      coverInput.addEventListener('change', () => {
+        const file = coverInput.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          flashStatus('Choose an image file for the playlist cover.');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const image = new Image();
+          image.onload = () => {
+            const canvas = document.createElement('canvas');
+            const size = 500;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const scale = Math.max(size / image.width, size / image.height);
+            const sw = size / scale, sh = size / scale;
+            ctx.drawImage(image, (image.width - sw) / 2, (image.height - sh) / 2, sw, sh, 0, 0, size, size);
+            Store.setPlaylistCover(pl.id, canvas.toDataURL('image/jpeg', 0.82));
+            renderPlaylists();
+          };
+          image.onerror = () => flashStatus('That image could not be opened. Try another one.');
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      menuWrap.append(coverInput);
+      acts.append(menuWrap);
+      head.append(cover, heading, acts);
       card.append(head);
 
       const list = document.createElement('div');
@@ -670,7 +736,6 @@
       c.append(card);
     });
   }
-
   $('createPlaylistBtn').addEventListener('click', () => {
     const input = $('newPlaylistName');
     if (!input.value.trim()) return;
@@ -685,15 +750,54 @@
     const list = $('pickerList');
     list.replaceChildren();
     const pls = Store.getPlaylists();
-    if (!pls.length) list.append(emptyNote('Create a playlist first in the Playlists tab.'));
-    pls.forEach(pl => {
-      list.append(button(`${pl.name} (${pl.tracks.length})`, () => {
-        Store.addToPlaylist(pl.id, track);
-        $('pickerDialog').classList.add('hidden');
-        refreshCurrent();
-      }, 'btn ghost'));
+
+    const createPanel = document.createElement('div');
+    createPanel.className = 'picker-create-panel';
+    const createInput = document.createElement('input');
+    createInput.type = 'text';
+    createInput.maxLength = 48;
+    createInput.placeholder = 'New playlist name';
+    createInput.setAttribute('aria-label', 'New playlist name');
+    const createButton = button('Create playlist', () => {
+      const name = createInput.value.trim();
+      if (!name) {
+        createInput.focus();
+        return;
+      }
+      const created = Store.createPlaylist(name);
+      if (track) Store.addToPlaylist(created.id, track);
+      $('pickerDialog').classList.add('hidden');
+      renderPlaylists();
+      flashStatus(`Created "${created.name}" and added the song.`);
+    }, 'btn primary');
+    createInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') createButton.click();
     });
+    createPanel.append(createInput, createButton);
+
+    if (!pls.length) {
+      const note = document.createElement('p');
+      note.className = 'picker-empty-note';
+      note.textContent = 'You do not have any playlists yet. Create one here and this song will be added automatically.';
+      list.append(note, createPanel);
+    } else {
+      const note = document.createElement('p');
+      note.className = 'picker-empty-note';
+      note.textContent = 'Choose a playlist, or make a new one.';
+      list.append(note);
+      pls.forEach(pl => {
+        list.append(button(`${pl.name} · ${pl.tracks.length} songs`, () => {
+          Store.addToPlaylist(pl.id, track);
+          $('pickerDialog').classList.add('hidden');
+          renderPlaylists();
+          flashStatus(`Added "${track.title}" to "${pl.name}".`);
+        }, 'btn ghost picker-playlist-option'));
+      });
+      list.append(createPanel);
+    }
     $('pickerDialog').classList.remove('hidden');
+    $('pickerDialog').setAttribute('aria-hidden', 'false');
+    if (!pls.length) requestAnimationFrame(() => createInput.focus());
   }
   $('pickerClose').addEventListener('click', () => $('pickerDialog').classList.add('hidden'));
 
