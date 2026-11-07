@@ -509,7 +509,7 @@
       const rect = moreButton.getBoundingClientRect();
       const gap = 7;
       const menuHeight = moreMenu.offsetHeight || 96;
-      const availableLeft = Math.max(120, rect.left - gap - 8);
+      const availableLeft = Math.max(1, rect.left - gap - 8);
       const menuWidth = Math.min(180, availableLeft);
       const left = rect.left - gap - menuWidth;
       const top = Math.max(8, Math.min(window.innerHeight - menuHeight - 8, rect.top - 2));
@@ -633,6 +633,19 @@
     const c = $('playlistsContainer');
     c.replaceChildren();
     const pls = Store.getPlaylists();
+    if (!window.__resonaPlaylistMenusBound) {
+      window.__resonaPlaylistMenusBound = true;
+      document.addEventListener('pointerdown', event => {
+        if (event.target.closest('.playlist-menu-wrap')) return;
+        document.querySelectorAll('.playlist-actions-menu').forEach(menu => { menu.hidden = true; });
+        document.querySelectorAll('.playlist-menu-button[aria-expanded="true"]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        document.querySelectorAll('.playlist-actions-menu').forEach(menu => { menu.hidden = true; });
+        document.querySelectorAll('.playlist-menu-button[aria-expanded="true"]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+      });
+    }
     if (!pls.length) return c.append(emptyNote('No playlists yet. Create your first playlist above.'));
 
     pls.forEach(pl => {
@@ -644,8 +657,9 @@
       const cover = document.createElement('img');
       cover.className = 'playlist-cover';
       cover.alt = '';
-      cover.src = pl.cover || pl.tracks?.[0]?.thumbnail || '';
-      if (!cover.src) cover.classList.add('is-empty');
+      const coverUrl = pl.cover || pl.tracks?.[0]?.thumbnail || '';
+      if (coverUrl) cover.src = coverUrl;
+      else cover.classList.add('is-empty');
       const heading = document.createElement('div');
       heading.className = 'playlist-heading';
       const h = document.createElement('h3');
@@ -688,6 +702,7 @@
           }
         }, 'playlist-menu-item danger')
       );
+      menu.addEventListener('click', event => event.stopPropagation());
       menuWrap.append(menuButton, menu);
       const coverInput = document.createElement('input');
       coverInput.type = 'file';
