@@ -408,11 +408,47 @@
     updateQuotaBadge();
   }
 
+  // ---------- Hover-to-play (only while the player is idle) ----------
+  let hoverPlayTimer = null;
+  let hoverPlayRow = null;
+  function clearHoverPlay() {
+    if (hoverPlayTimer) clearTimeout(hoverPlayTimer);
+    hoverPlayTimer = null;
+    if (hoverPlayRow) hoverPlayRow.classList.remove('hover-play-pending');
+    hoverPlayRow = null;
+  }
+  function isPlaybackActive() {
+    if (window.ResonaAudio?.isPlaying?.()) return true;
+    if (state.playerReady && state.player) {
+      try { return state.player.getPlayerState() === 1; } catch (_) {}
+    }
+    return false;
+  }
+  document.addEventListener('pointerdown', clearHoverPlay, true);
+
   // ---------- Track rendering ----------
   function trackRow(track, opts = {}) {
     const row = document.createElement('div');
     row.className = 'track';
     if (state.currentTrack && state.currentTrack.id === track.id) row.classList.add('playing');
+
+    // Hovering a song for 1.5 seconds starts normal playback, but never
+    // interrupts a track that is already playing. Touch devices are unaffected.
+    if (track.source !== 'local-audio') {
+      row.addEventListener('mouseenter', event => {
+        if (event.pointerType === 'touch' || isPlaybackActive()) return;
+        clearHoverPlay();
+        hoverPlayRow = row;
+        row.classList.add('hover-play-pending');
+        hoverPlayTimer = setTimeout(() => {
+          const targetRow = hoverPlayRow;
+          clearHoverPlay();
+          if (!targetRow || !targetRow.isConnected || isPlaybackActive()) return;
+          playFromList(opts.list || [track], track);
+        }, 1500);
+      });
+      row.addEventListener('mouseleave', clearHoverPlay);
+    }
 
     const img = document.createElement('img');
     img.src = track.thumbnail || '';
