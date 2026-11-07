@@ -444,7 +444,7 @@
     }
 
     actions.append(
-      button('▶ Play', () => {
+      button('▶', () => {
         if (track.source === 'local-audio') {
           $('audioToolsDialog').classList.remove('hidden');
           $('audioToolsDialog').setAttribute('aria-hidden', 'false');
@@ -453,18 +453,42 @@
         } else {
           playFromList(opts.list || [track], track);
         }
-      }, 'btn small primary'),
-      button('+ Queue', () => addToQueue(track), 'btn small'),
-      button(Store.isSaved(track.id) ? '★ Saved' : '☆ Save', () => {
-        if (Store.isSaved(track.id)) Store.removeTrack(track.id);
-        else Store.saveTrack(track);
-        refreshCurrent();
-      }, 'btn small'),
-      button('Add to playlist', () => openPicker(track), 'btn small ghost')
+      }, 'btn small primary track-play-btn')
     );
+
+    const moreWrap = document.createElement('div');
+    moreWrap.className = 'track-more-wrap';
+    const moreButton = button('⋯', () => {
+      const willOpen = moreMenu.hidden;
+      document.querySelectorAll('.track-more-menu').forEach(menu => { menu.hidden = true; });
+      moreMenu.hidden = !willOpen;
+      moreButton.setAttribute('aria-expanded', String(willOpen));
+    }, 'btn small track-more-btn');
+    moreButton.setAttribute('aria-label', 'More song actions');
+    moreButton.setAttribute('aria-expanded', 'false');
+    const moreMenu = document.createElement('div');
+    moreMenu.className = 'track-more-menu';
+    moreMenu.hidden = true;
+    const addQueueButton = button('Add to queue', () => {
+      addToQueue(track);
+      moreMenu.hidden = true;
+      moreButton.setAttribute('aria-expanded', 'false');
+    }, 'track-more-item');
+    const playlistButton = button('Add to playlist', () => {
+      moreMenu.hidden = true;
+      moreButton.setAttribute('aria-expanded', 'false');
+      openPicker(track);
+    }, 'track-more-item');
+    moreMenu.append(addQueueButton, playlistButton);
     if (window.ResonaRooms?.isActive()) {
-      actions.append(button('Suggest to room', () => window.ResonaRooms.suggestTrack(track), 'btn small ghost'));
+      moreMenu.append(button('Suggest to room', () => {
+        moreMenu.hidden = true;
+        moreButton.setAttribute('aria-expanded', 'false');
+        window.ResonaRooms.suggestTrack(track);
+      }, 'track-more-item'));
     }
+    moreWrap.append(moreButton, moreMenu);
+    actions.append(moreWrap);
     if (opts.removable) {
       actions.append(button('Remove', () => opts.removable(track), 'btn small danger'));
     }
