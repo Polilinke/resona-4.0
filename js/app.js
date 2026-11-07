@@ -127,24 +127,20 @@
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
     btn.addEventListener('click', () => showView(btn.dataset.view));
   });
-  document.querySelectorAll('.library-subnav-btn[data-library-view]').forEach(btn => {
-    btn.addEventListener('click', () => showView(btn.dataset.libraryView));
-  });
 
   function showView(name) {
-    const librarySection = ['library', 'playlists', 'queue', 'history'].includes(name);
+    const librarySection = ['playlists', 'queue', 'history'].includes(name);
     const mobileLayout = document.documentElement.dataset.deviceLayout === 'mobile';
     document.documentElement.dataset.libraryOpen = mobileLayout && librarySection ? 'true' : 'false';
 
     document.querySelectorAll('.nav-btn[data-view]').forEach(b => {
-      const activeName = mobileLayout && librarySection ? 'library' : name;
+      const activeName = mobileLayout && librarySection ? 'playlists' : name;
       b.classList.toggle('active', b.dataset.view === activeName);
     });
     document.querySelectorAll('.library-subnav-btn[data-library-view]').forEach(b => {
       b.classList.toggle('active', b.dataset.libraryView === name);
     });
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
-    if (name === 'library') renderLibrary();
     if (name === 'playlists') renderPlaylists();
     if (name === 'history') renderHistory();
     if (name === 'queue') renderQueue();
@@ -557,17 +553,6 @@
       ? getOfficialResults()
       : state.rawResults.slice();
     state.results.forEach(track => box.append(trackRow(track, { list: state.results })));
-  }
-
-  function renderLibrary() {
-    const box = $('libraryList');
-    box.replaceChildren();
-    const lib = Store.getLibrary();
-    if (!lib.length) return box.append(emptyNote('No saved tracks yet. Click ☆ Save on any track.'));
-    lib.forEach(track => box.append(trackRow(track, {
-      list: lib,
-      removable: () => { Store.removeTrack(track.id); renderLibrary(); }
-    })));
   }
 
   function renderHistory() {
