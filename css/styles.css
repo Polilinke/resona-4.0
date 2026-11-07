@@ -2773,3 +2773,41 @@ html[data-device-layout="mobile"] .track-meta { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .track-waveform i { animation: none !important; transform: none; }
 }
+
+
+/* Independent YouTube hover preview: deliberately separate from the Now Playing bar. */
+.hover-preview-card {
+  position: fixed;
+  z-index: 2147482000;
+  right: 22px;
+  bottom: 112px;
+  width: 224px;
+  padding: 10px;
+  border: 1px solid rgba(var(--glass-edge-rgb,166,220,229),.48);
+  border-radius: 16px;
+  background: color-mix(in srgb,var(--panel,#071522) 91%,var(--glass-tint,#17313b));
+  box-shadow: 0 16px 46px rgba(0,0,0,.48),0 0 24px rgba(var(--accent-rgb),.12);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px) scale(.97);
+  transition: opacity 180ms ease,transform 220ms ease,visibility 180ms ease;
+}
+.hover-preview-card.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.hover-preview-heading { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px; }
+.hover-preview-label { color:var(--accent);font-size:9px;font-weight:800;letter-spacing:.16em; }
+.hover-preview-close { width:25px;height:25px;border:0;border-radius:8px;background:rgba(255,255,255,.07);color:var(--text);font-size:18px;line-height:1;cursor:pointer; }
+.hover-preview-title { overflow:hidden;margin:0 0 8px;color:var(--text);font-size:11px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap; }
+.hover-preview-player { width:200px;height:200px;overflow:hidden;border-radius:10px;background:#000; }
+.hover-preview-player iframe { display:block;width:200px!important;height:200px!important;max-width:none!important; }
+@media(max-width:600px) {
+  .hover-preview-card { right:10px;bottom:calc(92px + env(safe-area-inset-bottom));width:214px;padding:7px; }
+  .hover-preview-player,.hover-preview-player iframe { width:200px!important;height:200px!important; }
+}
