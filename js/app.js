@@ -421,15 +421,20 @@
     img.loading = 'lazy';
 
     const info = document.createElement('div');
-    info.style.minWidth = '0';
-    const t = document.createElement('div');
+    info.className = 'track-info';
+    const copy = document.createElement('div');
+    copy.className = 'track-copy';
+    const titleViewport = document.createElement('div');
+    titleViewport.className = 'track-title-viewport';
+    const t = document.createElement('span');
     t.className = 'track-title';
     t.textContent = track.title;
     t.title = track.title;
+    titleViewport.append(t);
     const a = document.createElement('div');
     a.className = 'track-artist';
     a.textContent = track.artist + (track.source === 'audius' ? ' · Audius' : '');
-    info.append(t, a);
+    copy.append(titleViewport, a);
     const actions = document.createElement('div');
     actions.className = 'track-actions';
 
@@ -495,6 +500,12 @@
 
     info.append(copy, actions);
     row.append(img, info);
+    requestAnimationFrame(() => {
+      if (t.scrollWidth > titleViewport.clientWidth + 3) {
+        titleViewport.style.setProperty('--title-overflow', (t.scrollWidth - titleViewport.clientWidth) + 'px');
+        titleViewport.classList.add('is-overflowing');
+      }
+    });
     return row;
   }
 
