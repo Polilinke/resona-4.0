@@ -141,6 +141,12 @@ const Store = (() => {
       if (pl) pl.name = name.trim();
       write(KEYS.playlists, pls);
     },
+    setPlaylistCover(id, cover) {
+      const pls = this.getPlaylists();
+      const pl = pls.find(p => p.id === id);
+      if (pl) pl.cover = cover || '';
+      write(KEYS.playlists, pls);
+    },
     deletePlaylist(id) {
       write(KEYS.playlists, this.getPlaylists().filter(p => p.id !== id));
     },
