@@ -434,6 +434,45 @@
     a.className = 'track-artist';
     a.textContent = track.artist + (track.source === 'audius' ? ' · Audius' : '');
     copy.append(titleViewport, a);
+
+    // Use metadata only when the provider actually supplies it.
+    const meta = document.createElement('div');
+    meta.className = 'track-meta';
+    const metaDetails = document.createElement('div');
+    metaDetails.className = 'track-meta-details';
+    const albumName = track.album || track.albumTitle || track.releaseTitle || '';
+    const releaseYear = track.releaseYear || track.year || '';
+    if (albumName || releaseYear) {
+      const album = document.createElement('span');
+      album.className = 'track-album';
+      album.textContent = [albumName, releaseYear].filter(Boolean).join(' · ');
+      album.title = album.textContent;
+      metaDetails.append(album);
+    }
+    const rawDuration = track.duration ?? track.durationSeconds ?? track.duration_seconds;
+    let durationText = '';
+    if (typeof rawDuration === 'string' && /^\d{1,2}:\d{2}(?::\d{2})?$/.test(rawDuration.trim())) {
+      durationText = rawDuration.trim();
+    } else if (Number.isFinite(Number(rawDuration)) && rawDuration !== null && rawDuration !== '') {
+      const seconds = Math.max(0, Math.floor(Number(rawDuration)));
+      durationText = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+    }
+    if (durationText) {
+      const duration = document.createElement('span');
+      duration.className = 'track-duration';
+      duration.textContent = durationText;
+      metaDetails.append(duration);
+    }
+    const waveform = document.createElement('div');
+    waveform.className = 'track-waveform';
+    waveform.setAttribute('aria-hidden', 'true');
+    [5,9,13,7,16,10,6,14,8,18,11,6,15,9,5,12,17,8,13,6,10,15,7,12].forEach(height => {
+      const bar = document.createElement('i');
+      bar.style.setProperty('--wave-height', height + 'px');
+      waveform.append(bar);
+    });
+    meta.append(metaDetails, waveform);
+
     const actions = document.createElement('div');
     actions.className = 'track-actions';
 
@@ -559,7 +598,7 @@
       actions.append(button('Remove', () => opts.removable(track), 'btn small danger'));
     }
 
-    info.append(copy, actions);
+    info.append(copy, meta, actions);
     row.append(img, info);
     requestAnimationFrame(() => {
       if (t.scrollWidth > titleViewport.clientWidth + 3) {
