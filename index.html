@@ -27,10 +27,10 @@
   </svg>
 
   <header class="topbar">
-    <div class="brand">
+    <button class="brand brand-home" id="brandHomeBtn" type="button" title="Go to Home" aria-label="Resona home">
       <span class="reactor"></span>
       <span class="brand-text">RESONA</span>
-    </div>
+    </button>
 
     <div class="search-wrap">
       <input id="searchInput" type="search" placeholder="Search songs, artists, albums… then press Enter" autocomplete="off" />
@@ -55,7 +55,7 @@
 
   <main class="layout">
     <nav class="sidebar" aria-label="Main navigation">
-      <button class="nav-btn active" data-view="search" title="Search" aria-label="Search"><span class="nav-icon" aria-hidden="true">⌕</span><span class="nav-label">Search</span></button>
+      <button class="nav-btn active" data-view="search" title="Home" aria-label="Home"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span></button>
       <button class="nav-btn" data-view="playlists" title="Playlists" aria-label="Playlists"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Playlists</span></button>
       <button class="nav-btn" data-view="history" title="History" aria-label="History"><span class="nav-icon" aria-hidden="true">◷</span><span class="nav-label">History</span></button>
       <button class="nav-btn" data-view="insights" title="Insights" aria-label="Insights"><span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Insights</span></button>
