@@ -127,8 +127,14 @@
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
     btn.addEventListener('click', () => showView(btn.dataset.view));
   });
+  $('brandHomeBtn')?.addEventListener('click', () => {
+    showView('search');
+    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 
   function showView(name) {
+    if (!document.getElementById('view-' + name)) name = 'search';
     const librarySection = ['playlists', 'queue', 'history'].includes(name);
     const mobileLayout = document.documentElement.dataset.deviceLayout === 'mobile';
     document.documentElement.dataset.libraryOpen = mobileLayout && librarySection ? 'true' : 'false';
