@@ -3,6 +3,8 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   let sleepTimeout = null;
+  let sleepInterval = null;
+  let sleepDeadline = 0;
   let sleepAtTrackEnd = false;
 
   function history() { return Store.getHistory(); }
@@ -235,20 +237,42 @@
     root.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
     Store.saveSettings({ customAccent: hex });
   }
-  function startSleepTimer() {
-    const raw = prompt('Stop playback after how many minutes (5–240), or type "end" to stop after the current song?');
-    if (raw === null) return;
+  function clearSleepTimer() {
     clearTimeout(sleepTimeout);
+    clearInterval(sleepInterval);
+    sleepTimeout = null;
+    sleepInterval = null;
+    sleepDeadline = 0;
     sleepAtTrackEnd = false;
-    if (raw.trim().toLowerCase() === 'end') {
+    if ($('sleepTimerBtn')) $('sleepTimerBtn').textContent = 'Sleep';
+  }
+  function startSleepTimer() {
+    const raw = prompt('Sleep timer: enter 5–240 minutes, "end" for the end of this song, or "off" to cancel.');
+    if (raw === null) return;
+    const value = raw.trim().toLowerCase();
+    if (value === 'off' || value === 'cancel') {
+      clearSleepTimer();
+      return;
+    }
+    clearSleepTimer();
+    if (value === 'end') {
       sleepAtTrackEnd = true;
       $('sleepTimerBtn').textContent = 'End of song';
       return;
     }
-    const mins = Number(raw);
-    if (!Number.isFinite(mins) || mins < 5 || mins > 240) { alert('Enter a number between 5 and 240, or type end.'); return; }
-    sleepTimeout = setTimeout(() => window.dispatchEvent(new Event('deepflow:sleep-stop')), mins*60000);
-    $('sleepTimerBtn').textContent = mins + 'm left';
+    const mins = Number(value);
+    if (!Number.isFinite(mins) || mins < 5 || mins > 240) {
+      alert('Enter a number between 5 and 240, "end", or "off".');
+      return;
+    }
+    sleepDeadline = Date.now() + mins * 60000;
+    const updateLabel = () => {
+      const seconds = Math.max(0, Math.ceil((sleepDeadline - Date.now()) / 1000));
+      $('sleepTimerBtn').textContent = 'Sleep · ' + Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+    };
+    updateLabel();
+    sleepInterval = setInterval(updateLabel, 1000);
+    sleepTimeout = setTimeout(() => window.dispatchEvent(new Event('deepflow:sleep-stop')), mins * 60000);
   }
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => btn.addEventListener('click', () => { if (btn.dataset.view === 'insights') renderInsights(); }));
   $('smartQueueBtn').addEventListener('click', buildSmartQueue);
@@ -302,9 +326,9 @@
 
   $('customAccent').addEventListener('input', e => setAccent(e.target.value));
   $('glassIntensity').addEventListener('input', e => document.documentElement.style.setProperty('--glass-blur', `${Number(e.target.value)}px`));
-  window.addEventListener('deepflow:sleep-ended', () => { clearTimeout(sleepTimeout); sleepAtTrackEnd = false; $('sleepTimerBtn').textContent = 'Sleep'; });
+  window.addEventListener('deepflow:sleep-ended', clearSleepTimer);
   window.addEventListener('resona:track-ended', event => { if (sleepAtTrackEnd) { sleepAtTrackEnd = false; event.preventDefault(); window.dispatchEvent(new Event('deepflow:sleep-stop')); } });
-  window.addEventListener('deepflow:sleep-stop', () => { $('sleepTimerBtn').textContent = 'Sleep'; });
+  window.addEventListener('deepflow:sleep-stop', clearSleepTimer);
   const saved = Store.getSettings().customAccent; if (saved) { $('customAccent').value = saved; setAccent(saved); }
   const intensity = Store.getSettings().glassIntensity || 12; $('glassIntensity').value = intensity;
 })();
