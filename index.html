@@ -111,7 +111,7 @@
       </div>
 
       <div id="view-insights" class="view">
-        <div class="row-between"><h2>Your listening insights</h2><button id="wrappedBtn" class="btn">Generate DeepFlow Wrapped</button></div>
+        <div class="row-between"><h2>Your listening insights</h2><div class="row"><select id="wrappedPeriodSelect" aria-label="Wrapped period"><option value="year">This year</option><option value="month">This month</option></select><button id="wrappedBtn" class="btn">Generate Resona Wrapped</button></div></div>
         <div id="insightsStats" class="insights-grid"></div>
         <section class="feature-card personalisation-panel">
           <div class="row-between"><div><h3 class="subheading">Listening goals</h3><p class="hint">Set a weekly play-start goal using your local listening history.</p></div><div class="goal-controls"><input id="weeklyGoalInput" type="number" min="1" max="500" step="1" aria-label="Weekly listening goal" /><button id="saveGoalBtn" class="btn small">Save goal</button></div></div>
