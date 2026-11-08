@@ -471,11 +471,19 @@
     const waveform = document.createElement('div');
     waveform.className = 'track-waveform';
     waveform.setAttribute('aria-hidden', 'true');
-    [5,9,13,7,16,10,6,14,8,18,11,6,15,9,5,12,17,8,13,6,10,15,7,12].forEach(height => {
+    // A stable per-track seed gives every song its own waveform without audio analysis or API calls.
+    const waveformSeed = String(track.id || track.title || track.artist || 'resona')
+      .split('').reduce((hash, char) => ((hash * 31) + char.charCodeAt(0)) >>> 0, 2166136261);
+    let waveState = waveformSeed || 1;
+    for (let barIndex = 0; barIndex < 24; barIndex++) {
+      waveState = (waveState * 1664525 + 1013904223) >>> 0;
+      const height = 5 + (waveState % 15);
       const bar = document.createElement('i');
       bar.style.setProperty('--wave-height', height + 'px');
+      bar.style.setProperty('--wave-speed', (760 + (waveState % 720)) + 'ms');
+      bar.style.animationDelay = '-' + (waveState % 1100) + 'ms';
       waveform.append(bar);
-    });
+    }
     meta.append(metaDetails, sonic, waveform);
 
     const actions = document.createElement('div');
@@ -900,11 +908,12 @@
     renderQueue();
   }
 
+  let draggedQueueIndex = null;
   function renderQueue() {
     const box = $('queueList');
     box.replaceChildren();
     $('queueCount').textContent = state.queue.length;
-    if (!state.queue.length) return box.append(emptyNote('Queue is empty.'));
+    if (!state.queue.length) return box.append(emptyNote('Queue is empty. Drag songs here after adding them to your queue.'));
     state.queue.forEach((track, i) => {
       const row = trackRow(track, {
         list: state.queue,
@@ -916,6 +925,35 @@
           saveQueue();
           renderQueue();
         }
+      });
+      row.classList.add('queue-draggable');
+      row.draggable = true;
+      row.setAttribute('aria-roledescription', 'Draggable queue item');
+      row.addEventListener('dragstart', event => {
+        draggedQueueIndex = i;
+        row.classList.add('queue-dragging');
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', String(i));
+      });
+      row.addEventListener('dragover', event => {
+        if (draggedQueueIndex === null || draggedQueueIndex === i) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        row.classList.add('queue-drop-target');
+      });
+      row.addEventListener('dragleave', () => row.classList.remove('queue-drop-target'));
+      row.addEventListener('drop', event => {
+        if (draggedQueueIndex === null) return;
+        event.preventDefault();
+        row.classList.remove('queue-drop-target');
+        const from = draggedQueueIndex;
+        draggedQueueIndex = null;
+        if (from !== i) moveQueue(from, i);
+      });
+      row.addEventListener('dragend', () => {
+        draggedQueueIndex = null;
+        row.classList.remove('queue-dragging');
+        box.querySelectorAll('.queue-drop-target').forEach(el => el.classList.remove('queue-drop-target'));
       });
       row.addEventListener('dblclick', () => playQueueIndex(i));
       box.append(row);
@@ -1118,15 +1156,68 @@
   }
 
   function applyVolume() {
-    const volume = Number($('volumeSlider').value);
+    const volume = Math.max(0, Math.min(100, Number($('volumeSlider').value)));
     ResonaAudio.setVolume(volume);
+    Store.saveSettings({ volume });
     if (state.playerReady) state.player.setVolume(volume);
+  }
+
+  // Restore the last chosen volume before the YouTube player becomes ready.
+  const savedVolume = Store.getSettings().volume;
+  if (savedVolume !== undefined && Number.isFinite(Number(savedVolume))) {
+    $('volumeSlider').value = Math.max(0, Math.min(100, Number(savedVolume)));
   }
 
   $('playBtn').addEventListener('click', togglePlay);
   $('nextBtn').addEventListener('click', playNext);
   $('prevBtn').addEventListener('click', playPrev);
   $('volumeSlider').addEventListener('input', applyVolume);
+
+  // Global playback shortcuts. Text fields and sliders keep their normal keyboard behaviour.
+  document.addEventListener('keydown', event => {
+    const target = event.target;
+    if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+    if (event.altKey || event.metaKey) return;
+
+    if (event.ctrlKey && event.key === 'ArrowRight') {
+      event.preventDefault();
+      playNext();
+      return;
+    }
+    if (event.ctrlKey && event.key === 'ArrowLeft') {
+      event.preventDefault();
+      playPrev();
+      return;
+    }
+    if (event.ctrlKey) return;
+
+    if (event.code === 'Space') {
+      event.preventDefault();
+      togglePlay();
+    } else if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+      if (!state.currentTrack) return;
+      event.preventDefault();
+      const delta = event.key === 'ArrowRight' ? 5 : -5;
+      if (state.audioMode) ResonaAudio.seek(ResonaAudio.getTime() + delta);
+      else if (state.playerReady) state.player.seekTo(Math.max(0, state.player.getCurrentTime() + delta), true);
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      const change = event.key === 'ArrowUp' ? 5 : -5;
+      $('volumeSlider').value = Math.max(0, Math.min(100, Number($('volumeSlider').value) + change));
+      applyVolume();
+    } else if (event.key.toLowerCase() === 'm') {
+      event.preventDefault();
+      const slider = $('volumeSlider');
+      if (Number(slider.value) > 0) {
+        Store.saveSettings({ preMuteVolume: Number(slider.value) });
+        slider.value = 0;
+      } else {
+        slider.value = Store.getSettings().preMuteVolume || 80;
+      }
+      applyVolume();
+    }
+  });
+
   $('eqBtn').addEventListener('click', () => {
     syncEqualizerControls();
     $('audioToolsDialog').classList.remove('hidden');
