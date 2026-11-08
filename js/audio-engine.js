@@ -190,6 +190,7 @@
   function getDuration() { return Number.isFinite(audio.duration) ? audio.duration : 0; }
   function onTrackEnded(callback) { onEnded = typeof callback === 'function' ? callback : () => {}; }
   audio.addEventListener('play', () => window.dispatchEvent(new Event('resona:audio-play')));
+  audio.addEventListener('timeupdate', () => window.dispatchEvent(new Event('resona:audio-timeupdate')));
   audio.addEventListener('pause', () => window.dispatchEvent(new Event('resona:audio-pause')));
   audio.addEventListener('ended', () => onEnded());
   audio.addEventListener('error', () => window.dispatchEvent(new CustomEvent('resona:audio-error', {
