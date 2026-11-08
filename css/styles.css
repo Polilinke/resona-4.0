@@ -3037,3 +3037,25 @@ html[data-device-layout="mobile"] .track-meta { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .queue-drop-target { transform: none; }
 }
+
+
+/* Stage 2 — personalisation */
+.personalisation-panel { margin:14px 0; }
+.goal-controls,.mood-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.goal-controls input { width:90px; }
+.goal-track { height:9px; overflow:hidden; border-radius:99px; background:rgba(var(--accent-rgb),.12); margin:12px 0 7px; }
+.goal-track span { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--accent),var(--warm)); transition:width .35s ease; }
+.recent-searches { display:flex; flex-wrap:wrap; gap:8px; }
+.recent-search-chip { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid var(--panel-border); border-radius:999px; padding:7px 11px; background:rgba(var(--accent-rgb),.08); color:var(--text); cursor:pointer; }
+.recent-search-chip:hover { border-color:var(--accent); background:rgba(var(--accent-rgb),.16); }
+.listening-timeline { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin:10px 0 22px; }
+.timeline-day { padding:12px; border:1px solid var(--panel-border); border-radius:12px; background:var(--panel); min-width:0; }
+.timeline-day > .row-between { margin-bottom:8px; }
+.timeline-track { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-top:1px solid rgba(var(--accent-rgb),.1); min-width:0; }
+.timeline-track span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.timeline-track small { color:var(--muted); white-space:nowrap; }
+.wrapped-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(135px,1fr)); gap:10px; margin:14px 0; }
+.wrapped-stat { min-width:0; padding:13px; border-radius:12px; background:rgba(var(--accent-rgb),.08); }
+.wrapped-stat span { display:block; color:var(--muted); font-size:10px; letter-spacing:1px; }
+.wrapped-stat strong { display:block; margin-top:7px; color:var(--accent); font-size:20px; overflow-wrap:anywhere; }
+@media (max-width:650px) { .personalisation-panel .row-between { align-items:flex-start; } .mood-controls,.goal-controls { width:100%; } .mood-controls select { flex:1; min-width:0; } }
