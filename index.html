@@ -200,6 +200,11 @@
             <label class="check-row social-sharing-toggle"><input id="activitySharingToggle" type="checkbox" /> Share my current listening activity with friends</label>
             <div id="socialActivityList" class="social-activity-list"><div class="rooms-empty">Your friends' shared activity will appear here.</div></div>
           </section>
+          <section class="rooms-panel social-collab-panel">
+            <div class="rooms-list-heading"><div><h3>Collaborative playlists</h3><p class="rooms-muted">Create a shared playlist, invite friends and build it together.</p></div></div>
+            <div class="social-search-row"><input id="collabPlaylistName" maxlength="80" placeholder="Name your shared playlist"><button id="createCollabPlaylistBtn" class="btn primary" type="button">Create</button></div>
+            <div id="collabPlaylistsList" class="social-list"><div class="rooms-empty">Your shared playlists will appear here after the Stage 3 database migration.</div></div>
+          </section>
           <section class="rooms-panel"><h3>Find friends</h3><div class="social-search-row"><input id="socialSearchInput" placeholder="Search display names" maxlength="60"><button id="socialSearchBtn" class="btn">Search</button></div><div id="socialSearchResults" class="social-list"></div></section>
           <section class="rooms-panel"><h3>Friends <span id="socialFriendCount" class="room-count">0</span></h3><div id="socialFriendsList" class="social-list"></div></section>
           <section class="rooms-panel"><h3>Friend requests</h3><div id="socialRequestsList" class="social-list"></div></section>
