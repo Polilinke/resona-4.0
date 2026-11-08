@@ -25,6 +25,9 @@
   }
   function renderInsights() {
     const list = history();
+    renderWeeklyGoal(list);
+    renderRecentSearches();
+    renderTimeline(list);
     const counts = new Map();
     list.forEach(t => { const key = t.id; const old = counts.get(key) || { track: t, count: 0, last: t.playedAt || 0 }; old.count++; old.last = Math.max(old.last, t.playedAt || 0); counts.set(key, old); });
     const ranked = [...counts.values()].sort((a,b) => b.count-a.count);
@@ -50,6 +53,123 @@
     if (!ranked.length) { box.textContent = 'Save or play a few tracks first. Recommendations are generated from your local library and history.'; return; }
     ranked.slice(0,8).forEach(x => box.append(trackItem(x.t)));
   }
+
+  function renderWeeklyGoal(list) {
+    const goal = Math.max(1, Math.min(500, Number(Store.getSettings().weeklyPlayGoal) || 30));
+    $('weeklyGoalInput').value = goal;
+    const start = new Date();
+    start.setHours(0,0,0,0);
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+    const plays = (list || history()).filter(t => (t.playedAt || 0) >= start.getTime()).length;
+    $('weeklyGoalProgress').style.width = Math.min(100, Math.round(plays / goal * 100)) + '%';
+    $('weeklyGoalLabel').textContent = plays + ' of ' + goal + ' play starts this week';
+  }
+
+  const MOOD_TERMS = {
+    focus: ['focus','study','instrumental','piano','ambient','classical','soundtrack','lofi','lo-fi'],
+    chill: ['chill','acoustic','soft','calm','relax','ambient','slow','jazz','lofi','lo-fi'],
+    energetic: ['dance','rock','metal','workout','edm','remix','upbeat','party','energy','pop'],
+    night: ['night','drive','midnight','city','synthwave','synth','dream','ambient','late'],
+    classical: ['classical','piano','orchestra','symphony','sonata','concerto','mozart','beethoven','chopin','bach'],
+    happy: ['happy','feel good','summer','sunshine','upbeat','pop','dance','celebration']
+  };
+  function buildMoodQueue() {
+    const mood = $('moodSelect').value;
+    const all = [...Store.getLibrary(), ...history()];
+    const unique = new Map();
+    all.forEach(track => { if (track && track.id && !unique.has(track.id)) unique.set(track.id, track); });
+    const terms = MOOD_TERMS[mood] || [];
+    const ranked = [...unique.values()].map(track => {
+      const haystack = ((track.title || '') + ' ' + (track.artist || '') + ' ' + (track.album || '')).toLowerCase();
+      return { track, score: terms.reduce((sum, term) => sum + (haystack.includes(term) ? 1 : 0), 0) };
+    }).sort((a,b) => b.score - a.score);
+    const matches = ranked.filter(x => x.score > 0).map(x => x.track);
+    const chosen = matches.length ? matches : ranked.slice(0,8).map(x => x.track);
+    if (!chosen.length) {
+      $('moodStatus').textContent = 'Play or save some tracks first. Mood queues use only your existing music.';
+      return;
+    }
+    chosen.slice(0,15).forEach(track => window.dispatchEvent(new CustomEvent('deepflow:queue-track', { detail: track })));
+    $('moodStatus').textContent = matches.length
+      ? 'Added ' + Math.min(15,matches.length) + ' locally matched tracks for ' + mood + '.'
+      : 'No clear ' + mood + ' matches yet, so we added a mix from your existing music.';
+  }
+
+  function renderRecentSearches() {
+    const box = $('recentSearchesList');
+    if (!box) return;
+    box.replaceChildren();
+    const items = Store.getRecentSearches();
+    if (!items.length) {
+      const note = document.createElement('p'); note.className = 'hint'; note.textContent = 'Your searches will appear here.';
+      box.append(note); return;
+    }
+    items.forEach(item => {
+      const button = document.createElement('button');
+      button.className = 'recent-search-chip';
+      button.type = 'button';
+      button.textContent = item.query + ' · ' + (item.source === 'audius' ? 'Audius' : 'YouTube');
+      button.addEventListener('click', () => {
+        const input = $('searchInput');
+        input.value = item.query;
+        const provider = $('searchSourceSelect');
+        provider.value = item.source || 'youtube';
+        provider.dispatchEvent(new Event('change'));
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      });
+      box.append(button);
+    });
+  }
+
+  function renderTimeline(list) {
+    const box = $('listeningTimeline');
+    if (!box) return;
+    box.replaceChildren();
+    const cutoff = Date.now() - 30 * 86400000;
+    const recent = (list || history()).filter(t => (t.playedAt || 0) >= cutoff).slice(0,30);
+    if (!recent.length) {
+      const note = document.createElement('p'); note.className = 'hint'; note.textContent = 'Your last 30 days of listening will appear here.';
+      box.append(note); return;
+    }
+    const groups = new Map();
+    recent.forEach(track => {
+      const date = new Date(track.playedAt || Date.now());
+      const key = date.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(track);
+    });
+    groups.forEach((tracks, date) => {
+      const section = document.createElement('section'); section.className = 'timeline-day';
+      const head = document.createElement('div'); head.className = 'row-between';
+      const heading = document.createElement('strong'); heading.textContent = date;
+      const count = document.createElement('span'); count.className = 'hint'; count.textContent = tracks.length + ' plays';
+      head.append(heading,count); section.append(head);
+      tracks.slice(0,6).forEach(track => {
+        const line = document.createElement('div'); line.className = 'timeline-track';
+        const title = document.createElement('span'); title.textContent = track.title || 'Unknown track';
+        const artist = document.createElement('small'); artist.textContent = track.artist || '';
+        line.append(title,artist); section.append(line);
+      });
+      box.append(section);
+    });
+  }
+
+  function createSmartPlaylist() {
+    const seed = history()[0] || Store.getLibrary()[0];
+    if (!seed) { alert('Play or save a few songs first.'); return; }
+    const unique = new Map();
+    [...Store.getLibrary(), ...history()].forEach(track => { if (track && track.id && !unique.has(track.id)) unique.set(track.id, track); });
+    const ranked = [...unique.values()].map(track => ({
+      track,
+      score: (track.artist && seed.artist && track.artist.toLowerCase() === seed.artist.toLowerCase() ? 3 : 0) +
+        (track.title && seed.title && track.title.toLowerCase().split(/\\s+/).some(word => word.length > 4 && seed.title.toLowerCase().includes(word)) ? 1 : 0)
+    })).sort((a,b) => b.score - a.score);
+    const chosen = ranked.slice(0,20).map(x => x.track);
+    const playlist = Store.createPlaylist('Made for you · ' + new Date().toLocaleDateString());
+    chosen.forEach(track => Store.addToPlaylist(playlist.id, track));
+    alert('Created "' + playlist.name + '" with ' + chosen.length + ' tracks from your existing library and history.');
+  }
+
   function buildSmartQueue() {
     const seed = history()[0] || Store.getLibrary()[0];
     if (!seed) { alert('Play or save a few songs first.'); return; }
@@ -60,15 +180,44 @@
     candidates.slice(0,10).forEach(track => window.dispatchEvent(new CustomEvent('deepflow:queue-track', { detail: track })));
     alert(`Added ${Math.min(10,candidates.length)} locally matched tracks. No YouTube searches were made.`);
   }
+
   function wrapped() {
-    const list = history(); const counts = new Map();
-    list.forEach(t => counts.set(t.title, (counts.get(t.title)||0)+1));
-    const top = [...counts.entries()].sort((a,b)=>b[1]-a[1])[0];
+    const year = new Date().getFullYear();
+    const list = history().filter(track => new Date(track.playedAt || 0).getFullYear() === year);
+    const counts = new Map();
+    const artists = new Map();
+    const months = new Map();
+    list.forEach(track => {
+      const key = track.id || track.title;
+      const entry = counts.get(key) || { track, count: 0 };
+      entry.count++;
+      counts.set(key, entry);
+      if (track.artist) artists.set(track.artist, (artists.get(track.artist) || 0) + 1);
+      const month = new Date(track.playedAt || 0).toLocaleDateString(undefined, { month:'long' });
+      months.set(month, (months.get(month) || 0) + 1);
+    });
+    const ranked = [...counts.values()].sort((a,b) => b.count-a.count);
+    const topArtist = [...artists.entries()].sort((a,b) => b[1]-a[1])[0];
+    const busiest = [...months.entries()].sort((a,b) => b[1]-a[1])[0];
     const panel = $('wrappedPanel'); panel.classList.remove('hidden'); panel.replaceChildren();
-    const h = document.createElement('h3'); h.textContent = 'Your DeepFlow Wrapped';
-    const p = document.createElement('p'); p.textContent = list.length ? `You've started ${list.length} plays across ${counts.size} different tracks. Your most-played track is ${top[0]} (${top[1]} plays).` : 'Your story starts when you play your first track.';
-    const note = document.createElement('p'); note.className = 'hint'; note.textContent = 'This is based on play starts recorded by this browser, not verified listening duration.';
-    panel.append(h,p,note);
+    const h = document.createElement('h3'); h.textContent = year + ' · Your Resona Wrapped';
+    const grid = document.createElement('div'); grid.className = 'wrapped-stats';
+    const cards = [
+      ['PLAY STARTS', String(list.length)],
+      ['UNIQUE TRACKS', String(counts.size)],
+      ['TOP TRACK', ranked[0] ? ranked[0].track.title : 'Not yet'],
+      ['TOP ARTIST', topArtist ? topArtist[0] : 'Not yet'],
+      ['BUSIEST MONTH', busiest ? busiest[0] : 'Not yet']
+    ];
+    cards.forEach(item => {
+      const card = document.createElement('div'); card.className = 'wrapped-stat';
+      const label = document.createElement('span'); label.textContent = item[0];
+      const value = document.createElement('strong'); value.textContent = item[1];
+      card.append(label,value); grid.append(card);
+    });
+    const note = document.createElement('p'); note.className = 'hint';
+    note.textContent = 'Based on play starts recorded in this browser during the current calendar year. It does not estimate listening duration.';
+    panel.append(h,grid,note);
   }
   function setAccent(hex) {
     const root = document.documentElement;
@@ -88,7 +237,19 @@
   }
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => btn.addEventListener('click', () => { if (btn.dataset.view === 'insights') renderInsights(); }));
   $('smartQueueBtn').addEventListener('click', buildSmartQueue);
+  $('createSmartPlaylistBtn').addEventListener('click', createSmartPlaylist);
   $('wrappedBtn').addEventListener('click', wrapped);
+  $('saveGoalBtn').addEventListener('click', () => {
+    const goal = Math.max(1, Math.min(500, Math.floor(Number($('weeklyGoalInput').value) || 30)));
+    Store.saveSettings({ weeklyPlayGoal: goal });
+    renderWeeklyGoal();
+  });
+  $('moodQueueBtn').addEventListener('click', buildMoodQueue);
+  $('clearSearchHistoryBtn').addEventListener('click', () => {
+    Store.clearRecentSearches();
+    renderRecentSearches();
+  });
+  window.addEventListener('resona:search-history-changed', renderRecentSearches);
   $('sleepTimerBtn').addEventListener('click', startSleepTimer);
   $('customAccent').addEventListener('input', e => setAccent(e.target.value));
   $('glassIntensity').addEventListener('input', e => document.documentElement.style.setProperty('--glass-blur', `${Number(e.target.value)}px`));
