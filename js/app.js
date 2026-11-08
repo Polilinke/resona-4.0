@@ -408,102 +408,11 @@
     updateQuotaBadge();
   }
 
-  // ---------- YouTube hover preview (separate from the main player) ----------
-  let hoverPlayTimer = null;
-  let hoverPlayRow = null;
-  let hoverPreviewPlayer = null;
-  let hoverPreviewReady = false;
-  let hoverPreviewHost = null;
-  let hoverPreviewTrack = null;
-
-  function ensureHoverPreviewHost() {
-    if (hoverPreviewHost) return hoverPreviewHost;
-    const host = document.createElement('section');
-    host.id = 'hoverPreviewCard';
-    host.className = 'hover-preview-card';
-    host.setAttribute('aria-label', 'YouTube hover preview');
-    host.innerHTML = '<div class="hover-preview-heading"><span class="hover-preview-label">QUICK PREVIEW</span><button type="button" class="hover-preview-close" aria-label="Close preview">×</button></div><div class="hover-preview-title"></div><div class="hover-preview-player" id="hoverPreviewPlayer"></div><div class="hover-preview-message" role="status" aria-live="polite"></div>';
-    host.querySelector('.hover-preview-close').addEventListener('click', stopHoverPreview);
-    host.addEventListener('mouseleave', clearHoverPlay);
-    document.body.append(host);
-    hoverPreviewHost = host;
-    return host;
-  }
-
-  function stopHoverPreview() {
-    if (hoverPreviewPlayer && hoverPreviewReady) {
-      try { hoverPreviewPlayer.stopVideo(); } catch (_) {}
-    }
-    hoverPreviewTrack = null;
-    if (hoverPreviewHost) hoverPreviewHost.classList.remove('is-visible');
-  }
-
-  function startHoverPreview(track) {
-    if (!track || track.source === 'audius' || track.source === 'local-audio' || !track.id) return;
-    if (isPlaybackActive()) return;
-    const host = ensureHoverPreviewHost();
-    host.querySelector('.hover-preview-title').textContent =
-      (track.title || 'Preview') + (track.artist ? ' · ' + track.artist : '');
-    host.classList.add('is-visible');
-    host.querySelector('.hover-preview-message').textContent = '';
-    hoverPreviewTrack = track;
-    if (!hoverPreviewReady || !hoverPreviewPlayer) return;
-    try {
-      hoverPreviewPlayer.loadVideoById({ videoId: String(track.id), startSeconds: 0 });
-      // Explicitly request playback so the preview does not wait for the YouTube
-      // player's on-screen Start control. Browser autoplay policy may still block it. 
-      hoverPreviewPlayer.playVideo();
-    } catch (_) {
-      host.querySelector('.hover-preview-message').textContent = 'This upload could not be previewed.';
-    }
-  }
-
-  function clearHoverPlay() {
-    if (hoverPlayTimer) clearTimeout(hoverPlayTimer);
-    hoverPlayTimer = null;
-    if (hoverPlayRow) hoverPlayRow.classList.remove('hover-play-pending');
-    hoverPlayRow = null;
-    stopHoverPreview();
-  }
-
-  function isPlaybackActive() {
-    if (window.ResonaAudio?.isPlaying?.()) return true;
-    if (state.playerReady && state.player) {
-      try { return state.player.getPlayerState() === 1; } catch (_) {}
-    }
-    return false;
-  }
-  document.addEventListener('pointerdown', clearHoverPlay, true);
-
   // ---------- Track rendering ----------
   function trackRow(track, opts = {}) {
     const row = document.createElement('div');
     row.className = 'track';
     if (state.currentTrack && state.currentTrack.id === track.id) row.classList.add('playing');
-
-    // A 1.5-second hover starts an independent YouTube preview only.
-    // It never changes the queue, history, current track or main player.
-    if (track.source === 'youtube' || (!track.source && track.id)) {
-      row.addEventListener('mouseenter', () => {
-        if (isPlaybackActive()) return;
-        clearHoverPlay();
-        hoverPlayRow = row;
-        row.classList.add('hover-play-pending');
-        hoverPlayTimer = setTimeout(() => {
-          const targetRow = hoverPlayRow;
-          hoverPlayTimer = null;
-          if (hoverPlayRow) hoverPlayRow.classList.remove('hover-play-pending');
-          hoverPlayRow = null;
-          if (!targetRow || !targetRow.isConnected || isPlaybackActive()) return;
-          startHoverPreview(track);
-        }, 1500);
-      });
-      row.addEventListener('mouseleave', (event) => {
-        // Moving from a song row into its floating preview should not cancel playback.
-        if (event.relatedTarget && hoverPreviewHost?.contains(event.relatedTarget)) return;
-        clearHoverPlay();
-      });
-    }
 
     const img = document.createElement('img');
     img.src = track.thumbnail || '';
@@ -1033,35 +942,6 @@
   }
 
   window.onYouTubeIframeAPIReady = function () {
-    ensureHoverPreviewHost();
-    hoverPreviewPlayer = new YT.Player('hoverPreviewPlayer', {
-      width: '200',
-      height: '200',
-      playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0 },
-      events: {
-        onReady: () => {
-          hoverPreviewReady = true;
-          if (hoverPreviewTrack && !isPlaybackActive()) {
-            try { hoverPreviewPlayer.loadVideoById({ videoId: String(hoverPreviewTrack.id), startSeconds: 0 }); } catch (_) {}
-          }
-        },
-        onError: (e) => {
-          if (!hoverPreviewHost) return;
-          const messages = {
-            2: 'This video has an invalid ID.',
-            5: 'This upload is not supported by the embedded player.',
-            100: 'This video is unavailable, private, or removed.',
-            101: 'The uploader does not allow embedded playback.',
-            150: 'The uploader does not allow embedded playback.',
-            153: 'YouTube could not verify this player configuration.'
-          };
-          const message = messages[e.data] || 'YouTube could not play this preview.';
-          const messageNode = hoverPreviewHost.querySelector('.hover-preview-message');
-          if (messageNode) messageNode.textContent = message;
-          // Keep the preview card open so the failure is clear instead of flashing closed.
-        }
-      }
-    });
     state.player = new YT.Player('ytHolder', {
       width: '200',
       height: '113',
