@@ -110,6 +110,93 @@
     if (error) status('Could not update friend activity. Check the Stage 3 Supabase migration.', 'error');
   }
 
+
+  async function loadCollaborativePlaylists(friendIds = []) {
+    const box = $('collabPlaylistsList');
+    if (!box || !user) return;
+    try {
+      const { data: playlists, error } = await client.from('resona_collaborative_playlists')
+        .select('id,name,owner_id,created_at').order('updated_at', { ascending: false });
+      if (error) throw error;
+      box.replaceChildren();
+      if (!playlists?.length) {
+        box.innerHTML = '<div class="rooms-empty">No shared playlists yet. Create one to get started.</div>';
+        return;
+      }
+      const { data: friends, error: friendsError } = await client.from('resona_friendships')
+        .select('requester_id,addressee_id').eq('status','accepted')
+        .or('requester_id.eq.' + user.id + ',addressee_id.eq.' + user.id);
+      if (friendsError) throw friendsError;
+      const friendIdsList = [...new Set((friends || []).map(x => x.requester_id === user.id ? x.addressee_id : x.requester_id))];
+      const friendProfiles = await profilesByIds(friendIdsList);
+      const library = [...(window.Store?.getLibrary?.() || []), ...(window.Store?.getHistory?.() || [])];
+      const uniqueTracks = [...new Map(library.filter(t => t?.id).map(t => [t.source + ':' + t.id, t])).values()];
+      for (const playlist of playlists) {
+        const card = document.createElement('article'); card.className = 'social-collab-card';
+        const heading = document.createElement('strong'); heading.textContent = playlist.name;
+        const owner = document.createElement('small'); owner.textContent = playlist.owner_id === user.id ? 'Created by you' : 'Shared with you';
+        const controls = document.createElement('div'); controls.className = 'social-collab-controls';
+        const inviteSelect = document.createElement('select');
+        inviteSelect.setAttribute('aria-label','Choose a friend to invite');
+        const inviteDefault = document.createElement('option'); inviteDefault.value=''; inviteDefault.textContent='Invite a friend…'; inviteSelect.append(inviteDefault);
+        friendProfiles.forEach(p=>{const o=document.createElement('option');o.value=p.user_id;o.textContent=nameOf(p);inviteSelect.append(o);});
+        const inviteBtn = button('Invite','btn small',async()=>{
+          if(!inviteSelect.value){status('Choose a friend first.','error');return;}
+          const {error}=await client.from('resona_collaborative_playlist_members').insert({playlist_id:playlist.id,user_id:inviteSelect.value,role:'editor'});
+          if(error){status(error.message,'error');return;}
+          status('Friend added to the collaborative playlist.','success');inviteSelect.value='';
+        });
+        const trackSelect = document.createElement('select');
+        trackSelect.setAttribute('aria-label','Choose a saved or recently played track');
+        const trackDefault=document.createElement('option');trackDefault.value='';trackDefault.textContent='Add a track from your library…';trackSelect.append(trackDefault);
+        uniqueTracks.forEach((t,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=(t.title||'Untitled')+' — '+(t.artist||'Unknown artist');trackSelect.append(o);});
+        const addBtn=button('Add track','btn small primary',async()=>{
+          if(trackSelect.value===''){status('Choose a track first.','error');return;}
+          const track=uniqueTracks[Number(trackSelect.value)];
+          const {error}=await client.from('resona_collaborative_playlist_tracks').insert({playlist_id:playlist.id,track,added_by:user.id,position:Date.now()});
+          if(error){status(error.message,'error');return;}
+          status('Track added to '+playlist.name+'.','success');await loadCollaborativePlaylists(friendIds);
+        });
+        controls.append(inviteSelect,inviteBtn,trackSelect,addBtn);
+        const trackBox=document.createElement('div');trackBox.className='social-collab-tracks';
+        const {data:tracks,error:trackError}=await client.from('resona_collaborative_playlist_tracks')
+          .select('id,track,added_by').eq('playlist_id',playlist.id).order('position',{ascending:true}).order('added_at',{ascending:true});
+        if(trackError) throw trackError;
+        (tracks||[]).forEach(entry=>{
+          const line=document.createElement('div');line.className='social-collab-track';
+          const label=document.createElement('span');label.textContent=(entry.track?.title||'Unknown track')+' · '+(entry.track?.artist||'Unknown artist');
+          const remove=button('Remove','btn small ghost',async()=>{
+            const {error}=await client.from('resona_collaborative_playlist_tracks').delete().eq('id',entry.id);
+            if(error){status(error.message,'error');return;}
+            await loadCollaborativePlaylists(friendIds);
+          });
+          line.append(label,remove);trackBox.append(line);
+        });
+        if(!tracks?.length) trackBox.innerHTML='<div class="rooms-empty">No tracks yet. Add one from your library.</div>';
+        card.append(heading,owner,controls,trackBox);box.append(card);
+      }
+    } catch (error) {
+      box.innerHTML = '<div class="rooms-empty">Collaborative playlists need the Stage 3 Supabase migration. Apply supabase/stage-3-social-upgrades.sql, then refresh. ' + esc(error.message || '') + '</div>';
+    }
+  }
+
+  async function createCollaborativePlaylist() {
+    try {
+      await connect();
+      if (!user) throw new Error('Sign in to create a collaborative playlist.');
+      const name = $('collabPlaylistName').value.trim();
+      if (!name) throw new Error('Enter a playlist name.');
+      const { error } = await client.from('resona_collaborative_playlists').insert({ owner_id:user.id, name });
+      if (error) throw error;
+      $('collabPlaylistName').value='';
+      status('Collaborative playlist created. Invite friends to contribute.','success');
+      const {data:friendships}=await client.from('resona_friendships').select('requester_id,addressee_id')
+        .eq('status','accepted').or('requester_id.eq.'+user.id+',addressee_id.eq.'+user.id);
+      const ids=(friendships||[]).map(x=>x.requester_id===user.id?x.addressee_id:x.requester_id);
+      await loadCollaborativePlaylists(ids);
+    } catch(error) { status(error.message || 'Could not create the collaborative playlist. Apply the Stage 3 migration first.','error'); }
+  }
+
   async function loadSocial() {
     await connect(); user=window.ResonaAccount.getUser(); signedInUI();
     if(!user) return;
@@ -124,6 +211,7 @@
     const people=await profilesByIds(allIds); const byId=new Map(people.map(p=>[p.user_id,p]));
     renderFriends(friendIds.map(id=>byId.get(id)).filter(Boolean));
     await loadFriendActivity(friendIds);
+    await loadCollaborativePlaylists(friendIds);
     renderRequests(incoming,outgoing,byId);
     renderConversations(friendIds.map(id=>byId.get(id)).filter(Boolean));
     await loadInvites(byId);
@@ -332,6 +420,7 @@
       $('roomInviteFriendsPanel').classList.remove('hidden');
     }catch(e){status(e.message||'Could not load your friends.','error');}
   }
+  $('createCollabPlaylistBtn')?.addEventListener('click',createCollaborativePlaylist);
   $('activitySharingToggle')?.addEventListener('change', event => setActivitySharing(event.target.checked));
   $('socialSignInBtn')?.addEventListener('click',()=> $('accountBtn')?.click());
   $('socialSearchBtn')?.addEventListener('click',searchPeople);
