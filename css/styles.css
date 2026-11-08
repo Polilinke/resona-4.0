@@ -3084,3 +3084,18 @@ html[data-device-layout="mobile"] .track-meta { display: none; }
 .social-collab-track{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(var(--accent-rgb),.045)}
 .social-collab-track span{min-width:0;overflow-wrap:anywhere;color:var(--text);font-size:11px}
 @media(max-width:700px){.social-collab-controls{grid-template-columns:minmax(0,1fr) auto}.social-collab-controls select:nth-of-type(2){grid-column:1/-1}.social-collab-track{align-items:flex-start}}
+
+
+/* Stage 3: collaborative playlist drag-and-drop and live ordering feedback */
+.social-collab-track[draggable="true"]{cursor:grab;transition:opacity .16s ease,border-color .16s ease,transform .16s ease}
+.social-collab-track.is-dragging{opacity:.4;cursor:grabbing}
+.social-collab-track.is-drop-target{outline:1px solid var(--accent);transform:translateY(-2px);background:rgba(var(--accent-rgb),.11)}
+@media(prefers-reduced-motion:reduce){.social-collab-track{transition:none}.social-collab-track.is-drop-target{transform:none}}
+
+/* Stage 4: compact keyboard shortcut reference */
+.shortcut-reference{margin:14px 0;padding:13px 15px;border:1px solid var(--panel-border);border-radius:14px;background:rgba(var(--accent-rgb),.035)}
+.shortcut-reference summary{color:var(--text);font-size:12px;font-weight:750;cursor:pointer}
+.shortcut-reference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.shortcut-reference-grid span{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;flex-wrap:wrap}
+.shortcut-reference kbd{padding:3px 7px;border:1px solid var(--panel-border);border-radius:6px;background:rgba(255,255,255,.06);color:var(--text);font:600 10px Consolas,monospace}
+@media(max-width:560px){.shortcut-reference-grid{grid-template-columns:1fr}}
