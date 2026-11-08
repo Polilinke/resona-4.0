@@ -368,7 +368,11 @@
   });
 
   $('customAccent').addEventListener('input', e => setAccent(e.target.value));
-  $('glassIntensity').addEventListener('input', e => document.documentElement.style.setProperty('--glass-blur', `${Number(e.target.value)}px`));
+  $('glassIntensity').addEventListener('input', e => {
+    const value = Number(e.target.value);
+    document.documentElement.style.setProperty('--glass-blur', `${value}px`);
+    Store.saveSettings({ glassIntensity: value });
+  });
   window.addEventListener('deepflow:sleep-ended', clearSleepTimer);
   window.addEventListener('resona:track-ended', event => { if (sleepAtTrackEnd) { sleepAtTrackEnd = false; event.preventDefault(); window.dispatchEvent(new Event('deepflow:sleep-stop')); } });
   window.addEventListener('deepflow:sleep-stop', clearSleepTimer);
