@@ -1,0 +1,15 @@
+{
+  "appId": "com.resona.player",
+  "appName": "Resona",
+  "webDir": "www",
+  "server": {
+    "url": "https://resonalive.vercel.app",
+    "cleartext": false,
+    "allowNavigation": [
+      "resonalive.vercel.app"
+    ]
+  },
+  "android": {
+    "backgroundColor": "#020a13"
+  }
+}
