@@ -3139,3 +3139,24 @@ html[data-device-layout="mobile"] .track-meta { display: none; }
 @keyframes playbackOverlayIn{from{opacity:0}to{opacity:1}}
 @keyframes playbackCardIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.playback-error-overlay,.playback-error-card{animation:none}}
+
+
+/* Mandatory account gate for visitors without an active session */
+.account-overlay.account-gate-active{
+  display:flex!important;justify-content:center;align-items:center;padding:20px;
+  background:rgba(0,4,9,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.account-gate-active .account-drawer{
+  width:min(520px,100%);height:auto;max-height:calc(100vh - 40px);overflow-y:auto;
+  border:1px solid rgba(145,198,207,.34);border-radius:26px;
+  box-shadow:0 28px 100px rgba(0,0,0,.68),0 0 50px rgba(80,190,205,.1);
+  animation:accountGateIn .28s cubic-bezier(.2,.8,.2,1);
+}
+.account-gate-active .account-drawer-head{padding-bottom:18px}
+.account-gate-active .account-intro{font-size:14px;line-height:1.6}
+.account-gate-active .account-legal{margin-bottom:4px}
+@keyframes accountGateIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:600px){
+  .account-overlay.account-gate-active{padding:12px}
+  .account-gate-active .account-drawer{width:100%;max-height:calc(100dvh - 24px);padding:24px 20px;border-radius:22px}
+}
