@@ -290,6 +290,49 @@
   });
   window.addEventListener('resona:search-history-changed', renderRecentSearches);
   $('sleepTimerBtn').addEventListener('click', startSleepTimer);
+  const goalNotificationToggle = $('weeklyGoalNotificationsToggle');
+  if (goalNotificationToggle) {
+    goalNotificationToggle.checked = !!Store.getSettings().weeklyGoalNotifications;
+    goalNotificationToggle.addEventListener('change', async () => {
+      if (goalNotificationToggle.checked) {
+        if (!('Notification' in window)) {
+          goalNotificationToggle.checked = false;
+          alert('This browser does not support desktop notifications.');
+          return;
+        }
+        if (Notification.permission === 'default') await Notification.requestPermission();
+        if (Notification.permission !== 'granted') {
+          goalNotificationToggle.checked = false;
+          alert('Notifications were not permitted. You can enable them in your browser site settings.');
+          return;
+        }
+      }
+      Store.saveSettings({ weeklyGoalNotifications: goalNotificationToggle.checked });
+    });
+  }
+  function checkWeeklyGoalNotification() {
+    const settings = Store.getSettings();
+    if (!settings.weeklyGoalNotifications || !('Notification' in window) || Notification.permission !== 'granted') return;
+    const start = new Date();
+    start.setHours(0,0,0,0);
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+    const weekKey = start.getFullYear() + '-' + String(start.getMonth()+1).padStart(2,'0') + '-' + String(start.getDate()).padStart(2,'0');
+    if (settings.lastWeeklyGoalNotification === weekKey) return;
+    const goal = Math.max(1, Math.min(500, Number(settings.weeklyPlayGoal) || 30));
+    const plays = history().filter(track => (track.playedAt || 0) >= start.getTime()).length;
+    if (plays < goal) return;
+    Store.saveSettings({ lastWeeklyGoalNotification: weekKey });
+    try {
+      const notice = new Notification('Weekly listening goal reached!', {
+        body: 'You reached ' + goal + ' play starts this week. Nice work.',
+        tag: 'resona-weekly-goal',
+        renotify: false
+      });
+      notice.onclick = () => { window.focus(); notice.close(); };
+    } catch (error) { console.warn('Weekly goal notification unavailable:', error); }
+  }
+  window.addEventListener('resona:track-changed', checkWeeklyGoalNotification);
+
   const notificationToggle = $('desktopNotificationsToggle');
   if (notificationToggle) {
     notificationToggle.checked = !!Store.getSettings().desktopNotifications;
