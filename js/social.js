@@ -97,13 +97,13 @@
   }
 
   async function publishCurrentTrack(track) {
-    if (!client || !user || !$('activitySharingToggle')?.checked || !track?.id) return;
-    const safeTrack = {
+    if (!client || !user || !$('activitySharingToggle')?.checked) return;
+    const safeTrack = track?.id ? {
       id: String(track.id).slice(0, 180),
       title: String(track.title || 'Unknown track').slice(0, 180),
       artist: String(track.artist || 'Unknown artist').slice(0, 140),
       source: String(track.source || 'youtube').slice(0, 24)
-    };
+    } : null;
     const { error } = await client.from('resona_friend_activity').upsert({
       user_id: user.id, sharing_enabled: true, track: safeTrack, updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
@@ -476,6 +476,7 @@
   });
   window.ResonaSocial={inviteToRoom,openRoomChat};
   window.addEventListener('resona:track-changed', event => publishCurrentTrack(event.detail?.track));
+  window.addEventListener('resona:track-ended', () => publishCurrentTrack(null));
   window.addEventListener('resona:room-open',event=>{if(event.detail?.room)openRoomChat(event.detail.room);});
   window.addEventListener('resona:room-close',()=>{activeRoom=null;if(roomChannel&&client)client.removeChannel(roomChannel);roomChannel=null;});
   window.addEventListener('resona:auth-ready',event=>{user=event.detail?.user||null;connect().then(loadSocial).catch(e=>status(e.message,'error'));});
