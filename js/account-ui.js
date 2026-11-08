@@ -5,7 +5,7 @@
   const loginTab = $('showLogin'), signupTab = $('showSignup');
   const loginPanel = $('loginPanel'), signupPanel = $('signupPanel');
   const status = $('accountStatus'), accountButton = $('accountBtn');
-  let client = null, currentUser = null, initPromise = null;
+  let client = null, currentUser = null, initPromise = null, gateRequired = false;
 
   function message(text, kind = 'info') {
     if (!status) return;
@@ -42,7 +42,25 @@
       $('accountMemberSince').textContent = created && !Number.isNaN(created.getTime())
         ? created.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : '—';
     }
+    if (currentUser && gateRequired) {
+      gateRequired = false;
+      dialog.classList.remove('account-gate-active');
+      $('accountClose')?.classList.remove('hidden');
+      closeDrawer();
+    }
     window.dispatchEvent(new CustomEvent('resona:auth-changed', { detail: { user: currentUser } }));
+  }
+  function openAccountGate() {
+    if (currentUser) return;
+    gateRequired = true;
+    dialog.classList.add('account-gate-active');
+    dialog.classList.remove('hidden');
+    dialog.setAttribute('aria-hidden', 'false');
+    $('accountClose')?.classList.add('hidden');
+    const intro = dialog.querySelector('.account-intro');
+    if (intro) intro.textContent = 'Create a free Resona account to continue. Already have one? Sign in below.';
+    showMode('signup');
+    message('A Resona account is required to use the website.', 'info');
   }
   function showMode(mode) {
     const login = mode === 'login';
@@ -107,12 +125,12 @@
     try { await initialise(); if (!currentUser) showMode('login'); }
     catch (error) { message(error.message || 'Could not connect to accounts.', 'error'); }
   });
-  function closeDrawer() { dialog.classList.add('hidden'); dialog.setAttribute('aria-hidden', 'true'); }
+  function closeDrawer() { if (gateRequired && !currentUser) return; dialog.classList.add('hidden'); dialog.setAttribute('aria-hidden', 'true'); dialog.classList.remove('account-gate-active'); $('accountClose')?.classList.remove('hidden'); }
   $('accountClose')?.addEventListener('click', closeDrawer);
-  dialog.addEventListener('click', event => { if (event.target === dialog) closeDrawer(); });
+  dialog.addEventListener('click', event => { if (event.target === dialog && !gateRequired) closeDrawer(); });
   loginTab?.addEventListener('click', () => showMode('login'));
   signupTab?.addEventListener('click', () => showMode('signup'));
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeDrawer(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !gateRequired) closeDrawer(); });
   ['loginSubmit', 'signupSubmit', 'saveProfileBtn'].forEach(id => {
     const button = $(id); if (button) button.dataset.idleLabel = button.textContent;
   });
@@ -173,5 +191,11 @@
     } catch (error) { message(error.message || 'Could not sign out.', 'error'); }
     finally { button.disabled = false; }
   });
-  initialise().catch(error => console.warn('Resona account setup:', error));
+  initialise().then(() => {
+    if (!currentUser) openAccountGate();
+  }).catch(error => {
+    console.warn('Resona account setup:', error);
+    openAccountGate();
+    message(error.message || 'Could not connect to accounts. Check your connection and try again.', 'error');
+  });
 })();
