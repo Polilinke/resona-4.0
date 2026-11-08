@@ -1036,6 +1036,7 @@
     Store.addToHistory(track);
     renderDiscovery();
     showNowPlaying(track);
+    window.dispatchEvent(new CustomEvent('resona:track-changed', { detail: { track } }));
 
     if (track.source === 'audius') {
       state.pendingVideoId = null;
