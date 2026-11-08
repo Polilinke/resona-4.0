@@ -463,6 +463,11 @@
       duration.textContent = durationText;
       metaDetails.append(duration);
     }
+    const sonic = document.createElement('div');
+    sonic.className = 'track-sonic';
+    sonic.setAttribute('aria-hidden', 'true');
+    sonic.innerHTML = '<span></span><span></span><span></span><i></i>';
+
     const waveform = document.createElement('div');
     waveform.className = 'track-waveform';
     waveform.setAttribute('aria-hidden', 'true');
@@ -471,7 +476,7 @@
       bar.style.setProperty('--wave-height', height + 'px');
       waveform.append(bar);
     });
-    meta.append(metaDetails, waveform);
+    meta.append(metaDetails, sonic, waveform);
 
     const actions = document.createElement('div');
     actions.className = 'track-actions';
