@@ -88,7 +88,7 @@
       const { data, error } = await client.auth.getSession();
       if (error) throw error;
       setUser(data.session?.user || null);
-      client.auth.onAuthStateChange((_event, session) => setUser(session?.user || null));
+      client.auth.onAuthStateChange((event, session) => {\n        setUser(session?.user || null);\n        if (event === 'SIGNED_OUT' && !session?.user) openAccountGate();\n      });
       window.ResonaAccount = { getClient: initialise, getUser: () => currentUser };
       window.dispatchEvent(new CustomEvent('resona:auth-ready', { detail: { user: currentUser } }));
       return client;
@@ -187,7 +187,7 @@
     try {
       const sb = await initialise(); const { error } = await sb.auth.signOut();
       if (error) throw error;
-      setUser(null); showMode('login'); message('Signed out successfully.', 'success');
+      setUser(null); openAccountGate(); message('You have been signed out. Sign in or create an account to continue.', 'info');
     } catch (error) { message(error.message || 'Could not sign out.', 'error'); }
     finally { button.disabled = false; }
   });
