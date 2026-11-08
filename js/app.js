@@ -1019,16 +1019,22 @@
         },
         onStateChange: onPlayerStateChange,
         onError: (e) => {
-          const msg = {
-            2: 'Invalid video.',
-            5: 'Player error in this video.',
-            100: 'This video was removed or is private.',
-            101: 'The owner does not allow embedded playback. Skipping.',
-            150: 'The owner does not allow embedded playback. Skipping.',
-            153: 'Player configuration error. Skipping.'
-          }[e.data] || 'Playback error. Skipping.';
+          const unavailableCodes = [2, 100, 101, 150, 153];
+          const detail = {
+            2: 'This video ID is invalid.',
+            100: 'This video was removed, made private, or is unavailable.',
+            101: 'The owner does not allow this song to play in embedded players.',
+            150: 'The owner does not allow this song to play in embedded players.',
+            153: 'YouTube could not configure playback for this video.',
+            5: 'YouTube encountered an HTML5 playback error.'
+          }[e.data] || 'YouTube could not play this track.';
+          const msg = unavailableCodes.includes(e.data)
+            ? 'Song not available — ' + detail
+            : 'Unable to play song — ' + detail;
+          setPlayingUI(false);
           flashStatus(msg);
-          setTimeout(playNext, 1200);
+          const status = $('audioToolsStatus');
+          if (status) status.textContent = msg;
         }
       }
     });
