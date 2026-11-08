@@ -113,16 +113,31 @@ on public.resona_collaborative_playlist_members for select to authenticated
 using (public.is_resona_collab_member(playlist_id));
 
 drop policy if exists "Owners manage playlist collaborators" on public.resona_collaborative_playlist_members;
-create policy "Owners manage playlist collaborators"
-on public.resona_collaborative_playlist_members for all to authenticated
-using (exists (
-  select 1 from public.resona_collaborative_playlists p
-  where p.id = playlist_id and p.owner_id = auth.uid()
-))
-with check (exists (
-  select 1 from public.resona_collaborative_playlists p
-  where p.id = playlist_id and p.owner_id = auth.uid()
-));
+drop policy if exists "Owners invite friends to playlists" on public.resona_collaborative_playlist_members;
+drop policy if exists "Owners update playlist collaborators" on public.resona_collaborative_playlist_members;
+drop policy if exists "Owners remove playlist collaborators" on public.resona_collaborative_playlist_members;
+
+-- Only the playlist owner can invite, and the invited account must be an accepted friend.
+create policy "Owners invite friends to playlists"
+on public.resona_collaborative_playlist_members for insert to authenticated
+with check (
+  exists (select 1 from public.resona_collaborative_playlists p where p.id = playlist_id and p.owner_id = auth.uid())
+  and exists (
+    select 1 from public.resona_friendships f
+    where f.status = 'accepted'
+      and ((f.requester_id = auth.uid() and f.addressee_id = user_id)
+        or (f.addressee_id = auth.uid() and f.requester_id = user_id))
+  )
+);
+
+create policy "Owners update playlist collaborators"
+on public.resona_collaborative_playlist_members for update to authenticated
+using (exists (select 1 from public.resona_collaborative_playlists p where p.id = playlist_id and p.owner_id = auth.uid()))
+with check (exists (select 1 from public.resona_collaborative_playlists p where p.id = playlist_id and p.owner_id = auth.uid()));
+
+create policy "Owners remove playlist collaborators"
+on public.resona_collaborative_playlist_members for delete to authenticated
+using (exists (select 1 from public.resona_collaborative_playlists p where p.id = playlist_id and p.owner_id = auth.uid()));
 
 drop policy if exists "Members read collaborative tracks" on public.resona_collaborative_playlist_tracks;
 create policy "Members read collaborative tracks"
@@ -161,3 +176,34 @@ drop trigger if exists resona_collab_owner_after_insert on public.resona_collabo
 create trigger resona_collab_owner_after_insert
 after insert on public.resona_collaborative_playlists
 for each row execute function public.add_resona_collab_owner();
+
+
+-- Keep updated_at useful for ordering shared playlists.
+create or replace function public.touch_resona_collab_playlist_updated_at()
+returns trigger language plpgsql set search_path = public
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists resona_collab_playlist_touch on public.resona_collaborative_playlists;
+create trigger resona_collab_playlist_touch
+before update on public.resona_collaborative_playlists
+for each row execute function public.touch_resona_collab_playlist_updated_at();
+
+-- Enable Realtime for social activity and shared playlist changes when not already published.
+do $$
+declare t text;
+begin
+  foreach t in array array['resona_friend_activity','resona_collaborative_playlists','resona_collaborative_playlist_members','resona_collaborative_playlist_tracks'] loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end;
+$$;
