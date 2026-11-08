@@ -1069,6 +1069,9 @@
   }
 
   async function handleTrackEnded() {
+    const sleepEvent = new Event('resona:track-ended', { cancelable: true });
+    window.dispatchEvent(sleepEvent);
+    if (sleepEvent.defaultPrevented) { setPlayingUI(false); return; }
     const endedIndex = state.currentIndex;
     if (endedIndex + 1 >= state.queue.length) {
       setPlayingUI(false);
