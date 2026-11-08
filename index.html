@@ -113,8 +113,21 @@
       <div id="view-insights" class="view">
         <div class="row-between"><h2>Your listening insights</h2><button id="wrappedBtn" class="btn">Generate DeepFlow Wrapped</button></div>
         <div id="insightsStats" class="insights-grid"></div>
+        <section class="feature-card personalisation-panel">
+          <div class="row-between"><div><h3 class="subheading">Listening goals</h3><p class="hint">Set a weekly play-start goal using your local listening history.</p></div><div class="goal-controls"><input id="weeklyGoalInput" type="number" min="1" max="500" step="1" aria-label="Weekly listening goal" /><button id="saveGoalBtn" class="btn small">Save goal</button></div></div>
+          <div class="goal-track"><span id="weeklyGoalProgress"></span></div><div id="weeklyGoalLabel" class="hint"></div>
+        </section>
+        <section class="feature-card personalisation-panel">
+          <div class="row-between"><div><h3 class="subheading">Mood listening</h3><p class="hint">Build a queue from songs already in your library and history. No new searches.</p></div><div class="mood-controls"><select id="moodSelect" aria-label="Choose a listening mood"><option value="focus">Focus</option><option value="chill">Chill</option><option value="energetic">Energetic</option><option value="night">Night drive</option><option value="classical">Classical</option><option value="happy">Feel-good</option></select><button id="moodQueueBtn" class="btn small primary">Build mood queue</button></div></div>
+          <p id="moodStatus" class="hint" aria-live="polite">Choose a mood to organise music you already have.</p>
+        </section>
+        <section class="feature-card personalisation-panel">
+          <div class="row-between"><h3 class="subheading">Recent searches</h3><button id="clearSearchHistoryBtn" class="btn small ghost">Clear</button></div>
+          <div id="recentSearchesList" class="recent-searches"></div>
+        </section>
+        <h3 class="subheading">Listening timeline</h3><div id="listeningTimeline" class="listening-timeline"></div>
         <h3 class="subheading">Most played</h3><div id="topTracks" class="track-list"></div>
-        <h3 class="subheading">Recommended from your library</h3><div class="row-end"><button id="smartQueueBtn" class="btn primary">Build a smart queue</button></div><div id="recommendations" class="track-list"></div>
+        <div class="row-between"><h3 class="subheading">Recommended from your library</h3><div class="row"><button id="createSmartPlaylistBtn" class="btn small">Create smart playlist</button><button id="smartQueueBtn" class="btn primary">Build a smart queue</button></div></div><div id="recommendations" class="track-list"></div>
         <div id="wrappedPanel" class="wrapped-panel hidden"></div>
       </div>
 
