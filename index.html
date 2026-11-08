@@ -195,6 +195,11 @@
         <div id="socialStatus" class="rooms-status hidden" role="status" aria-live="polite"></div>
         <section id="socialSignedOut" class="rooms-panel hidden"><h3>Your music circle starts here</h3><p>Sign in to find friends, chat privately and receive room invitations.</p><button id="socialSignInBtn" class="btn primary" type="button">Sign in to Resona</button></section>
         <div id="socialWorkspace" class="social-layout hidden">
+          <section class="rooms-panel social-activity-panel">
+            <div class="rooms-list-heading"><div><h3>Friend activity</h3><p class="rooms-muted">See what friends are listening to when they choose to share.</p></div></div>
+            <label class="check-row social-sharing-toggle"><input id="activitySharingToggle" type="checkbox" /> Share my current listening activity with friends</label>
+            <div id="socialActivityList" class="social-activity-list"><div class="rooms-empty">Your friends' shared activity will appear here.</div></div>
+          </section>
           <section class="rooms-panel"><h3>Find friends</h3><div class="social-search-row"><input id="socialSearchInput" placeholder="Search display names" maxlength="60"><button id="socialSearchBtn" class="btn">Search</button></div><div id="socialSearchResults" class="social-list"></div></section>
           <section class="rooms-panel"><h3>Friends <span id="socialFriendCount" class="room-count">0</span></h3><div id="socialFriendsList" class="social-list"></div></section>
           <section class="rooms-panel"><h3>Friend requests</h3><div id="socialRequestsList" class="social-list"></div></section>
@@ -432,6 +437,7 @@
       <label class="check-row"><input id="albumBgToggle" type="checkbox" /> Album artwork background</label>
       <label class="check-row"><input id="glassToggle" type="checkbox" /> Liquid glass — entire app (uses more GPU)</label>
       <label class="check-row"><input id="npGlassToggle" type="checkbox" /> Liquid glass — Now Playing lyrics only</label>
+      <label class="check-row"><input id="desktopNotificationsToggle" type="checkbox" /> Desktop notifications when a new song starts</label>
       <section class="theme-studio" aria-labelledby="themeStudioTitle">
         <div class="theme-studio-heading">
           <div><span class="theme-studio-kicker">APPEARANCE LAB</span><h3 id="themeStudioTitle">Theme Studio</h3><p>Build a palette that flows through the liquid glass.</p></div>
