@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const socialView = $('view-social');
   if (!socialView) return;
-  let client = null, user = null, activeFriend = null, dmChannel = null, roomChannel = null, activeRoom = null;
+  let client = null, user = null, activeFriend = null, dmChannel = null, roomChannel = null, activeRoom = null, socialRealtimeChannel = null, socialRefreshTimer = null;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const nameOf = profile => profile?.display_name || 'Listener';
   function status(message, kind='info') {
@@ -160,15 +160,36 @@
         controls.append(inviteSelect,inviteBtn,trackSelect,addBtn);
         const trackBox=document.createElement('div');trackBox.className='social-collab-tracks';
         const {data:tracks,error:trackError}=await client.from('resona_collaborative_playlist_tracks')
-          .select('id,track,added_by').eq('playlist_id',playlist.id).order('position',{ascending:true}).order('added_at',{ascending:true});
+          .select('id,track,added_by,position,added_at').eq('playlist_id',playlist.id).order('position',{ascending:true}).order('added_at',{ascending:true});
         if(trackError) throw trackError;
+        const contributorProfiles = await profilesByIds([...new Set((tracks||[]).map(entry=>entry.added_by).filter(Boolean))]);
+        const contributorNames = new Map(contributorProfiles.map(profile=>[profile.user_id,nameOf(profile)]));
         (tracks||[]).forEach(entry=>{
-          const line=document.createElement('div');line.className='social-collab-track';
-          const label=document.createElement('span');label.textContent=(entry.track?.title||'Unknown track')+' · '+(entry.track?.artist||'Unknown artist');
+          const line=document.createElement('div');line.className='social-collab-track';line.draggable=true;line.dataset.trackId=entry.id;
+          const label=document.createElement('span');
+          label.textContent=(entry.track?.title||'Unknown track')+' · '+(entry.track?.artist||'Unknown artist')+' · Added by '+(entry.added_by===user.id?'you':(contributorNames.get(entry.added_by)||'collaborator'));
           const remove=button('Remove','btn small ghost',async()=>{
             const {error}=await client.from('resona_collaborative_playlist_tracks').delete().eq('id',entry.id);
             if(error){status(error.message,'error');return;}
             await loadCollaborativePlaylists(friendIds);
+          });
+          line.addEventListener('dragstart',event=>{event.dataTransfer.setData('text/plain',entry.id);event.dataTransfer.effectAllowed='move';line.classList.add('is-dragging');});
+          line.addEventListener('dragend',()=>line.classList.remove('is-dragging'));
+          line.addEventListener('dragover',event=>{event.preventDefault();event.dataTransfer.dropEffect='move';line.classList.add('is-drop-target');});
+          line.addEventListener('dragleave',()=>line.classList.remove('is-drop-target'));
+          line.addEventListener('drop',async event=>{
+            event.preventDefault();line.classList.remove('is-drop-target');
+            const draggedId=event.dataTransfer.getData('text/plain');
+            if(!draggedId||draggedId===entry.id)return;
+            const ordered=[...(tracks||[])];
+            const from=ordered.findIndex(x=>x.id===draggedId),to=ordered.findIndex(x=>x.id===entry.id);
+            if(from<0||to<0)return;
+            const [moved]=ordered.splice(from,1);ordered.splice(to,0,moved);
+            try{
+              const results=await Promise.all(ordered.map((item,index)=>client.from('resona_collaborative_playlist_tracks').update({position:index}).eq('id',item.id)));
+              const failed=results.find(result=>result.error);if(failed)throw failed.error;
+              await loadCollaborativePlaylists(friendIds);
+            }catch(error){status(error.message||'Could not reorder this playlist.','error');}
           });
           line.append(label,remove);trackBox.append(line);
         });
@@ -197,9 +218,27 @@
     } catch(error) { status(error.message || 'Could not create the collaborative playlist. Apply the Stage 3 migration first.','error'); }
   }
 
+  function subscribeSocialUpdates() {
+    if (!client || !user) return;
+    if (socialRealtimeChannel) client.removeChannel(socialRealtimeChannel);
+    socialRealtimeChannel = client.channel('resona-social-live-' + user.id)
+      .on('postgres_changes',{event:'*',schema:'public',table:'resona_friend_activity'},scheduleSocialRefresh)
+      .on('postgres_changes',{event:'*',schema:'public',table:'resona_collaborative_playlists'},scheduleSocialRefresh)
+      .on('postgres_changes',{event:'*',schema:'public',table:'resona_collaborative_playlist_members'},scheduleSocialRefresh)
+      .on('postgres_changes',{event:'*',schema:'public',table:'resona_collaborative_playlist_tracks'},scheduleSocialRefresh)
+      .subscribe();
+  }
+  function scheduleSocialRefresh() {
+    clearTimeout(socialRefreshTimer);
+    socialRefreshTimer = setTimeout(() => {
+      if (user && socialView.classList.contains('active')) loadSocial().catch(error=>status(error.message||'Could not refresh social activity.','error'));
+    }, 350);
+  }
+
   async function loadSocial() {
     await connect(); user=window.ResonaAccount.getUser(); signedInUI();
     if(!user) return;
+    if(!socialRealtimeChannel) subscribeSocialUpdates();
     const {data:friendships,error}=await client.from('resona_friendships').select('*')
       .or('requester_id.eq.'+user.id+',addressee_id.eq.'+user.id).order('created_at',{ascending:false});
     if(error) throw error;
@@ -445,6 +484,7 @@
     if(user?.id!==next?.id){user=next;activeFriend=null;activeRoom=null;
       if(dmChannel&&client)client.removeChannel(dmChannel);dmChannel=null;
       if(roomChannel&&client)client.removeChannel(roomChannel);roomChannel=null;
+      if(socialRealtimeChannel&&client)client.removeChannel(socialRealtimeChannel);socialRealtimeChannel=null;
       if(user)connect().then(async()=>{await loadSocial(); const {data}=await client.from('resona_friend_activity').select('sharing_enabled').eq('user_id',user.id).maybeSingle(); $('activitySharingToggle').checked=!!data?.sharing_enabled;}).catch(e=>status(e.message,'error'));else { signedInUI(); if($('activitySharingToggle'))$('activitySharingToggle').checked=false; }
     }
   });
