@@ -8,7 +8,8 @@ const Store = (() => {
     quota: 'jm.quota',
     cache: 'jm.searchCache',
     queue: 'jm.queue',
-    history: 'jm.history'
+    history: 'jm.history',
+    recentSearches: 'jm.recentSearches'
   };
 
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // cache results for 24 hours
@@ -187,6 +188,23 @@ const Store = (() => {
       write(KEYS.history, []);
     },
 
+    // ---- Search history ----
+    getRecentSearches() {
+      return read(KEYS.recentSearches, []);
+    },
+    addRecentSearch(query, source) {
+      const clean = String(query || '').trim();
+      if (!clean) return this.getRecentSearches();
+      const item = { query: clean, source: source || 'youtube', searchedAt: Date.now() };
+      const list = this.getRecentSearches().filter(x => !(String(x.query).toLowerCase() === clean.toLowerCase() && x.source === item.source));
+      list.unshift(item);
+      write(KEYS.recentSearches, list.slice(0, 15));
+      return list.slice(0, 15);
+    },
+    clearRecentSearches() {
+      write(KEYS.recentSearches, []);
+    },
+
     // ---- Backup ----
     exportAll() {
       return {
@@ -195,7 +213,8 @@ const Store = (() => {
         library: this.getLibrary(),
         playlists: this.getPlaylists(),
         queue: this.getQueue(),
-        history: this.getHistory()
+        history: this.getHistory(),
+        recentSearches: this.getRecentSearches()
       };
     },
     importAll(data) {
@@ -204,6 +223,7 @@ const Store = (() => {
       if (Array.isArray(data.playlists)) write(KEYS.playlists, data.playlists);
       if (Array.isArray(data.queue)) write(KEYS.queue, data.queue);
       if (Array.isArray(data.history)) write(KEYS.history, data.history);
+      if (Array.isArray(data.recentSearches)) write(KEYS.recentSearches, data.recentSearches);
     }
   };
 })();
