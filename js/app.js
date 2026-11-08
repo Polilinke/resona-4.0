@@ -1162,11 +1162,85 @@
     }
   };
 
+  // Keep mobile lock-screen / notification media controls in sync with Resona.
+  let lastMediaPositionUpdate = 0;
+  function updateMediaPosition(force = false) {
+    if (!('mediaSession' in navigator) || typeof navigator.mediaSession.setPositionState !== 'function') return;
+    const now = Date.now();
+    if (!force && now - lastMediaPositionUpdate < 4000) return;
+    let duration = 0, position = 0;
+    try {
+      if (state.audioMode) {
+        duration = ResonaAudio.getDuration();
+        position = ResonaAudio.getTime();
+      } else if (state.playerReady && state.player && state.currentTrack) {
+        duration = Number(state.player.getDuration()) || 0;
+        position = Number(state.player.getCurrentTime()) || 0;
+      }
+      if (duration > 0 && Number.isFinite(duration) && Number.isFinite(position)) {
+        navigator.mediaSession.setPositionState({ duration, playbackRate: 1, position: Math.max(0, Math.min(position, duration)) });
+        lastMediaPositionUpdate = now;
+      }
+    } catch (_) {}
+  }
+
+  function syncMediaSession(playing) {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
+      if (state.currentTrack && 'MediaMetadata' in window) {
+        const track = state.currentTrack;
+        const artwork = track.thumbnail ? [{ src: track.thumbnail, sizes: '512x512', type: 'image/jpeg' }] : [];
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: track.title || 'Resona',
+          artist: track.artist || 'Unknown artist',
+          album: 'Resona',
+          artwork
+        });
+      }
+      updateMediaPosition(true);
+    } catch (_) {}
+  }
+
+  if ('mediaSession' in navigator) {
+    const actions = {
+      play: () => togglePlay(),
+      pause: () => {
+        if (state.audioMode) ResonaAudio.pause();
+        else if (state.playerReady && state.player) state.player.pauseVideo();
+      },
+      previoustrack: () => playPrev(),
+      nexttrack: () => playNext(),
+      seekbackward: (details) => {
+        const offset = Number(details.seekOffset) || 10;
+        if (state.audioMode) ResonaAudio.seek(ResonaAudio.getTime() - offset);
+        else if (state.playerReady && state.player) state.player.seekTo(Math.max(0, state.player.getCurrentTime() - offset), true);
+        updateMediaPosition(true);
+      },
+      seekforward: (details) => {
+        const offset = Number(details.seekOffset) || 10;
+        if (state.audioMode) ResonaAudio.seek(ResonaAudio.getTime() + offset);
+        else if (state.playerReady && state.player) state.player.seekTo(state.player.getCurrentTime() + offset, true);
+        updateMediaPosition(true);
+      },
+      seekto: (details) => {
+        if (!Number.isFinite(details.seekTime)) return;
+        if (state.audioMode) ResonaAudio.seek(details.seekTime);
+        else if (state.playerReady && state.player) state.player.seekTo(details.seekTime, true);
+        updateMediaPosition(true);
+      }
+    };
+    Object.entries(actions).forEach(([name, handler]) => {
+      try { navigator.mediaSession.setActionHandler(name, handler); } catch (_) {}
+    });
+  }
+
   function setPlayingUI(playing) {
     NowPlaying.setPlaying(playing);
     $('playBtn').textContent = playing ? '❚❚' : '▶';
     $('visualizer').classList.toggle('active', playing);
     $('visualizer').classList.toggle('audio-reactive', !!playing && !!state.audioMode);
+    syncMediaSession(playing);
   }
 
   function showNowPlaying(track) {
@@ -1174,6 +1248,7 @@
     $('npArtist').textContent = track.artist;
     $('npThumb').src = track.thumbnail || '';
     NowPlaying.setTrack(track);
+    syncMediaSession(true);
     setPlayingUI(true);
     updateAlbumBg();
   }
@@ -1399,9 +1474,11 @@
   window.addEventListener('resona:audio-play', () => {
     if (!state.audioMode) return;
     setPlayingUI(true);
+    updateMediaPosition(true);
     cancelAnimationFrame(visualizerFrame);
     visualizerFrame = requestAnimationFrame(animateAudioVisualizer);
   });
+  window.addEventListener('resona:audio-timeupdate', () => updateMediaPosition());
   window.addEventListener('resona:audio-pause', () => {
     if (!state.audioMode) return;
     setPlayingUI(false);
