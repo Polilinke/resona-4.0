@@ -971,6 +971,23 @@
     window.dispatchEvent(new Event('deepflow:sleep-ended'));
   });
 
+  $('shuffleQueueBtn')?.addEventListener('click', () => {
+    const start = Math.max(0, state.currentIndex + 1);
+    const upcoming = state.queue.slice(start);
+    if (upcoming.length < 2) {
+      flashStatus('Add at least two upcoming tracks to shuffle.');
+      return;
+    }
+    for (let i = upcoming.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [upcoming[i], upcoming[j]] = [upcoming[j], upcoming[i]];
+    }
+    state.queue.splice(start, upcoming.length, ...upcoming);
+    saveQueue();
+    renderQueue();
+    flashStatus('Upcoming tracks shuffled. The current song stays in place.');
+  });
+
   $('clearQueueBtn').addEventListener('click', () => {
     state.queue = [];
     state.currentIndex = -1;
