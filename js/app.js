@@ -366,6 +366,8 @@
   async function runSearch(query, force = false) {
     if (query === state.lastQuery && !force) return;
     state.lastQuery = query;
+    Store.addRecentSearch(query, state.searchSource);
+    window.dispatchEvent(new Event('resona:search-history-changed'));
     const requestId = ++state.searchRequestId;
     showView('search');
 
