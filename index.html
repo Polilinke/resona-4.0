@@ -519,6 +519,17 @@
     </div>
   </div>
 
+
+  <!-- Centered playback error popup -->
+  <div id="playbackErrorDialog" class="playback-error-overlay hidden" aria-hidden="true">
+    <section class="playback-error-card" role="alertdialog" aria-modal="true" aria-labelledby="playbackErrorTitle" aria-describedby="playbackErrorMessage">
+      <button id="closePlaybackError" class="playback-error-close" type="button" aria-label="Close">×</button>
+      <div class="playback-error-mark" aria-hidden="true">×</div>
+      <h3 id="playbackErrorTitle">Song not available</h3>
+      <p id="playbackErrorMessage">This song cannot be played right now.</p>
+    </section>
+  </div>
+
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/device-layout.js"></script>
