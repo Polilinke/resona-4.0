@@ -182,8 +182,15 @@
   }
 
   function wrapped() {
-    const year = new Date().getFullYear();
-    const list = history().filter(track => new Date(track.playedAt || 0).getFullYear() === year);
+    const now = new Date();
+    const period = $('wrappedPeriodSelect').value;
+    const year = now.getFullYear();
+    const list = history().filter(track => {
+      const date = new Date(track.playedAt || 0);
+      return period === 'month'
+        ? date.getFullYear() === year && date.getMonth() === now.getMonth()
+        : date.getFullYear() === year;
+    });
     const counts = new Map();
     const artists = new Map();
     const months = new Map();
@@ -200,7 +207,8 @@
     const topArtist = [...artists.entries()].sort((a,b) => b[1]-a[1])[0];
     const busiest = [...months.entries()].sort((a,b) => b[1]-a[1])[0];
     const panel = $('wrappedPanel'); panel.classList.remove('hidden'); panel.replaceChildren();
-    const h = document.createElement('h3'); h.textContent = year + ' · Your Resona Wrapped';
+    const periodName = period === 'month' ? now.toLocaleDateString(undefined, { month:'long', year:'numeric' }) : String(year);
+    const h = document.createElement('h3'); h.textContent = periodName + ' · Your Resona Wrapped';
     const grid = document.createElement('div'); grid.className = 'wrapped-stats';
     const cards = [
       ['PLAY STARTS', String(list.length)],
@@ -216,7 +224,7 @@
       card.append(label,value); grid.append(card);
     });
     const note = document.createElement('p'); note.className = 'hint';
-    note.textContent = 'Based on play starts recorded in this browser during the current calendar year. It does not estimate listening duration.';
+    note.textContent = 'Based on play starts recorded in this browser for the selected period. It does not estimate listening duration.';
     panel.append(h,grid,note);
   }
   function setAccent(hex) {
