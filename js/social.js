@@ -36,6 +36,80 @@
     const {data,error}=await client.from('resona_profiles').select('user_id,display_name,bio').in('user_id',ids);
     if(error) throw error; return data||[];
   }
+
+  async function loadFriendActivity(friendIds) {
+    const box = $('socialActivityList');
+    if (!box) return;
+    box.replaceChildren();
+    if (!friendIds.length) {
+      box.innerHTML = '<div class="rooms-empty">Add friends to see shared listening activity.</div>';
+      return;
+    }
+    try {
+      const { data, error } = await client.from('resona_friend_activity')
+        .select('user_id,track,updated_at').in('user_id', friendIds).eq('sharing_enabled', true)
+        .order('updated_at', { ascending: false });
+      if (error) throw error;
+      const rows = data || [];
+      if (!rows.length) {
+        box.innerHTML = '<div class="rooms-empty">No friends are sharing activity right now. Activity sharing is optional.</div>';
+        return;
+      }
+      const profiles = await profilesByIds(rows.map(x => x.user_id));
+      const names = new Map(profiles.map(p => [p.user_id, nameOf(p)]));
+      rows.forEach(item => {
+        const track = item.track || {};
+        const card = document.createElement('div');
+        card.className = 'social-activity-card';
+        const title = document.createElement('strong');
+        title.textContent = names.get(item.user_id) || 'Friend';
+        const song = document.createElement('span');
+        song.textContent = track.title ? 'Listening to ' + track.title + (track.artist ? ' · ' + track.artist : '') : 'Recently active';
+        const when = document.createElement('small');
+        when.textContent = 'Updated ' + new Date(item.updated_at).toLocaleString();
+        card.append(title, song, when);
+        box.append(card);
+      });
+    } catch (error) {
+      box.innerHTML = '<div class="rooms-empty">Friend activity needs the Stage 3 Supabase migration. Apply supabase/stage-3-social-upgrades.sql to enable it.</div>';
+    }
+  }
+
+  async function setActivitySharing(enabled) {
+    try {
+      await connect();
+      if (!user) throw new Error('Sign in to change activity sharing.');
+      const { error } = await client.from('resona_friend_activity').upsert({
+        user_id: user.id, sharing_enabled: !!enabled, track: null, updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+      if (error) throw error;
+      status(enabled ? 'Friend activity sharing is on. Friends can see your current track.' : 'Friend activity sharing is off.', 'success');
+      const friendships = await client.from('resona_friendships').select('requester_id,addressee_id')
+        .or('requester_id.eq.' + user.id + ',addressee_id.eq.' + user.id).eq('status','accepted');
+      if (!friendships.error) {
+        const ids = (friendships.data || []).map(x => x.requester_id === user.id ? x.addressee_id : x.requester_id);
+        await loadFriendActivity(ids);
+      }
+    } catch (error) {
+      $('activitySharingToggle').checked = false;
+      status(error.message || 'Could not update activity sharing. Apply the Stage 3 Supabase migration first.', 'error');
+    }
+  }
+
+  async function publishCurrentTrack(track) {
+    if (!client || !user || !$('activitySharingToggle')?.checked || !track?.id) return;
+    const safeTrack = {
+      id: String(track.id).slice(0, 180),
+      title: String(track.title || 'Unknown track').slice(0, 180),
+      artist: String(track.artist || 'Unknown artist').slice(0, 140),
+      source: String(track.source || 'youtube').slice(0, 24)
+    };
+    const { error } = await client.from('resona_friend_activity').upsert({
+      user_id: user.id, sharing_enabled: true, track: safeTrack, updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    if (error) status('Could not update friend activity. Check the Stage 3 Supabase migration.', 'error');
+  }
+
   async function loadSocial() {
     await connect(); user=window.ResonaAccount.getUser(); signedInUI();
     if(!user) return;
@@ -49,6 +123,7 @@
     const allIds=[...new Set([...friendIds,...incoming.map(x=>x.requester_id),...outgoing.map(x=>x.addressee_id)])];
     const people=await profilesByIds(allIds); const byId=new Map(people.map(p=>[p.user_id,p]));
     renderFriends(friendIds.map(id=>byId.get(id)).filter(Boolean));
+    await loadFriendActivity(friendIds);
     renderRequests(incoming,outgoing,byId);
     renderConversations(friendIds.map(id=>byId.get(id)).filter(Boolean));
     await loadInvites(byId);
@@ -257,6 +332,7 @@
       $('roomInviteFriendsPanel').classList.remove('hidden');
     }catch(e){status(e.message||'Could not load your friends.','error');}
   }
+  $('activitySharingToggle')?.addEventListener('change', event => setActivitySharing(event.target.checked));
   $('socialSignInBtn')?.addEventListener('click',()=> $('accountBtn')?.click());
   $('socialSearchBtn')?.addEventListener('click',searchPeople);
   $('socialSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')searchPeople();});
@@ -271,6 +347,7 @@
     catch{status('Invite code: '+activeRoom.invite_code,'info');}
   });
   window.ResonaSocial={inviteToRoom,openRoomChat};
+  window.addEventListener('resona:track-changed', event => publishCurrentTrack(event.detail?.track));
   window.addEventListener('resona:room-open',event=>{if(event.detail?.room)openRoomChat(event.detail.room);});
   window.addEventListener('resona:room-close',()=>{activeRoom=null;if(roomChannel&&client)client.removeChannel(roomChannel);roomChannel=null;});
   window.addEventListener('resona:auth-ready',event=>{user=event.detail?.user||null;connect().then(loadSocial).catch(e=>status(e.message,'error'));});
@@ -279,10 +356,10 @@
     if(user?.id!==next?.id){user=next;activeFriend=null;activeRoom=null;
       if(dmChannel&&client)client.removeChannel(dmChannel);dmChannel=null;
       if(roomChannel&&client)client.removeChannel(roomChannel);roomChannel=null;
-      if(user)connect().then(loadSocial).catch(e=>status(e.message,'error'));else signedInUI();
+      if(user)connect().then(async()=>{await loadSocial(); const {data}=await client.from('resona_friend_activity').select('sharing_enabled').eq('user_id',user.id).maybeSingle(); $('activitySharingToggle').checked=!!data?.sharing_enabled;}).catch(e=>status(e.message,'error'));else { signedInUI(); if($('activitySharingToggle'))$('activitySharingToggle').checked=false; }
     }
   });
-  if(window.ResonaAccount?.getClient)connect().then(loadSocial).catch(()=>{});
+  if(window.ResonaAccount?.getClient)connect().then(async()=>{await loadSocial();if(user){const {data}=await client.from('resona_friend_activity').select('sharing_enabled').eq('user_id',user.id).maybeSingle();$('activitySharingToggle').checked=!!data?.sharing_enabled;}}).catch(()=>{});
   else signedInUI();
   document.querySelector('[data-view="social"]')?.addEventListener('click',()=>loadSocial().catch(e=>status(e.message||'Social could not load.','error')));
 })();
