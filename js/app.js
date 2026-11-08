@@ -1032,7 +1032,7 @@
             ? 'Song not available — ' + detail
             : 'Unable to play song — ' + detail;
           setPlayingUI(false);
-          flashStatus(msg);
+          showPlaybackError(msg);
           const status = $('audioToolsStatus');
           if (status) status.textContent = msg;
         }
@@ -1502,6 +1502,38 @@
     setPlayingUI(false);
   });
 
+
+  // ---------- Playback error popup ----------
+
+  function showPlaybackError(message) {
+    const dialog = $('playbackErrorDialog');
+    const text = $('playbackErrorMessage');
+    if (!dialog || !text) {
+      flashStatus(message);
+      return;
+    }
+    text.textContent = message;
+    dialog.classList.remove('hidden');
+    dialog.setAttribute('aria-hidden', 'false');
+    $('closePlaybackError')?.focus();
+  }
+
+  function closePlaybackError() {
+    const dialog = $('playbackErrorDialog');
+    if (!dialog) return;
+    dialog.classList.add('hidden');
+    dialog.setAttribute('aria-hidden', 'true');
+  }
+
+  $('closePlaybackError')?.addEventListener('click', closePlaybackError);
+  $('playbackErrorDialog')?.addEventListener('click', event => {
+    if (event.target === $('playbackErrorDialog')) closePlaybackError();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && $('playbackErrorDialog') && !$('playbackErrorDialog').classList.contains('hidden')) {
+      closePlaybackError();
+    }
+  });
 
   // ---------- Status helper ----------
   let statusTimer = null;
