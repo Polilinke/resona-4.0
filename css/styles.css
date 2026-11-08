@@ -3099,3 +3099,13 @@ html[data-device-layout="mobile"] .track-meta { display: none; }
 .shortcut-reference-grid span{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;flex-wrap:wrap}
 .shortcut-reference kbd{padding:3px 7px;border:1px solid var(--panel-border);border-radius:6px;background:rgba(255,255,255,.06);color:var(--text);font:600 10px Consolas,monospace}
 @media(max-width:560px){.shortcut-reference-grid{grid-template-columns:1fr}}
+
+
+/* Stage 4: queue actions stay compact and wrap cleanly on small screens */
+.queue-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.queue-header-actions .btn{white-space:nowrap}
+@media(max-width:520px){
+  #view-queue>.row-between{align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .queue-header-actions{width:100%;justify-content:flex-start}
+  .queue-header-actions .btn{flex:1;min-width:0}
+}
