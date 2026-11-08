@@ -259,6 +259,40 @@
   });
   window.addEventListener('resona:search-history-changed', renderRecentSearches);
   $('sleepTimerBtn').addEventListener('click', startSleepTimer);
+  const notificationToggle = $('desktopNotificationsToggle');
+  if (notificationToggle) {
+    notificationToggle.checked = !!Store.getSettings().desktopNotifications;
+    notificationToggle.addEventListener('change', async () => {
+      if (notificationToggle.checked) {
+        if (!('Notification' in window)) {
+          notificationToggle.checked = false;
+          alert('This browser does not support desktop notifications.');
+          return;
+        }
+        if (Notification.permission === 'default') await Notification.requestPermission();
+        if (Notification.permission !== 'granted') {
+          notificationToggle.checked = false;
+          alert('Notifications were not permitted. You can enable them in your browser site settings.');
+          return;
+        }
+      }
+      Store.saveSettings({ desktopNotifications: notificationToggle.checked });
+    });
+  }
+  window.addEventListener('resona:track-changed', event => {
+    const track = event.detail?.track;
+    if (!track || !Store.getSettings().desktopNotifications || !('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+      const notice = new Notification(track.title || 'Now playing', {
+        body: track.artist || 'Resona',
+        icon: track.thumbnail || undefined,
+        tag: 'resona-now-playing',
+        renotify: false
+      });
+      notice.onclick = () => { window.focus(); notice.close(); };
+    } catch (error) { console.warn('Desktop notification unavailable:', error); }
+  });
+
   $('customAccent').addEventListener('input', e => setAccent(e.target.value));
   $('glassIntensity').addEventListener('input', e => document.documentElement.style.setProperty('--glass-blur', `${Number(e.target.value)}px`));
   window.addEventListener('deepflow:sleep-ended', () => { clearTimeout(sleepTimeout); $('sleepTimerBtn').textContent = 'Sleep'; });
