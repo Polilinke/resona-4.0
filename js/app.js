@@ -1547,21 +1547,21 @@
     const bassBins = live ? liveData.slice(1, 6) : [];
     const bassEnergy = bassBins.length ? bassBins.reduce((sum, value) => sum + value, 0) / (bassBins.length * 255) : 0;
     const bassRise = bassEnergy - bassAverage;
-    if (live && playing && now - lastBeatAt > 185 && bassEnergy > 0.105 && bassRise > Math.max(0.025, bassAverage * 0.34)) {
-      beatPulse = 1;
+    if (live && playing && now - lastBeatAt > 420 && bassEnergy > 0.16 && bassRise > Math.max(0.045, bassAverage * 0.48)) {
+      beatPulse = 0.28;
       lastBeatAt = now;
     }
     bassAverage = bassAverage * 0.94 + bassEnergy * 0.06;
-    beatPulse *= 0.91;
+    beatPulse *= 0.94;
     const rawEnergy = live ? liveData.slice(2, 22).reduce((sum, value) => sum + value, 0) / (20 * 255) : (playing ? 0.12 : 0.025);
-    smoothedEnergy += (rawEnergy - smoothedEnergy) * 0.18;
-    const energy = smoothedEnergy + beatPulse * 0.2;
+    smoothedEnergy += (rawEnergy - smoothedEnergy) * 0.09;
+    const energy = smoothedEnergy * 0.55 + beatPulse * 0.045;
     const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#55dfff';
     const warm = getComputedStyle(document.documentElement).getPropertyValue('--warm').trim() || '#f0a064';
     visualStageTick += playing ? 1 : 0.18;
     ctx.clearRect(0, 0, width, height);
     const glow = ctx.createRadialGradient(width * 0.5, height * 0.48, 8, width * 0.5, height * 0.48, Math.max(width, height) * 0.68);
-    glow.addColorStop(0, 'rgba(22,105,130,' + (0.12 + energy * 0.2) + ')');
+    glow.addColorStop(0, 'rgba(22,105,130,' + (0.08 + energy * 0.08) + ')');
     glow.addColorStop(0.55, 'rgba(8,25,36,0.12)');
     glow.addColorStop(1, 'rgba(2,6,10,0)');
     ctx.fillStyle = glow;
@@ -1572,13 +1572,13 @@
       const barWidth = Math.max(2, (width - gap * (count - 1)) / count);
       for (let i = 0; i < count; i++) {
         const bin = live ? liveData[Math.min(liveData.length - 1, Math.floor(2 + Math.pow(i / count, 1.8) * liveData.length * 0.72))] / 255 : 0.18 + 0.17 * (0.5 + Math.sin(visualStageTick * 0.045 + i * 0.22));
-        const h = Math.max(3, (0.025 + bin * (playing ? 0.9 : 0.12) + beatPulse * (0.28 + Math.max(0, 1 - Math.abs(i - count * 0.5) / (count * 0.5)) * 0.34)) * height);
+        const h = Math.max(3, (0.025 + bin * (playing ? 0.42 : 0.08) + beatPulse * (0.045 + Math.max(0, 1 - Math.abs(i - count * 0.5) / (count * 0.5)) * 0.055)) * height);
         const x = i * (barWidth + gap);
         const grad = ctx.createLinearGradient(0, height - h, 0, height);
         grad.addColorStop(0, i > count * 0.72 ? warm : accent);
         grad.addColorStop(1, 'rgba(57,139,160,0.12)');
         ctx.fillStyle = grad;
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 6;
         ctx.shadowColor = accent;
         ctx.beginPath();
         ctx.roundRect(x, height - h, barWidth, h, barWidth);
@@ -1591,7 +1591,7 @@
         for (let x = 0; x <= width; x += 3) {
           const index = Math.floor((x / width) * (liveData.length - 1));
           const sample = live ? (liveData[index] / 255 - 0.35) : Math.sin(x * 0.012 + visualStageTick * 0.025 + layer) * 0.35;
-          const y = height * (0.5 + layer * 0.045) + Math.sin(x * (0.009 + layer * 0.002) + visualStageTick * (0.018 + layer * 0.006)) * height * (0.12 + energy * 0.2) + sample * height * (live ? 0.22 : 0.08);
+          const y = height * (0.5 + layer * 0.045) + Math.sin(x * (0.009 + layer * 0.002) + visualStageTick * (0.018 + layer * 0.006)) * height * (0.075 + energy * 0.045) + sample * height * (live ? 0.09 : 0.05);
           if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
         ctx.strokeStyle = layer % 2 ? warm : accent;
@@ -1605,14 +1605,14 @@
       ctx.shadowBlur = 0;
     } else if (visualMode === 'orb') {
       const cx = width / 2, cy = height / 2;
-      const radius = Math.min(width, height) * (0.17 + energy * 0.08 + beatPulse * 0.075);
+      const radius = Math.min(width, height) * (0.17 + energy * 0.025 + beatPulse * 0.018);
       for (let ring = 5; ring >= 0; ring--) {
         ctx.beginPath();
         const points = 220;
         for (let i = 0; i <= points; i++) {
           const angle = i / points * Math.PI * 2;
           const bin = live ? liveData[Math.min(liveData.length - 1, Math.floor(i / points * liveData.length))] / 255 : 0.5 + 0.5 * Math.sin(angle * 5 + visualStageTick * 0.03);
-          const r = radius + ring * 13 + bin * (live ? 34 : 16) * (playing ? 1 : 0.2);
+          const r = radius + ring * 13 + bin * (live ? 12 : 8) * (playing ? 1 : 0.2);
           const x = cx + Math.cos(angle) * r;
           const y = cy + Math.sin(angle) * r * 0.78;
           if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
@@ -1641,11 +1641,11 @@
         const drift = visualStageTick * particle.speed * (playing ? 0.6 : 0.08);
         const x = ((particle.x * width + Math.sin(drift + index) * 32) % width + width) % width;
         const y = ((particle.y * height - drift * 18) % height + height) % height;
-        const size = particle.size * (1 + energy * 1.8 + beatPulse * 1.2);
+        const size = particle.size * (1 + energy * 0.45 + beatPulse * 0.2);
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fillStyle = index % 7 === 0 ? warm : accent;
-        ctx.globalAlpha = Math.min(1, 0.25 + energy * 0.55 + beatPulse * 0.2);
+        ctx.globalAlpha = Math.min(1, 0.2 + energy * 0.2 + beatPulse * 0.08);
         ctx.shadowBlur = 12;
         ctx.shadowColor = ctx.fillStyle;
         ctx.fill();
