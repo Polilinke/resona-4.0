@@ -1338,7 +1338,7 @@
     $('audioToolsStatus').textContent = 'Choose the Resona tab in your browser picker and enable Share tab audio.';
     try {
       ResonaAudio.pause();
-      await ResonaAudio.startTabCapture();
+      await ResonaAudio.startVisualizerCapture();
       $('startTabCaptureBtn').textContent = 'Tab capture active';
       $('stopTabCaptureBtn').disabled = false;
       $('audioSourceTitle').textContent = 'Browser tab audio';
@@ -1508,8 +1508,8 @@
     const status = $('visualizerSourceStatus');
     if (!status) return;
     const beatButton = $('visualizerBeatSyncBtn');
-    const liveSource = state.audioMode || ResonaAudio.isTabCapturing();
-    if (beatButton) beatButton.classList.toggle('hidden', liveSource);
+    const liveSource = state.audioMode || ResonaAudio.isVisualizerCapturing() || ResonaAudio.isTabCapturing();
+    if (beatButton) beatButton.classList.toggle('hidden', liveSource || !state.currentTrack);
     if (liveSource) {
       status.textContent = 'LIVE AUDIO · BEAT SYNC ACTIVE';
       status.classList.add('is-live');
@@ -1540,7 +1540,7 @@
     const width = visualizerCanvas.clientWidth;
     const height = visualizerCanvas.clientHeight;
     const playing = visualizerIsPlaying();
-    const liveData = (state.audioMode || ResonaAudio.isTabCapturing()) ? ResonaAudio.getFrequencyData() : [];
+    const liveData = (state.audioMode || ResonaAudio.isVisualizerCapturing() || ResonaAudio.isTabCapturing()) ? ResonaAudio.getFrequencyData() : [];
     const live = liveData.length > 0;
     const now = performance.now();
     // Bass transient detection: look for a sudden low-frequency rise, not just loudness.
@@ -1693,6 +1693,8 @@
   window.addEventListener('resona:audio-play', updateDynamicVisualizerSource);
   window.addEventListener('resona:tab-capture-start', updateDynamicVisualizerSource);
   window.addEventListener('resona:tab-capture-stop', updateDynamicVisualizerSource);
+  window.addEventListener('resona:visualizer-capture-start', updateDynamicVisualizerSource);
+  window.addEventListener('resona:visualizer-capture-stop', updateDynamicVisualizerSource);
   window.addEventListener('resona:audio-pause', updateDynamicVisualizerSource);
 
   let visualizerFrame = 0;
