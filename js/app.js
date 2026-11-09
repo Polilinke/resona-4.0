@@ -1469,7 +1469,7 @@
   let lastBeatAt = 0;
   let smoothedEnergy = 0;
   let bassMotion = 0;
-  const visualBarLevels = Array.from({ length: 32 }, () => 0);
+  const visualBarLevels = Array.from({ length: 48 }, () => 0);
   function visualizerIsPlaying() {
     if (state.audioMode) return ResonaAudio.isPlaying();
     try { return !!(state.playerReady && state.player && state.player.getPlayerState() === 1); }
@@ -1566,8 +1566,8 @@
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, width, height);
     bassMotion += ((live && playing ? bassEnergy : 0) - bassMotion) * 0.16;
-    const count = 32;
-    const bassAmount = Math.min(1, bassMotion * 1.75);
+    const count = 48;
+    const bassAmount = Math.min(1, bassMotion * 1.9);
 
     if (visualMode === 'spectrum') {
       const gap = Math.max(3, Math.min(7, width * 0.006));
@@ -1577,17 +1577,33 @@
       const baseline = height * 0.79;
       for (let i = 0; i < count; i++) {
         const position = i / (count - 1);
-        const binIndex = Math.min(liveData.length - 1, Math.floor(2 + Math.pow(position, 1.45) * liveData.length * 0.68));
-        const target = live ? (liveData[binIndex] || 0) / 255 : 0.12 + 0.08 * (0.5 + Math.sin(visualStageTick * 0.025 + i * 0.28));
-        visualBarLevels[i] += (target - visualBarLevels[i]) * 0.16;
-        const middleBoost = 1 - Math.abs((i - (count - 1) / 2) / ((count - 1) / 2));
-        const barHeight = Math.max(5, (0.035 + visualBarLevels[i] * (playing ? 0.48 : 0.12) + bassAmount * middleBoost * 0.07) * height);
+        // Logarithmic frequency mapping gives bass and low-mids more visual space.
+        const lowBin = Math.max(1, Math.floor(Math.pow(position, 2.15) * (liveData.length - 2)));
+        const highBin = Math.max(lowBin + 1, Math.min(liveData.length, Math.floor(Math.pow(Math.min(1, position + 1 / count), 2.15) * (liveData.length - 1)) + 1));
+        let bandLevel = 0;
+        if (live) {
+          let peak = 0, total = 0;
+          for (let bin = lowBin; bin < highBin; bin++) {
+            const value = (liveData[bin] || 0) / 255;
+            peak = Math.max(peak, value);
+            total += value;
+          }
+          const average = total / Math.max(1, highBin - lowBin);
+          bandLevel = average * 0.62 + peak * 0.38;
+        }
+        const target = live ? Math.min(1, bandLevel * 1.22) : 0.12 + 0.08 * (0.5 + Math.sin(visualStageTick * 0.025 + i * 0.28));
+        const smoothing = target > visualBarLevels[i] ? 0.24 : 0.105;
+        visualBarLevels[i] += (target - visualBarLevels[i]) * smoothing;
+        const bassBoost = 1 - Math.min(1, position * 1.65);
+        const midPresence = Math.max(0, 1 - Math.abs(position - 0.42) * 2.1);
+        const barHeight = Math.max(4, (0.025 + visualBarLevels[i] * (playing ? 0.56 : 0.12) + bassAmount * bassBoost * 0.105 + energy * midPresence * 0.035) * height);
         const x = left + i * (barWidth + gap), y = baseline - barHeight;
         const gradient = ctx.createLinearGradient(0, y, 0, baseline);
-        gradient.addColorStop(0, i > count * 0.72 ? warm : accent);
-        gradient.addColorStop(1, 'rgba(57,139,160,0.18)');
+        gradient.addColorStop(0, position > 0.72 ? warm : accent);
+        gradient.addColorStop(0.58, 'rgba(91,190,205,0.72)');
+        gradient.addColorStop(1, 'rgba(57,139,160,0.16)');
         ctx.fillStyle = gradient;
-        ctx.shadowBlur = 5;
+        ctx.shadowBlur = 4 + bassBoost * bassAmount * 5;
         ctx.shadowColor = accent;
         ctx.beginPath();
         ctx.roundRect(x, y, barWidth, barHeight, Math.min(barWidth / 2, 8));
