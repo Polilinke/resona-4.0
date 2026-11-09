@@ -1468,6 +1468,8 @@
   let bassAverage = 0.08;
   let lastBeatAt = 0;
   let smoothedEnergy = 0;
+  let bassMotion = 0;
+  const visualBarLevels = Array.from({ length: 32 }, () => 0);
   const visualParticles = Array.from({ length: 96 }, (_, index) => ({
     x: ((index * 0.61803398875) % 1),
     y: ((index * 0.7548776662) % 1),
@@ -1563,115 +1565,143 @@
     const glow = ctx.createRadialGradient(width * 0.5, height * 0.48, 8, width * 0.5, height * 0.48, Math.max(width, height) * 0.68);
     glow.addColorStop(0, 'rgba(22,105,130,' + (0.08 + energy * 0.08) + ')');
     glow.addColorStop(0.55, 'rgba(8,25,36,0.12)');
-    glow.addColorStop(1, 'rgba(2,6,10,0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, width, height);
-    const count = 72;
+    glow.addColorStop(1,    bassMotion += ((live && playing ? bassEnergy : 0) - bassMotion) * 0.11;
+    const count = 32;
+    const bassAmount = Math.min(1, bassMotion * 2.8);
+    const cx = width / 2, cy = height / 2;
+    const minSide = Math.min(width, height);
+
     if (visualMode === 'spectrum') {
-      const gap = 5;
-      const barWidth = Math.max(2, (width - gap * (count - 1)) / count);
+      const gap = Math.max(3, Math.min(7, width * 0.006));
+      const barWidth = Math.max(3, (width - gap * (count - 1) - 48) / count);
+      const totalWidth = count * barWidth + (count - 1) * gap;
+      const left = (width - totalWidth) / 2;
+      const baseline = height * 0.79;
       for (let i = 0; i < count; i++) {
-        const bin = live ? liveData[Math.min(liveData.length - 1, Math.floor(2 + Math.pow(i / count, 1.8) * liveData.length * 0.72))] / 255 : 0.18 + 0.17 * (0.5 + Math.sin(visualStageTick * 0.045 + i * 0.22));
-        const h = Math.max(3, (0.025 + bin * (playing ? 0.42 : 0.08) + beatPulse * (0.045 + Math.max(0, 1 - Math.abs(i - count * 0.5) / (count * 0.5)) * 0.055)) * height);
-        const x = i * (barWidth + gap);
-        const grad = ctx.createLinearGradient(0, height - h, 0, height);
-        grad.addColorStop(0, i > count * 0.72 ? warm : accent);
-        grad.addColorStop(1, 'rgba(57,139,160,0.12)');
-        ctx.fillStyle = grad;
-        ctx.shadowBlur = 6;
+        const position = i / (count - 1);
+        const binIndex = Math.min(liveData.length - 1, Math.floor(2 + Math.pow(position, 1.45) * liveData.length * 0.68));
+        const target = live ? (liveData[binIndex] || 0) / 255 : 0.12 + 0.08 * (0.5 + Math.sin(visualStageTick * 0.025 + i * 0.28));
+        visualBarLevels[i] += (target - visualBarLevels[i]) * 0.16;
+        const middleBoost = 1 - Math.abs((i - (count - 1) / 2) / ((count - 1) / 2));
+        const barHeight = Math.max(5, (0.035 + visualBarLevels[i] * (playing ? 0.48 : 0.12) + bassAmount * middleBoost * 0.07) * height);
+        const x = left + i * (barWidth + gap), y = baseline - barHeight;
+        const gradient = ctx.createLinearGradient(0, y, 0, baseline);
+        gradient.addColorStop(0, i > count * 0.72 ? warm : accent);
+        gradient.addColorStop(1, 'rgba(57,139,160,0.18)');
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 5;
         ctx.shadowColor = accent;
         ctx.beginPath();
-        ctx.roundRect(x, height - h, barWidth, h, barWidth);
+        ctx.roundRect(x, y, barWidth, barHeight, Math.min(barWidth / 2, 8));
         ctx.fill();
       }
       ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.moveTo(width * 0.12, baseline + 5);
+      ctx.lineTo(width * 0.88, baseline + 5);
+      ctx.strokeStyle = accent;
+      ctx.globalAlpha = 0.16;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
     } else if (visualMode === 'wave') {
-       // Smooth, bass-led ribbons: the whole wave breathes with the low end
-       // instead of drawing jagged frequency-bin values.
-       const midY = height * 0.5;
-       const bassAmount = Math.min(1, bassMotion * 2.4);
-       for (let layer = 0; layer < 3; layer++) {
-         const phase = visualStageTick * (0.012 + layer * 0.002);
-         const amplitude = height * (0.025 + bassAmount * 0.105) * (1 - layer * 0.2);
-         ctx.beginPath();
-         for (let x = 0; x <= width; x += 4) {
-           const progress = x / width;
-           const envelope = 0.35 + Math.pow(Math.sin(progress * Math.PI), 0.7) * 0.65;
-           const curve = Math.sin(progress * Math.PI * 4 + phase + layer * 0.55) * 0.62
-             + Math.sin(progress * Math.PI * 7 - phase * 0.7 + layer) * 0.2;
-           const y = midY + curve * amplitude * envelope + (layer - 1) * height * 0.018;
-           if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-         }
-         ctx.strokeStyle = layer === 1 ? warm : accent;
-         ctx.globalAlpha = 0.62 - layer * 0.13;
-         ctx.lineWidth = layer === 1 ? 2.6 : 1.7;
-         ctx.shadowBlur = 8;
-         ctx.shadowColor = layer === 1 ? warm : accent;
-         ctx.stroke();
-       }
-       ctx.globalAlpha = 1;
-       ctx.shadowBlur = 0;    } else if (visualMode === 'orb') {
-       // A clean circular core with one bass-deformed halo and a quiet outer ring.
-       const cx = width / 2, cy = height / 2;
-       const bassAmount = Math.min(1, bassMotion * 2.5);
-       const baseRadius = Math.min(width, height) * (0.19 + bassAmount * 0.035);
-       ctx.beginPath();
-       ctx.arc(cx, cy, baseRadius * 1.42, 0, Math.PI * 2);
-       ctx.strokeStyle = accent;
-       ctx.globalAlpha = 0.16 + bassAmount * 0.12;
-       ctx.lineWidth = 1.5;
-       ctx.stroke();
-       ctx.globalAlpha = 1;
-       for (let ring = 0; ring < 2; ring++) {
-         ctx.beginPath();
-         const points = 180;
-         for (let i = 0; i <= points; i++) {
-           const angle = i / points * Math.PI * 2;
-           const bassShape = Math.sin(angle * 4 + visualStageTick * 0.018) * 0.55
-             + Math.sin(angle * 7 - visualStageTick * 0.012) * 0.18;
-           const r = baseRadius + ring * 12 + bassShape * (5 + bassAmount * 18);
-           const x = cx + Math.cos(angle) * r;
-           const y = cy + Math.sin(angle) * r * 0.92;
-           if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-         }
-         ctx.closePath();
-         ctx.strokeStyle = ring === 0 ? accent : warm;
-         ctx.globalAlpha = ring === 0 ? 0.78 : 0.32;
-         ctx.lineWidth = ring === 0 ? 2 : 1.2;
-         ctx.shadowBlur = 7;
-         ctx.shadowColor = ring === 0 ? accent : warm;
-         ctx.stroke();
-       }
-       ctx.globalAlpha = 1;
-       ctx.shadowBlur = 0;
-       const core = ctx.createRadialGradient(cx - baseRadius * 0.28, cy - baseRadius * 0.32, 2, cx, cy, baseRadius);
-       core.addColorStop(0, 'rgba(177,245,255,0.88)');
-       core.addColorStop(0.32, accent);
-       core.addColorStop(1, 'rgba(13,49,68,0.16)');
-       ctx.fillStyle = core;
-       ctx.beginPath();
-       ctx.arc(cx, cy, baseRadius * 0.72, 0, Math.PI * 2);
-       ctx.fill();    } else {
-      const cx = width / 2, cy = height / 2;
-      visualParticles.forEach((particle, index) => {
-        const drift = visualStageTick * particle.speed * (playing ? 0.6 : 0.08);
-        const x = ((particle.x * width + Math.sin(drift + index) * 32) % width + width) % width;
-        const y = ((particle.y * height - drift * 18) % height + height) % height;
-        const size = particle.size * (1 + energy * 0.45 + beatPulse * 0.2);
+      const layers = [
+        { color: accent, alpha: 0.78, line: 2.8, offset: -0.035, phase: 0 },
+        { color: warm, alpha: 0.48, line: 1.8, offset: 0.015, phase: 1.1 },
+        { color: accent, alpha: 0.25, line: 1.2, offset: 0.065, phase: 2.2 }
+      ];
+      layers.forEach((layer, index) => {
+        const amplitude = height * (0.018 + bassAmount * 0.105) * (1 - index * 0.17);
+        const phase = visualStageTick * (0.009 + index * 0.0015) + layer.phase;
+        ctx.beginPath();
+        for (let x = 0; x <= width; x += 3) {
+          const p = x / width;
+          const envelope = 0.2 + Math.pow(Math.sin(p * Math.PI), 0.8) * 0.8;
+          const curve = Math.sin(p * Math.PI * 3.2 + phase) * 0.72 + Math.sin(p * Math.PI * 6.1 - phase * 0.62) * 0.18;
+          const y = cy + height * layer.offset + curve * amplitude * envelope;
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = layer.color;
+        ctx.globalAlpha = layer.alpha;
+        ctx.lineWidth = layer.line;
+        ctx.shadowBlur = index === 0 ? 10 : 5;
+        ctx.shadowColor = layer.color;
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 2 + bassAmount * 3, 0, Math.PI * 2);
+      ctx.fillStyle = warm;
+      ctx.globalAlpha = 0.35 + bassAmount * 0.2;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    } else if (visualMode === 'orb') {
+      const radius = minSide * (0.145 + bassAmount * 0.025);
+      const haloRadius = radius * (1.48 + bassAmount * 0.06);
+      const halo = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, haloRadius * 1.55);
+      halo.addColorStop(0, 'rgba(80,205,225,0.16)');
+      halo.addColorStop(0.55, 'rgba(45,145,170,0.07)');
+      halo.addColorStop(1, 'rgba(4,15,24,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(cx, cy, haloRadius * 1.55, 0, Math.PI * 2);
+      ctx.fill();
+      for (let ring = 0; ring < 2; ring++) {
+        ctx.beginPath();
+        const points = 200;
+        for (let i = 0; i <= points; i++) {
+          const angle = i / points * Math.PI * 2;
+          const contour = Math.sin(angle * 3 + visualStageTick * 0.012) * 0.55 + Math.sin(angle * 5 - visualStageTick * 0.008) * 0.2;
+          const r = haloRadius + ring * (9 + minSide * 0.012) + contour * (2 + bassAmount * 9);
+          const x = cx + Math.cos(angle) * r, y = cy + Math.sin(angle) * r * 0.96;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = ring === 0 ? accent : warm;
+        ctx.globalAlpha = ring === 0 ? 0.62 : 0.24;
+        ctx.lineWidth = ring === 0 ? 2 : 1.25;
+        ctx.shadowBlur = ring === 0 ? 9 : 4;
+        ctx.shadowColor = ring === 0 ? accent : warm;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      const coreRadius = radius * (0.78 + bassAmount * 0.035);
+      const core = ctx.createRadialGradient(cx - coreRadius * 0.34, cy - coreRadius * 0.38, 1, cx, cy, coreRadius);
+      core.addColorStop(0, 'rgba(221,250,255,0.96)');
+      core.addColorStop(0.28, accent);
+      core.addColorStop(0.72, 'rgba(25,111,139,0.94)');
+      core.addColorStop(1, 'rgba(6,24,37,0.88)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx - coreRadius * 0.24, cy - coreRadius * 0.28, coreRadius * 0.12, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(235,255,255,0.56)';
+      ctx.fill();
+    } else {
+      const particleCount = 52;
+      for (let index = 0; index < particleCount; index++) {
+        const particle = visualParticles[index];
+        const drift = visualStageTick * particle.speed * (playing ? 0.32 : 0.045);
+        const orbit = 10 + bassAmount * 22;
+        const x = (particle.x * width + Math.sin(drift + index * 0.7) * orbit + width) % width;
+        const y = (particle.y * height - drift * 12 + Math.cos(drift * 0.7 + index) * orbit * 0.35 + height) % height;
+        const size = (1.2 + particle.size * 0.52) * (1 + bassAmount * 0.22);
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fillStyle = index % 7 === 0 ? warm : accent;
-        ctx.globalAlpha = Math.min(1, 0.2 + energy * 0.2 + beatPulse * 0.08);
-        ctx.shadowBlur = 12;
+        ctx.fillStyle = index % 9 === 0 ? warm : accent;
+        ctx.globalAlpha = 0.24 + (index % 5) * 0.035 + bassAmount * 0.08;
+        ctx.shadowBlur = 6;
         ctx.shadowColor = ctx.fillStyle;
         ctx.fill();
-        if (index % 4 === 0) {
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.lineTo(cx + (x - cx) * 0.18, cy + (y - cy) * 0.18);
-          ctx.strokeStyle = ctx.fillStyle;
-          ctx.globalAlpha *= 0.25;
-          ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+    }
+ke();
         }
       });
       ctx.globalAlpha = 1;
