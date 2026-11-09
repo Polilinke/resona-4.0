@@ -1464,6 +1464,10 @@
   let visualMode = 'spectrum';
   let visualStageOpen = false;
   let visualStageTick = 0;
+  let beatPulse = 0;
+  let bassAverage = 0.08;
+  let lastBeatAt = 0;
+  let smoothedEnergy = 0;
   const visualParticles = Array.from({ length: 96 }, (_, index) => ({
     x: ((index * 0.61803398875) % 1),
     y: ((index * 0.7548776662) % 1),
@@ -1503,11 +1507,14 @@
   function updateDynamicVisualizerSource() {
     const status = $('visualizerSourceStatus');
     if (!status) return;
-    if (state.audioMode || ResonaAudio.isTabCapturing()) {
-      status.textContent = 'LIVE AUDIO ANALYSIS';
+    const beatButton = $('visualizerBeatSyncBtn');
+    const liveSource = state.audioMode || ResonaAudio.isTabCapturing();
+    if (beatButton) beatButton.classList.toggle('hidden', liveSource);
+    if (liveSource) {
+      status.textContent = 'LIVE AUDIO · BEAT SYNC ACTIVE';
       status.classList.add('is-live');
     } else if (state.currentTrack) {
-      status.textContent = 'AMBIENT VISUALS · YOUTUBE AUDIO IS ISOLATED';
+      status.textContent = 'YOUTUBE AUDIO IS ISOLATED · ENABLE BEAT SYNC';
       status.classList.remove('is-live');
     } else {
       status.textContent = 'PLAY A TRACK TO BEGIN';
@@ -1535,7 +1542,20 @@
     const playing = visualizerIsPlaying();
     const liveData = (state.audioMode || ResonaAudio.isTabCapturing()) ? ResonaAudio.getFrequencyData() : [];
     const live = liveData.length > 0;
-    const energy = live ? liveData.slice(2, 22).reduce((sum, value) => sum + value, 0) / (20 * 255) : (playing ? 0.28 + Math.sin(visualStageTick * 0.035) * 0.12 : 0.06);
+    const now = performance.now();
+    // Bass transient detection: look for a sudden low-frequency rise, not just loudness.
+    const bassBins = live ? liveData.slice(1, 6) : [];
+    const bassEnergy = bassBins.length ? bassBins.reduce((sum, value) => sum + value, 0) / (bassBins.length * 255) : 0;
+    const bassRise = bassEnergy - bassAverage;
+    if (live && playing && now - lastBeatAt > 185 && bassEnergy > 0.105 && bassRise > Math.max(0.025, bassAverage * 0.34)) {
+      beatPulse = 1;
+      lastBeatAt = now;
+    }
+    bassAverage = bassAverage * 0.94 + bassEnergy * 0.06;
+    beatPulse *= 0.88;
+    const rawEnergy = live ? liveData.slice(2, 22).reduce((sum, value) => sum + value, 0) / (20 * 255) : (playing ? 0.12 : 0.025);
+    smoothedEnergy += (rawEnergy - smoothedEnergy) * 0.18;
+    const energy = smoothedEnergy + beatPulse * 0.2;
     const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#55dfff';
     const warm = getComputedStyle(document.documentElement).getPropertyValue('--warm').trim() || '#f0a064';
     visualStageTick += playing ? 1 : 0.18;
@@ -1552,7 +1572,7 @@
       const barWidth = Math.max(2, (width - gap * (count - 1)) / count);
       for (let i = 0; i < count; i++) {
         const bin = live ? liveData[Math.min(liveData.length - 1, Math.floor(2 + Math.pow(i / count, 1.8) * liveData.length * 0.72))] / 255 : 0.18 + 0.17 * (0.5 + Math.sin(visualStageTick * 0.045 + i * 0.22));
-        const h = Math.max(3, (0.035 + bin * (playing ? 0.78 : 0.12)) * height);
+        const h = Math.max(3, (0.025 + bin * (playing ? 0.78 : 0.12) + beatPulse * (0.18 + Math.max(0, 1 - Math.abs(i - count * 0.5) / (count * 0.5)) * 0.16)) * height);
         const x = i * (barWidth + gap);
         const grad = ctx.createLinearGradient(0, height - h, 0, height);
         grad.addColorStop(0, i > count * 0.72 ? warm : accent);
@@ -1585,7 +1605,7 @@
       ctx.shadowBlur = 0;
     } else if (visualMode === 'orb') {
       const cx = width / 2, cy = height / 2;
-      const radius = Math.min(width, height) * (0.17 + energy * 0.08);
+      const radius = Math.min(width, height) * (0.17 + energy * 0.08 + beatPulse * 0.035);
       for (let ring = 5; ring >= 0; ring--) {
         ctx.beginPath();
         const points = 220;
@@ -1621,11 +1641,11 @@
         const drift = visualStageTick * particle.speed * (playing ? 0.6 : 0.08);
         const x = ((particle.x * width + Math.sin(drift + index) * 32) % width + width) % width;
         const y = ((particle.y * height - drift * 18) % height + height) % height;
-        const size = particle.size * (1 + energy * 1.8);
+        const size = particle.size * (1 + energy * 1.8 + beatPulse * 1.2);
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fillStyle = index % 7 === 0 ? warm : accent;
-        ctx.globalAlpha = 0.25 + energy * 0.55;
+        ctx.globalAlpha = Math.min(1, 0.25 + energy * 0.55 + beatPulse * 0.2);
         ctx.shadowBlur = 12;
         ctx.shadowColor = ctx.fillStyle;
         ctx.fill();
@@ -1644,6 +1664,20 @@
     visualStageFrame = requestAnimationFrame(drawDynamicVisualizer);
   }
   $('visualizerOpenBtn')?.addEventListener('click', openDynamicVisualizer);
+  $('visualizerBeatSyncBtn')?.addEventListener('click', async () => {
+    const button = $('visualizerBeatSyncBtn');
+    button.disabled = true;
+    button.textContent = 'Waiting for permission…';
+    try {
+      await ResonaAudio.startTabCapture();
+      updateDynamicVisualizerSource();
+      $('visualizerSourceStatus').textContent = 'LIVE AUDIO · BEAT SYNC ACTIVE';
+    } catch (err) {
+      $('visualizerSourceStatus').textContent = err.message || 'Could not enable audio analysis.';
+      button.disabled = false;
+      button.textContent = 'Enable beat sync';
+    }
+  });
   $('visualizerCloseBtn')?.addEventListener('click', closeDynamicVisualizer);
   visualizerStage?.addEventListener('click', event => { if (event.target === visualizerStage) closeDynamicVisualizer(); });
   visualizerStage?.querySelectorAll('[data-visual-mode]').forEach(button => button.addEventListener('click', () => {
