@@ -1456,6 +1456,211 @@
       $('audioToolsDialog').setAttribute('aria-hidden', 'true');
     }
   });
+  // Full-screen visualizer: real frequency data for direct audio and captured tab audio.
+  const visualizerStage = $('visualizerStage');
+  const visualizerCanvas = $('visualizerCanvas');
+  const visualizerContext = visualizerCanvas?.getContext('2d');
+  let visualStageFrame = 0;
+  let visualMode = 'spectrum';
+  let visualStageOpen = false;
+  let visualStageTick = 0;
+  const visualParticles = Array.from({ length: 96 }, (_, index) => ({
+    x: ((index * 0.61803398875) % 1),
+    y: ((index * 0.7548776662) % 1),
+    size: 0.7 + ((index * 7) % 18) / 10,
+    speed: 0.15 + ((index * 13) % 30) / 100
+  }));
+  function visualizerIsPlaying() {
+    if (state.audioMode) return ResonaAudio.isPlaying();
+    try { return !!(state.playerReady && state.player && state.player.getPlayerState() === 1); }
+    catch (_) { return false; }
+  }
+  function openDynamicVisualizer() {
+    if (!visualizerStage) return;
+    visualStageOpen = true;
+    visualizerStage.classList.remove('hidden');
+    visualizerStage.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('visualizer-stage-open');
+    updateDynamicVisualizerTrack();
+    resizeDynamicVisualizer();
+    updateDynamicVisualizerSource();
+    cancelAnimationFrame(visualStageFrame);
+    visualStageFrame = requestAnimationFrame(drawDynamicVisualizer);
+  }
+  function closeDynamicVisualizer() {
+    visualStageOpen = false;
+    if (!visualizerStage) return;
+    visualizerStage.classList.add('hidden');
+    visualizerStage.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('visualizer-stage-open');
+    cancelAnimationFrame(visualStageFrame);
+  }
+  function updateDynamicVisualizerTrack() {
+    const track = state.currentTrack;
+    $('visualizerTrackTitle').textContent = track?.title || 'Nothing playing';
+    $('visualizerTrackArtist').textContent = track?.artist || 'Start a track to begin';
+  }
+  function updateDynamicVisualizerSource() {
+    const status = $('visualizerSourceStatus');
+    if (!status) return;
+    if (state.audioMode || ResonaAudio.isTabCapturing()) {
+      status.textContent = 'LIVE AUDIO ANALYSIS';
+      status.classList.add('is-live');
+    } else if (state.currentTrack) {
+      status.textContent = 'AMBIENT VISUALS · YOUTUBE AUDIO IS ISOLATED';
+      status.classList.remove('is-live');
+    } else {
+      status.textContent = 'PLAY A TRACK TO BEGIN';
+      status.classList.remove('is-live');
+    }
+  }
+  function resizeDynamicVisualizer() {
+    if (!visualizerCanvas || !visualizerContext) return;
+    const rect = visualizerCanvas.getBoundingClientRect();
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.floor(rect.width * ratio));
+    const height = Math.max(1, Math.floor(rect.height * ratio));
+    if (visualizerCanvas.width !== width || visualizerCanvas.height !== height) {
+      visualizerCanvas.width = width;
+      visualizerCanvas.height = height;
+      visualizerContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+  }
+  function drawDynamicVisualizer() {
+    if (!visualStageOpen || !visualizerContext || !visualizerCanvas) return;
+    resizeDynamicVisualizer();
+    const ctx = visualizerContext;
+    const width = visualizerCanvas.clientWidth;
+    const height = visualizerCanvas.clientHeight;
+    const playing = visualizerIsPlaying();
+    const liveData = (state.audioMode || ResonaAudio.isTabCapturing()) ? ResonaAudio.getFrequencyData() : [];
+    const live = liveData.length > 0;
+    const energy = live ? liveData.slice(2, 22).reduce((sum, value) => sum + value, 0) / (20 * 255) : (playing ? 0.28 + Math.sin(visualStageTick * 0.035) * 0.12 : 0.06);
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#55dfff';
+    const warm = getComputedStyle(document.documentElement).getPropertyValue('--warm').trim() || '#f0a064';
+    visualStageTick += playing ? 1 : 0.18;
+    ctx.clearRect(0, 0, width, height);
+    const glow = ctx.createRadialGradient(width * 0.5, height * 0.48, 8, width * 0.5, height * 0.48, Math.max(width, height) * 0.68);
+    glow.addColorStop(0, 'rgba(22,105,130,' + (0.12 + energy * 0.2) + ')');
+    glow.addColorStop(0.55, 'rgba(8,25,36,0.12)');
+    glow.addColorStop(1, 'rgba(2,6,10,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, width, height);
+    const count = 72;
+    if (visualMode === 'spectrum') {
+      const gap = 5;
+      const barWidth = Math.max(2, (width - gap * (count - 1)) / count);
+      for (let i = 0; i < count; i++) {
+        const bin = live ? liveData[Math.min(liveData.length - 1, Math.floor(2 + Math.pow(i / count, 1.8) * liveData.length * 0.72))] / 255 : 0.18 + 0.17 * (0.5 + Math.sin(visualStageTick * 0.045 + i * 0.22));
+        const h = Math.max(3, (0.035 + bin * (playing ? 0.78 : 0.12)) * height);
+        const x = i * (barWidth + gap);
+        const grad = ctx.createLinearGradient(0, height - h, 0, height);
+        grad.addColorStop(0, i > count * 0.72 ? warm : accent);
+        grad.addColorStop(1, 'rgba(57,139,160,0.12)');
+        ctx.fillStyle = grad;
+        ctx.shadowBlur = 16;
+        ctx.shadowColor = accent;
+        ctx.beginPath();
+        ctx.roundRect(x, height - h, barWidth, h, barWidth);
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+    } else if (visualMode === 'wave') {
+      for (let layer = 0; layer < 4; layer++) {
+        ctx.beginPath();
+        for (let x = 0; x <= width; x += 3) {
+          const index = Math.floor((x / width) * (liveData.length - 1));
+          const sample = live ? (liveData[index] / 255 - 0.35) : Math.sin(x * 0.012 + visualStageTick * 0.025 + layer) * 0.35;
+          const y = height * (0.5 + layer * 0.045) + Math.sin(x * (0.009 + layer * 0.002) + visualStageTick * (0.018 + layer * 0.006)) * height * (0.12 + energy * 0.2) + sample * height * (live ? 0.22 : 0.08);
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = layer % 2 ? warm : accent;
+        ctx.globalAlpha = 0.72 - layer * 0.13;
+        ctx.lineWidth = 1.5 + (3 - layer) * 0.45;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = layer % 2 ? warm : accent;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+    } else if (visualMode === 'orb') {
+      const cx = width / 2, cy = height / 2;
+      const radius = Math.min(width, height) * (0.17 + energy * 0.08);
+      for (let ring = 5; ring >= 0; ring--) {
+        ctx.beginPath();
+        const points = 220;
+        for (let i = 0; i <= points; i++) {
+          const angle = i / points * Math.PI * 2;
+          const bin = live ? liveData[Math.min(liveData.length - 1, Math.floor(i / points * liveData.length))] / 255 : 0.5 + 0.5 * Math.sin(angle * 5 + visualStageTick * 0.03);
+          const r = radius + ring * 13 + bin * (live ? 34 : 16) * (playing ? 1 : 0.2);
+          const x = cx + Math.cos(angle) * r;
+          const y = cy + Math.sin(angle) * r * 0.78;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = ring % 2 ? warm : accent;
+        ctx.globalAlpha = 0.78 - ring * 0.1;
+        ctx.lineWidth = 1.4;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = ring % 2 ? warm : accent;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      const core = ctx.createRadialGradient(cx - radius * 0.25, cy - radius * 0.3, 2, cx, cy, radius * 1.15);
+      core.addColorStop(0, 'rgba(177,245,255,0.9)');
+      core.addColorStop(0.3, accent);
+      core.addColorStop(1, 'rgba(13,49,68,0.12)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 0.72, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      const cx = width / 2, cy = height / 2;
+      visualParticles.forEach((particle, index) => {
+        const drift = visualStageTick * particle.speed * (playing ? 0.6 : 0.08);
+        const x = ((particle.x * width + Math.sin(drift + index) * 32) % width + width) % width;
+        const y = ((particle.y * height - drift * 18) % height + height) % height;
+        const size = particle.size * (1 + energy * 1.8);
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fillStyle = index % 7 === 0 ? warm : accent;
+        ctx.globalAlpha = 0.25 + energy * 0.55;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.fill();
+        if (index % 4 === 0) {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(cx + (x - cx) * 0.18, cy + (y - cy) * 0.18);
+          ctx.strokeStyle = ctx.fillStyle;
+          ctx.globalAlpha *= 0.25;
+          ctx.stroke();
+        }
+      });
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+    }
+    visualStageFrame = requestAnimationFrame(drawDynamicVisualizer);
+  }
+  $('visualizerOpenBtn')?.addEventListener('click', openDynamicVisualizer);
+  $('visualizerCloseBtn')?.addEventListener('click', closeDynamicVisualizer);
+  visualizerStage?.addEventListener('click', event => { if (event.target === visualizerStage) closeDynamicVisualizer(); });
+  visualizerStage?.querySelectorAll('[data-visual-mode]').forEach(button => button.addEventListener('click', () => {
+    visualMode = button.dataset.visualMode;
+    visualizerStage.querySelectorAll('[data-visual-mode]').forEach(item => item.classList.toggle('active', item === button));
+  }));
+  window.addEventListener('resize', resizeDynamicVisualizer);
+  window.addEventListener('keydown', event => { if (event.key === 'Escape' && visualStageOpen) closeDynamicVisualizer(); });
+  window.addEventListener('resona:track-changed', () => {
+    updateDynamicVisualizerTrack();
+    updateDynamicVisualizerSource();
+  });
+  window.addEventListener('resona:audio-play', updateDynamicVisualizerSource);
+  window.addEventListener('resona:tab-capture-start', updateDynamicVisualizerSource);
+  window.addEventListener('resona:tab-capture-stop', updateDynamicVisualizerSource);
+  window.addEventListener('resona:audio-pause', updateDynamicVisualizerSource);
+
   let visualizerFrame = 0;
   function animateAudioVisualizer() {
     if (!state.audioMode || !ResonaAudio.isPlaying()) {
