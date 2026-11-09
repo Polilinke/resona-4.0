@@ -1552,7 +1552,7 @@
       lastBeatAt = now;
     }
     bassAverage = bassAverage * 0.94 + bassEnergy * 0.06;
-    beatPulse *= 0.88;
+    beatPulse *= 0.91;
     const rawEnergy = live ? liveData.slice(2, 22).reduce((sum, value) => sum + value, 0) / (20 * 255) : (playing ? 0.12 : 0.025);
     smoothedEnergy += (rawEnergy - smoothedEnergy) * 0.18;
     const energy = smoothedEnergy + beatPulse * 0.2;
@@ -1572,7 +1572,7 @@
       const barWidth = Math.max(2, (width - gap * (count - 1)) / count);
       for (let i = 0; i < count; i++) {
         const bin = live ? liveData[Math.min(liveData.length - 1, Math.floor(2 + Math.pow(i / count, 1.8) * liveData.length * 0.72))] / 255 : 0.18 + 0.17 * (0.5 + Math.sin(visualStageTick * 0.045 + i * 0.22));
-        const h = Math.max(3, (0.025 + bin * (playing ? 0.78 : 0.12) + beatPulse * (0.18 + Math.max(0, 1 - Math.abs(i - count * 0.5) / (count * 0.5)) * 0.16)) * height);
+        const h = Math.max(3, (0.025 + bin * (playing ? 0.9 : 0.12) + beatPulse * (0.28 + Math.max(0, 1 - Math.abs(i - count * 0.5) / (count * 0.5)) * 0.34)) * height);
         const x = i * (barWidth + gap);
         const grad = ctx.createLinearGradient(0, height - h, 0, height);
         grad.addColorStop(0, i > count * 0.72 ? warm : accent);
@@ -1605,7 +1605,7 @@
       ctx.shadowBlur = 0;
     } else if (visualMode === 'orb') {
       const cx = width / 2, cy = height / 2;
-      const radius = Math.min(width, height) * (0.17 + energy * 0.08 + beatPulse * 0.035);
+      const radius = Math.min(width, height) * (0.17 + energy * 0.08 + beatPulse * 0.075);
       for (let ring = 5; ring >= 0; ring--) {
         ctx.beginPath();
         const points = 220;
@@ -1669,7 +1669,7 @@
     button.disabled = true;
     button.textContent = 'Waiting for permission…';
     try {
-      await ResonaAudio.startTabCapture();
+      await ResonaAudio.startVisualizerCapture();
       updateDynamicVisualizerSource();
       $('visualizerSourceStatus').textContent = 'LIVE AUDIO · BEAT SYNC ACTIVE';
     } catch (err) {
