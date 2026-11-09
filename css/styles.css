@@ -3207,3 +3207,43 @@ body.visualizer-stage-open{overflow:hidden}
 
 
 
+
+
+/* Album-art ambience: soft, colour-rich artwork that crossfades with each track. */
+#albumBg {
+  position:fixed;
+  inset:-3%;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .9s ease;
+  isolation:isolate;
+}
+#albumBg.on { opacity:1; }
+#albumBg .album-art-layer {
+  position:absolute;
+  inset:-4%;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  opacity:0;
+  filter:blur(58px) saturate(1.42) brightness(.62);
+  transform:scale(1.12);
+  transition:opacity 1.35s cubic-bezier(.22,.61,.36,1);
+  will-change:opacity;
+}
+#albumBg:after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 50% 42%,rgba(4,12,20,.12),rgba(3,9,15,.72) 76%),
+    linear-gradient(120deg,rgba(3,9,15,.48),rgba(3,9,15,.2) 50%,rgba(3,9,15,.58));
+}
+@media(prefers-reduced-motion:reduce) {
+  #albumBg,.album-art-layer { transition:none!important; }
+}
+
+/* Spectrum 2.0: denser frequency detail with a restrained, smooth response. */
+#visualizerCanvas { filter:saturate(.92) contrast(1.04); }
