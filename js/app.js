@@ -1565,7 +1565,10 @@
     const glow = ctx.createRadialGradient(width * 0.5, height * 0.48, 8, width * 0.5, height * 0.48, Math.max(width, height) * 0.68);
     glow.addColorStop(0, 'rgba(22,105,130,' + (0.08 + energy * 0.08) + ')');
     glow.addColorStop(0.55, 'rgba(8,25,36,0.12)');
-    glow.addColorStop(1,    bassMotion += ((live && playing ? bassEnergy : 0) - bassMotion) * 0.11;
+    glow.addColorStop(1, 'rgba(2,6,10,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, width, height);
+    bassMotion += ((live && playing ? bassEnergy : 0) - bassMotion) * 0.11;
     const count = 32;
     const bassAmount = Math.min(1, bassMotion * 2.8);
     const cx = width / 2, cy = height / 2;
@@ -1698,12 +1701,6 @@
         ctx.shadowColor = ctx.fillStyle;
         ctx.fill();
       }
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
-    }
-ke();
-        }
-      });
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
     }
