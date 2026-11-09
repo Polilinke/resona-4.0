@@ -237,6 +237,7 @@
         <button id="playBtn" class="btn icon primary" title="Play / pause">▶</button>
         <button id="nextBtn" class="btn icon" title="Next">⏭</button>
         <button id="eqBtn" class="btn ghost eq-open-btn" type="button" title="Open equalizer">EQ</button>
+        <button id="visualizerOpenBtn" class="btn ghost visualizer-open-btn" type="button" title="Open dynamic visualizer" aria-label="Open dynamic visualizer">VISUAL</button>
       </div>
       <div class="visualizer" id="visualizer" aria-hidden="true">
         <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
@@ -291,6 +292,24 @@
     </div>
   </div>
 
+
+  <!-- Full-screen dynamic visualizer -->
+  <section id="visualizerStage" class="visualizer-stage hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Dynamic music visualizer">
+    <div class="visualizer-stage-top">
+      <div class="visualizer-stage-brand"><span class="visualizer-stage-kicker">RESONA / LIVE VISUALS</span><strong id="visualizerTrackTitle">Nothing playing</strong><span id="visualizerTrackArtist">Start a track to begin</span></div>
+      <button id="visualizerCloseBtn" class="btn ghost" type="button" aria-label="Close visualizer">✕ Close</button>
+    </div>
+    <canvas id="visualizerCanvas" aria-label="Animated music visualizer"></canvas>
+    <div class="visualizer-stage-bottom">
+      <div class="visualizer-modes" role="group" aria-label="Visualizer style">
+        <button class="visualizer-mode active" data-visual-mode="spectrum" type="button">Spectrum</button>
+        <button class="visualizer-mode" data-visual-mode="wave" type="button">Wave</button>
+        <button class="visualizer-mode" data-visual-mode="orb" type="button">Sonic orb</button>
+        <button class="visualizer-mode" data-visual-mode="particles" type="button">Particles</button>
+      </div>
+      <span id="visualizerSourceStatus" class="visualizer-source-status">Waiting for audio</span>
+    </div>
+  </section>
 
   <!-- Audio Lab: local audio playback with real-time Web Audio EQ -->
   <div id="audioToolsDialog" class="modal hidden" aria-hidden="true">
