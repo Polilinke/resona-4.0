@@ -1542,8 +1542,7 @@
     // Bass transient detection: look for a sudden low-frequency rise, not just loudness.
     const bassBins = live ? liveData.slice(1, 11) : [];
     const measuredBass = bassBins.length ? bassBins.reduce((sum, value) => sum + value, 0) / (bassBins.length * 255) : 0;
-    // Expand the useful low-volume range so Wave, Orb and Particles visibly respond
-    // without introducing sharp flashes or sudden beat jumps.
+    // Expand the useful low-volume range without introducing sharp flashes or sudden jumps.
     const bassEnergy = live ? Math.max(0, Math.min(1, (measuredBass - 0.025) * 5.2)) : 0;
     const bassRise = bassEnergy - bassAverage;
     if (live && playing && now - lastBeatAt > 420 && bassEnergy > 0.16 && bassRise > Math.max(0.045, bassAverage * 0.48)) {
@@ -1570,8 +1569,8 @@
     const bassAmount = Math.min(1, bassMotion * 1.9);
 
     if (visualMode === 'spectrum') {
-      const gap = Math.max(3, Math.min(7, width * 0.006));
-      const barWidth = Math.max(3, (width - gap * (count - 1) - 48) / count);
+      const gap = Math.max(2, Math.min(5, width * 0.004));
+      const barWidth = Math.max(2, (width - gap * (count - 1) - 32) / count);
       const totalWidth = count * barWidth + (count - 1) * gap;
       const left = (width - totalWidth) / 2;
       const baseline = height * 0.79;
