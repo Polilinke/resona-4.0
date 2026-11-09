@@ -1506,6 +1506,16 @@
     $('visualizerTrackTitle').textContent = track?.title || 'Nothing playing';
     $('visualizerTrackArtist').textContent = track?.artist || 'Start a track to begin';
   }
+  function syncVisualizerLyrics() {
+    const source = $('npLyrics');
+    const sourceStatus = $('npLyricsStatus');
+    const target = $('visualizerLyrics');
+    const targetStatus = $('visualizerLyricsStatus');
+    if (!source || !target) return;
+    if (target.innerHTML !== source.innerHTML) target.innerHTML = source.innerHTML;
+    if (targetStatus && sourceStatus) targetStatus.textContent = sourceStatus.textContent || '';
+    target.classList.toggle('has-lyrics', !!source.textContent.trim());
+  }
   function updateDynamicVisualizerSource() {
     const status = $('visualizerSourceStatus');
     if (!status) return;
@@ -1538,6 +1548,7 @@
   function drawDynamicVisualizer() {
     if (!visualStageOpen || !visualizerContext || !visualizerCanvas) return;
     resizeDynamicVisualizer();
+    syncVisualizerLyrics();
     const ctx = visualizerContext;
     const width = visualizerCanvas.clientWidth;
     const height = visualizerCanvas.clientHeight;
@@ -1546,8 +1557,11 @@
     const live = liveData.length > 0;
     const now = performance.now();
     // Bass transient detection: look for a sudden low-frequency rise, not just loudness.
-    const bassBins = live ? liveData.slice(1, 6) : [];
-    const bassEnergy = bassBins.length ? bassBins.reduce((sum, value) => sum + value, 0) / (bassBins.length * 255) : 0;
+    const bassBins = live ? liveData.slice(1, 11) : [];
+    const measuredBass = bassBins.length ? bassBins.reduce((sum, value) => sum + value, 0) / (bassBins.length * 255) : 0;
+    // Expand the useful low-volume range so Wave, Orb and Particles visibly respond
+    // without introducing sharp flashes or sudden beat jumps.
+    const bassEnergy = live ? Math.max(0, Math.min(1, (measuredBass - 0.025) * 5.2)) : 0;
     const bassRise = bassEnergy - bassAverage;
     if (live && playing && now - lastBeatAt > 420 && bassEnergy > 0.16 && bassRise > Math.max(0.045, bassAverage * 0.48)) {
       beatPulse = 0.28;
@@ -1568,9 +1582,9 @@
     glow.addColorStop(1, 'rgba(2,6,10,0)');
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, width, height);
-    bassMotion += ((live && playing ? bassEnergy : 0) - bassMotion) * 0.11;
+    bassMotion += ((live && playing ? bassEnergy : 0) - bassMotion) * 0.16;
     const count = 32;
-    const bassAmount = Math.min(1, bassMotion * 2.8);
+    const bassAmount = Math.min(1, bassMotion * 1.75);
     const cx = width / 2, cy = height / 2;
     const minSide = Math.min(width, height);
 
@@ -1614,7 +1628,7 @@
         { color: accent, alpha: 0.25, line: 1.2, offset: 0.065, phase: 2.2 }
       ];
       layers.forEach((layer, index) => {
-        const amplitude = height * (0.018 + bassAmount * 0.105) * (1 - index * 0.17);
+        const amplitude = height * (0.022 + bassAmount * 0.145) * (1 - index * 0.17);
         const phase = visualStageTick * (0.009 + index * 0.0015) + layer.phase;
         ctx.beginPath();
         for (let x = 0; x <= width; x += 3) {
@@ -1640,8 +1654,8 @@
       ctx.fill();
       ctx.globalAlpha = 1;
     } else if (visualMode === 'orb') {
-      const radius = minSide * (0.145 + bassAmount * 0.025);
-      const haloRadius = radius * (1.48 + bassAmount * 0.06);
+      const radius = minSide * (0.145 + bassAmount * 0.042);
+      const haloRadius = radius * (1.48 + bassAmount * 0.09);
       const halo = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, haloRadius * 1.55);
       halo.addColorStop(0, 'rgba(80,205,225,0.16)');
       halo.addColorStop(0.55, 'rgba(45,145,170,0.07)');
@@ -1656,7 +1670,7 @@
         for (let i = 0; i <= points; i++) {
           const angle = i / points * Math.PI * 2;
           const contour = Math.sin(angle * 3 + visualStageTick * 0.012) * 0.55 + Math.sin(angle * 5 - visualStageTick * 0.008) * 0.2;
-          const r = haloRadius + ring * (9 + minSide * 0.012) + contour * (2 + bassAmount * 9);
+          const r = haloRadius + ring * (9 + minSide * 0.012) + contour * (2 + bassAmount * 13);
           const x = cx + Math.cos(angle) * r, y = cy + Math.sin(angle) * r * 0.96;
           if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
@@ -1689,10 +1703,10 @@
       for (let index = 0; index < particleCount; index++) {
         const particle = visualParticles[index];
         const drift = visualStageTick * particle.speed * (playing ? 0.32 : 0.045);
-        const orbit = 10 + bassAmount * 22;
+        const orbit = 10 + bassAmount * 34;
         const x = (particle.x * width + Math.sin(drift + index * 0.7) * orbit + width) % width;
         const y = (particle.y * height - drift * 12 + Math.cos(drift * 0.7 + index) * orbit * 0.35 + height) % height;
-        const size = (1.2 + particle.size * 0.52) * (1 + bassAmount * 0.22);
+        const size = (1.2 + particle.size * 0.52) * (1 + bassAmount * 0.38);
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fillStyle = index % 9 === 0 ? warm : accent;
@@ -1720,6 +1734,12 @@
       button.disabled = false;
       button.textContent = 'Enable beat sync';
     }
+  });
+  $('visualizerSplitBtn')?.addEventListener('click', () => {
+    const split = visualizerStage.classList.toggle('is-split');
+    $('visualizerSplitBtn').setAttribute('aria-pressed', String(split));
+    $('visualizerSplitBtn').textContent = split ? 'Visualizer only' : 'Split + lyrics';
+    requestAnimationFrame(resizeDynamicVisualizer);
   });
   $('visualizerCloseBtn')?.addEventListener('click', closeDynamicVisualizer);
   visualizerStage?.addEventListener('click', event => { if (event.target === visualizerStage) closeDynamicVisualizer(); });
