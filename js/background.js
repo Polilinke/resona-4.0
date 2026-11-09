@@ -10,6 +10,8 @@ const Background = (() => {
   };
 
   let currentArt = '';
+  let artLayers = [];
+  let activeArtLayer = 0;
   let blobUrl = null;
   const DB_NAME = 'deepflow-media';
   const DB_STORE = 'backgrounds';
@@ -84,11 +86,31 @@ const Background = (() => {
     art.classList.toggle('on', showArt);
   }
 
-  // Called by the app whenever the current track changes
+  // Called by the app whenever the current track changes.
+  // Two overlapping artwork layers allow the ambient colours to crossfade smoothly.
+  function ensureArtLayers() {
+    const host = $('albumBg');
+    if (artLayers.length || !host) return;
+    artLayers = [0, 1].map(() => {
+      const layer = document.createElement('div');
+      layer.className = 'album-art-layer';
+      layer.setAttribute('aria-hidden', 'true');
+      host.appendChild(layer);
+      return layer;
+    });
+  }
+
   function setArt(url) {
     currentArt = url || '';
-    if (currentArt) {
-      $('albumBg').style.backgroundImage = `url("${currentArt.replace(/"/g, '')}")`;
+    ensureArtLayers();
+    if (currentArt && artLayers.length) {
+      const nextLayer = 1 - activeArtLayer;
+      artLayers[nextLayer].style.backgroundImage = `url("${currentArt.replace(/["\\\\]/g, '')}")`;
+      artLayers[nextLayer].style.opacity = '1';
+      artLayers[activeArtLayer].style.opacity = '0';
+      activeArtLayer = nextLayer;
+    } else {
+      artLayers.forEach(layer => { layer.style.opacity = '0'; });
     }
     applyMode();
   }
