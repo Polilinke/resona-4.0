@@ -88,7 +88,10 @@
       const { data, error } = await client.auth.getSession();
       if (error) throw error;
       setUser(data.session?.user || null);
-      client.auth.onAuthStateChange((event, session) => {\n        setUser(session?.user || null);\n        if (event === 'SIGNED_OUT' && !session?.user) openAccountGate();\n      });
+      client.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user || null);
+        if (event === 'SIGNED_OUT' && !session?.user) openAccountGate();
+      });
       window.ResonaAccount = { getClient: initialise, getUser: () => currentUser };
       window.dispatchEvent(new CustomEvent('resona:auth-ready', { detail: { user: currentUser } }));
       return client;
