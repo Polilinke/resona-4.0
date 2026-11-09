@@ -1568,7 +1568,6 @@
     bassMotion += ((live && playing ? bassEnergy : 0) - bassMotion) * 0.16;
     const count = 32;
     const bassAmount = Math.min(1, bassMotion * 1.75);
-    const cx = width / 2, cy = height / 2;
 
     if (visualMode === 'spectrum') {
       const gap = Math.max(3, Math.min(7, width * 0.006));
@@ -1602,38 +1601,6 @@
       ctx.globalAlpha = 0.16;
       ctx.lineWidth = 1;
       ctx.stroke();
-      ctx.globalAlpha = 1;
-    } else if (visualMode === 'wave') {
-      const layers = [
-        { color: accent, alpha: 0.78, line: 2.8, offset: -0.035, phase: 0 },
-        { color: warm, alpha: 0.48, line: 1.8, offset: 0.015, phase: 1.1 },
-        { color: accent, alpha: 0.25, line: 1.2, offset: 0.065, phase: 2.2 }
-      ];
-      layers.forEach((layer, index) => {
-        const amplitude = height * (0.022 + bassAmount * 0.145) * (1 - index * 0.17);
-        const phase = visualStageTick * (0.009 + index * 0.0015) + layer.phase;
-        ctx.beginPath();
-        for (let x = 0; x <= width; x += 3) {
-          const p = x / width;
-          const envelope = 0.2 + Math.pow(Math.sin(p * Math.PI), 0.8) * 0.8;
-          const curve = Math.sin(p * Math.PI * 3.2 + phase) * 0.72 + Math.sin(p * Math.PI * 6.1 - phase * 0.62) * 0.18;
-          const y = cy + height * layer.offset + curve * amplitude * envelope;
-          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = layer.color;
-        ctx.globalAlpha = layer.alpha;
-        ctx.lineWidth = layer.line;
-        ctx.shadowBlur = index === 0 ? 10 : 5;
-        ctx.shadowColor = layer.color;
-        ctx.stroke();
-      });
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 2 + bassAmount * 3, 0, Math.PI * 2);
-      ctx.fillStyle = warm;
-      ctx.globalAlpha = 0.35 + bassAmount * 0.2;
-      ctx.fill();
       ctx.globalAlpha = 1;
     }
     visualStageFrame = requestAnimationFrame(drawDynamicVisualizer);
