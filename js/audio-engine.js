@@ -14,7 +14,7 @@
   const audio = new Audio();
   audio.preload = 'metadata';
   audio.volume = 0.8;
-  let context = null, filters = [], source = null, analyser = null, objectUrl = null, onEnded = () => {}, currentFile = null, tabCaptureStream = null, tabCaptureSource = null;
+  let context = null, filters = [], source = null, analyser = null, visualizerAnalyser = null, visualizerCaptureStream = null, visualizerCaptureSource = null, objectUrl = null, onEnded = () => {}, currentFile = null, tabCaptureStream = null, tabCaptureSource = null;
 
   function readSettings() {
     try {
@@ -81,10 +81,60 @@
       name, indexes.reduce((sum, index) => sum + values[index], 0) / indexes.length
     ]));
   }
+  async function startVisualizerCapture() {
+    if (visualizerCaptureStream) return { active: true };
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
+      throw new Error('Tab audio capture is not available in this browser. Use the latest Chrome or Edge on the Resona HTTPS site.');
+    }
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
+    } catch (err) {
+      if (err && err.name === 'NotAllowedError') throw new Error('Capture was cancelled. Choose the Resona tab and enable “Share tab audio”.');
+      throw new Error(err && err.message ? err.message : 'Could not start beat-sync audio capture.');
+    }
+    if (!stream.getAudioTracks().length) {
+      stream.getTracks().forEach(track => track.stop());
+      throw new Error('No tab audio was shared. Select the Resona tab and turn on “Share tab audio”.');
+    }
+    try {
+      ensureGraph();
+      if (context.state === 'suspended') await context.resume();
+      visualizerAnalyser = context.createAnalyser();
+      visualizerAnalyser.fftSize = 512;
+      visualizerAnalyser.smoothingTimeConstant = 0.42;
+      visualizerCaptureStream = stream;
+      visualizerCaptureSource = context.createMediaStreamSource(stream);
+      // Analysis-only path: do not route captured audio back to speakers or alter playback.
+      visualizerCaptureSource.connect(visualizerAnalyser);
+      const stop = stopVisualizerCapture;
+      stream.getTracks().forEach(track => track.addEventListener('ended', stop, { once: true }));
+      window.dispatchEvent(new Event('resona:visualizer-capture-start'));
+      return { active: true };
+    } catch (err) {
+      stream.getTracks().forEach(track => track.stop());
+      visualizerCaptureStream = null;
+      visualizerCaptureSource = null;
+      visualizerAnalyser = null;
+      throw err;
+    }
+  }
+  function stopVisualizerCapture() {
+    const stream = visualizerCaptureStream;
+    const node = visualizerCaptureSource;
+    visualizerCaptureStream = null;
+    visualizerCaptureSource = null;
+    visualizerAnalyser = null;
+    if (node) { try { node.disconnect(); } catch (_) {} }
+    if (stream) stream.getTracks().forEach(track => { if (track.readyState !== 'ended') track.stop(); });
+    window.dispatchEvent(new Event('resona:visualizer-capture-stop'));
+  }
+  function isVisualizerCapturing() { return !!visualizerCaptureStream; }
   function getFrequencyData() {
-    if (!analyser) return [];
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(data);
+    const activeAnalyser = visualizerAnalyser || analyser;
+    if (!activeAnalyser) return [];
+    const data = new Uint8Array(activeAnalyser.frequencyBinCount);
+    activeAnalyser.getByteFrequencyData(data);
     return Array.from(data);
   }
   function getBassEnergy() {
@@ -198,5 +248,5 @@
       ? 'This file could not be decoded or played by your browser.'
        : 'This remote audio stream could not be played. It may be unavailable or may not permit browser audio processing (CORS).' }
   })));
-  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, startTabCapture, stopTabCapture, isTabCapturing, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, setSimpleBand, getSimpleBands, applyPreset, getBands, getFrequencyData, getBassEnergy, onTrackEnded };
+  window.ResonaAudio = { frequencies:FREQUENCIES.slice(), presets:Object.keys(PRESETS), loadFile, loadUrl, startTabCapture, stopTabCapture, isTabCapturing, startVisualizerCapture, stopVisualizerCapture, isVisualizerCapturing, play, pause, toggle, stop, seek, setVolume, getTime, getDuration, isPlaying:() => !audio.paused, getCurrentFile:() => currentFile, setBand, setSimpleBand, getSimpleBands, applyPreset, getBands, getFrequencyData, getBassEnergy, onTrackEnded };
 })();
