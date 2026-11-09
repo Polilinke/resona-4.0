@@ -301,21 +301,13 @@
     </div>
     <div class="visualizer-main">
       <canvas id="visualizerCanvas" aria-label="Animated music visualizer"></canvas>
-      <aside class="visualizer-lyrics-panel" aria-label="Live lyrics beside visualizer">
-        <div class="visualizer-lyrics-heading">LYRICS <span>LIVE</span></div>
-        <div id="visualizerLyricsStatus" class="visualizer-lyrics-status">Lyrics will appear here when available.</div>
-        <div id="visualizerLyrics" class="visualizer-lyrics"></div>
-      </aside>
     </div>
     <div class="visualizer-stage-bottom">
       <div class="visualizer-modes" role="group" aria-label="Visualizer style">
         <button class="visualizer-mode active" data-visual-mode="spectrum" type="button">Spectrum</button>
         <button class="visualizer-mode" data-visual-mode="wave" type="button">Wave</button>
-        <button class="visualizer-mode" data-visual-mode="orb" type="button">Sonic orb</button>
-        <button class="visualizer-mode" data-visual-mode="particles" type="button">Particles</button>
       </div>
       <div class="visualizer-live-controls">
-        <button id="visualizerSplitBtn" class="btn ghost small" type="button" aria-pressed="false">Split + lyrics</button>
         <button id="visualizerBeatSyncBtn" class="btn ghost small" type="button">Enable beat sync</button>
         <span id="visualizerSourceStatus" class="visualizer-source-status">Waiting for audio</span>
       </div>
