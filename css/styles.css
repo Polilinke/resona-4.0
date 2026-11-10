@@ -3801,3 +3801,57 @@ body.visualizer-stage-open{overflow:hidden}
 @media (max-width:680px) {
  .home-track-grid .track .track-info { grid-template-columns:34px minmax(0,1fr); }
 }
+
+
+/* Keep the solar-system accent inside the title block so it cannot be
+   displaced by the track row's other grid layouts. */
+.home-track-grid .track .track-info {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  grid-template-rows:auto auto !important;
+  row-gap:7px;
+  min-width:0;
+}
+.home-track-grid .track .track-copy {
+  display:grid !important;
+  grid-column:1 !important;
+  grid-row:1 !important;
+  grid-template-columns:34px minmax(0,1fr);
+  grid-template-rows:auto auto;
+  column-gap:9px;
+  align-items:center;
+  min-width:0;
+  overflow:visible;
+}
+.home-track-grid .track .track-solar-system {
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  grid-column:1;
+  grid-row:1 / span 2;
+  position:relative;
+  width:32px;
+  height:32px;
+  align-self:center;
+  overflow:visible;
+  z-index:1;
+}
+.home-track-grid .track .track-copy .track-title-viewport {
+  grid-column:2;
+  grid-row:1;
+  min-width:0;
+}
+.home-track-grid .track .track-copy .track-artist {
+  grid-column:2;
+  grid-row:2;
+  min-width:0;
+  margin-top:3px;
+}
+.home-track-grid .track .track-actions {
+  grid-column:1;
+  grid-row:2;
+  margin-left:43px;
+}
+@media (max-width:680px) {
+  .home-track-grid .track .track-copy { grid-template-columns:34px minmax(0,1fr); }
+}
