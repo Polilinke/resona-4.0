@@ -737,18 +737,22 @@
     const host = $('mobileHomeShelves');
     if (!host) return;
     host.replaceChildren();
-    const popular = state.rawResults.slice();
-    const history = Store.getHistory().slice(0, 12);
     const unique = items => {
       const seen = new Set();
-      return items.filter(track => {
-        const key = track.id || track.title;
+      return (items || []).filter(track => {
+        const key = track?.id || track?.title;
         if (!key || seen.has(key)) return false;
         seen.add(key);
         return true;
       });
     };
-    const shuffle = items => {
+    const history = unique(Store.getHistory()).slice(0, 8);
+    const catalogue = unique([
+      ...state.rawResults,
+      ...getDiscoveryPool(),
+      ...Store.getHistory()
+    ]);
+    const shuffled = items => {
       const copy = items.slice();
       for (let i = copy.length - 1; i > 0; i--) {
         const n = Math.floor(Math.random() * (i + 1));
@@ -756,16 +760,17 @@
       }
       return copy;
     };
-    const catalogue = unique(popular);
+    const rotate = (items, offset) => items.length
+      ? Array.from({ length:Math.min(8,items.length) }, (_, i) => items[(offset + i) % items.length])
+      : [];
     const sections = [
-      { title:'Your Frequent Plays', tracks:unique(history.length ? history : catalogue).slice(0,8), style:'mobile-frequent-shelf' },
-      { title:'Fresh finds', tracks:catalogue.slice(0,8), style:'mobile-cover-shelf' },
-      { title:'Popular right now', tracks:catalogue.slice(0,8), style:'mobile-cover-shelf' },
-      { title:'Your next repeat', tracks:shuffle(catalogue).slice(0,8), style:'mobile-cover-shelf' },
-      { title:'Songs for You', tracks:catalogue.slice(0,8), style:'mobile-songs-shelf' }
+      { title:'Your Frequent Plays', tracks:history.length ? history : catalogue.slice(0,8), style:'mobile-frequent-shelf' },
+      { title:'Fresh finds', tracks:rotate(shuffled(catalogue),0), style:'mobile-cover-shelf' },
+      { title:'Popular right now', tracks:rotate(catalogue,Math.floor(catalogue.length/3)), style:'mobile-cover-shelf' },
+      { title:'Your next repeat', tracks:rotate(shuffled(catalogue),Math.floor(catalogue.length/3)), style:'mobile-cover-shelf' },
+      { title:'Songs for You', tracks:rotate(shuffled(catalogue),0), style:'mobile-songs-shelf' }
     ];
     sections.forEach(section => {
-      if (!section.tracks.length) return;
       const shelf = document.createElement('section');
       shelf.className = 'mobile-home-shelf ' + section.style;
       const heading = document.createElement('div');
@@ -777,11 +782,19 @@
       heading.append(title, rule);
       const list = document.createElement('div');
       list.className = 'mobile-track-list';
-      section.tracks.forEach(track => list.append(trackRow(track, { list:section.tracks })));
+      if (section.tracks.length) {
+        section.tracks.forEach(track => list.append(trackRow(track, { list:section.tracks })));
+      } else {
+        const note = document.createElement('p');
+        note.className = 'mobile-shelf-empty';
+        note.textContent = section.title === 'Your Frequent Plays'
+          ? 'Play a few tracks and they will appear here.'
+          : 'Music recommendations will appear here once tracks load.';
+        list.append(note);
+      }
       shelf.append(heading, list);
       host.append(shelf);
     });
-    if (!host.children.length) host.append(emptyNote('Your music will appear here when popular tracks load.'));
   }
 
   function renderResults() {
