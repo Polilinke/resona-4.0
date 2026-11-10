@@ -54,7 +54,8 @@
 
   <main class="layout">
     <nav class="sidebar" aria-label="Main navigation">
-      <button class="nav-btn active" data-view="search" title="Home" aria-label="Home"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Search</span></button>
+      <button class="nav-btn active" data-view="home" title="Home" aria-label="Home"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span></button>
+      <button class="nav-btn" data-view="search" title="Search" aria-label="Search"><span class="nav-icon" aria-hidden="true">⌕</span><span class="nav-label">Search</span></button>
       <button class="nav-btn" data-view="playlists" title="Library" aria-label="Library"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Library</span></button>
       
       <button class="nav-btn" data-view="insights" title="Insights" aria-label="Insights"><span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Insights</span></button>
@@ -65,15 +66,18 @@
 </nav>
 
     <section class="content">
-      <div id="view-search" class="view active">
-        <div class="search-wrap">
-      <input id="searchInput" type="search" placeholder="Search songs, artists, albums… then press Enter" autocomplete="off" />
-      <div id="quotaBadge" class="quota-badge">Quota: —</div>
-    </div>
+      <div id="view-home" class="view active">
         <section class="discovery-shell">
           <div class="discovery-heading"><div><span class="discovery-kicker">YOUR SOUND, YOUR WAY</span><h1>Find your next <em>repeat.</em></h1><p>Fresh picks shaped by what you’ve been searching for.</p></div><button id="remixBtn" class="remix-button" type="button"><span class="remix-mark">⤨</span><span><strong>Remix</strong><small>Shuffle your discoveries</small></span></button></div>
           <div id="discoveryFeature" class="discovery-feature"><div class="discovery-placeholder">Search a few songs and Resona will start learning your sound.</div></div>
-        </section>
+        </section>        <div id="homeShelves" class="home-shelves"></div>
+      </div>
+
+      <div id="view-search" class="view">
+        <div class="search-wrap">
+          <input id="searchInput" type="search" placeholder="Search songs, artists, albums… then press Enter" autocomplete="off" />
+          <div id="quotaBadge" class="quota-badge">Shared search</div>
+        </div>
         <div class="search-provider-row">
           <label class="provider-picker" for="searchSourceSelect"><span>PROVIDER</span>
             <select id="searchSourceSelect" aria-label="Choose music provider">
@@ -87,13 +91,12 @@
           <span class="hint">Filters out lyric uploads, covers and unofficial edits on YouTube</span>
         </div>
         <div id="searchStatus" class="status"></div>
-        <div id="homeShelves" class="home-shelves"></div>
         <div id="results" class="track-list"></div>
       </div>
 
       
 
-      <div id="view-playlists" class="view"><div class="library-subnav"><button class="library-subnav-btn active" data-library-tab="playlists">Playlists</button><button class="library-subnav-btn" data-library-tab="history">History</button></div><section id="libraryPlaylistsPanel">
+      <div id="view-playlists" class="view"><div class="library-heading"><span class="discovery-kicker">YOUR COLLECTION</span><h2>Library</h2><p class="hint">Your playlists and listening history, together in one place.</p></div><section id="libraryPlaylistsPanel">
         <div class="row-between">
           <h2>Playlists</h2>
           <div class="row">
@@ -102,11 +105,11 @@
           </div>
         </div>
         <div id="playlistsContainer"></div>
-      </section><section id="libraryHistoryPanel" class="hidden">
+      </section><section id="libraryHistoryPanel">
 
       <div class="library-history-content">
         <div class="row-between">
-          <h2>History</h2>
+          <h2>Recently played</h2>
           <button id="clearHistoryBtn" class="btn ghost">Clear history</button>
         </div>
         <div id="historyList" class="track-list"></div>
