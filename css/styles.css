@@ -3986,3 +3986,104 @@ body.visualizer-stage-open{overflow:hidden}
   }
 }
 
+/* MOBILE FIX: homepage discovery cards were not covered by the earlier
+   #results-only compact-card rules. Constrain the actual shelf cards. */
+@media (max-width: 680px) {
+  html[data-device-layout="mobile"] .home-track-grid {
+    align-items: flex-start !important;
+    align-content: flex-start !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track {
+    box-sizing: border-box !important;
+    flex: 0 0 min(86vw, 340px) !important;
+    width: min(86vw, 340px) !important;
+    height: 104px !important;
+    min-height: 104px !important;
+    max-height: 104px !important;
+    min-width: 0 !important;
+    grid-template-columns: 58px minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    align-items: center !important;
+    align-content: center !important;
+    gap: 8px !important;
+    padding: 8px !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track > img {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px !important;
+    max-width: 58px !important;
+    min-height: 58px !important;
+    max-height: 58px !important;
+    object-fit: cover !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track .track-info {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-content: center !important;
+    align-self: stretch !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-height: 88px !important;
+    gap: 5px !important;
+    overflow: hidden !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track .track-copy {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    gap: 0 7px !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track .track-solar-system {
+    width: 26px !important;
+    height: 26px !important;
+    grid-column: 1 !important;
+    grid-row: 1 / span 2 !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track .track-title-viewport {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track .track-title {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track .track-artist {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    margin-top: 2px !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track .track-actions {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    margin: 0 0 0 35px !important;
+    gap: 5px !important;
+    min-height: 0 !important;
+  }
+  html[data-device-layout="mobile"] .home-track-grid .track .track-play-btn,
+  html[data-device-layout="mobile"] .home-track-grid .track .track-more-btn {
+    min-width: 30px !important;
+    min-height: 28px !important;
+    width: 30px !important;
+    height: 28px !important;
+    padding: 3px 7px !important;
+  }
+}
+
