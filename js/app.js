@@ -335,15 +335,32 @@
 
   // ---------- Home: popular music (1 quota unit, cached 24 hours) ----------
   async function showHome() {
+    renderDiscovery();
     state.searchRequestId++;
     state.searchSource = 'youtube';
-    if ($('searchSourceSelect')) $('searchSourceSelect').value = 'youtube';
-    if (officialOnlyToggle) {
-      officialOnlyToggle.disabled = false;
-      officialOnlyToggle.closest('.official-filter')?.classList.remove('source-filter-disabled');
-    }
+    $('searchSourceSelect').value = 'youtube';
+    officialOnlyToggle.disabled = false;
+    officialOnlyToggle.closest('.official-filter')?.classList.remove('source-filter-disabled');
     showView('home');
-    renderDiscovery();
+    const region = Store.getSettings().popularRegion || 'US';
+    const cacheKey = 'popular:' + region;
+    const cached = Store.getCachedSearch(cacheKey);
+    if (cached) {
+      state.rawResults = cached;
+      state.isSearch = false;
+      renderResults();
+      return;
+    }
+    try {
+      const results = await YouTubeAPI.fetchPopular(region);
+      Store.setCachedSearch(cacheKey, results);
+      state.rawResults = results;
+      state.isSearch = false;
+      renderResults();
+    } catch (err) {
+      $('searchStatus').textContent = 'Could not load popular music: ' + err.message;
+    }
+    updateQuotaBadge();
   }
 
   async function runSearch(query, force = false) {
