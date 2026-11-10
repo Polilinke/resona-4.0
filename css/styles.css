@@ -3880,3 +3880,109 @@ body.visualizer-stage-open{overflow:hidden}
     box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 5px 16px rgba(0,0,0,.16) !important;
   }
 }
+
+/* Compact search results: keep each result to a single, content-sized row.
+   These rules intentionally come last so older mobile sizing experiments
+   cannot stretch one song across most of the viewport. */
+#results.track-list {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  gap:9px !important;
+}
+#results .track {
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  aspect-ratio:auto !important;
+  grid-template-columns:68px minmax(0,1fr) auto !important;
+  align-items:center !important;
+  gap:11px !important;
+  padding:9px 11px !important;
+  margin:0 !important;
+  overflow:visible !important;
+}
+#results .track > img {
+  width:68px !important;
+  height:68px !important;
+  min-width:68px !important;
+  max-width:68px !important;
+  aspect-ratio:1 / 1 !important;
+  object-fit:cover !important;
+}
+#results .track-info {
+  min-width:0 !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:9px !important;
+}
+#results .track-copy {
+  min-width:0 !important;
+  flex:1 1 auto !important;
+}
+#results .track-title,
+#results .track-artist {
+  max-width:100% !important;
+}
+#results .track-actions {
+  flex:0 0 auto !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  flex-wrap:nowrap !important;
+  gap:6px !important;
+  margin:0 !important;
+}
+#results .track-play-btn,
+#results .track-more-btn {
+  min-width:38px !important;
+  min-height:38px !important;
+  width:auto !important;
+  height:38px !important;
+  padding:6px 10px !important;
+}
+@media (max-width:680px) {
+  html[data-device-layout="mobile"] #results .track {
+    grid-template-columns:58px minmax(0,1fr) auto !important;
+    min-height:76px !important;
+    padding:8px 9px !important;
+    gap:9px !important;
+    border-radius:15px !important;
+  }
+  html[data-device-layout="mobile"] #results .track > img {
+    width:58px !important;
+    height:58px !important;
+    min-width:58px !important;
+    max-width:58px !important;
+  }
+  html[data-device-layout="mobile"] #results .track-info {
+    min-width:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:center !important;
+    gap:5px !important;
+  }
+  html[data-device-layout="mobile"] #results .track-title {
+    font-size:14px !important;
+    line-height:1.3 !important;
+  }
+  html[data-device-layout="mobile"] #results .track-artist {
+    font-size:12px !important;
+    line-height:1.25 !important;
+  }
+  html[data-device-layout="mobile"] #results .track-actions {
+    align-self:center !important;
+    gap:4px !important;
+  }
+  html[data-device-layout="mobile"] #results .track-play-btn,
+  html[data-device-layout="mobile"] #results .track-more-btn {
+    min-width:34px !important;
+    min-height:36px !important;
+    height:36px !important;
+    padding:5px 8px !important;
+  }
+}
+
