@@ -3528,3 +3528,16 @@ body.visualizer-stage-open{overflow:hidden}
   .np-dock-tools {grid-column:1/-1;justify-content:flex-start}
 }
 @media(prefers-reduced-motion:reduce) {.np-full-spectrum i{animation:none!important}}
+
+/* The live spectrum now lives directly in the song artwork column. */
+.np-live-spectrum {width:min(100%,540px);margin-top:15px;display:flex;flex-direction:column;align-items:stretch;gap:7px}
+.np-live-spectrum-label {font-size:9px;font-weight:800;letter-spacing:.2em;color:#78d9d0;text-align:left}
+.np-live-spectrum canvas {display:block;width:100%;height:88px;border-radius:10px;background:linear-gradient(180deg,rgba(8,40,45,.24),rgba(2,14,20,.08))}
+.np-live-spectrum-controls {display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.np-live-spectrum-controls .btn {border-color:rgba(105,220,207,.22);color:#a8e7df}
+.np-live-spectrum-controls .visualizer-source-status {font-size:10px;color:#7faaa9;text-align:center}
+.np-live-spectrum-controls .visualizer-source-status.is-live {color:#7cf0d8}
+@media(max-width:760px) {
+ .np-live-spectrum {margin-top:8px}
+ .np-live-spectrum canvas {height:54px}
+}
