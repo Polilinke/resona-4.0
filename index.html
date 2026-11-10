@@ -57,11 +57,7 @@
       <button class="nav-btn active" data-view="home" title="Home" aria-label="Home"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span></button>
       <button class="nav-btn" data-view="search" title="Search" aria-label="Search"><span class="nav-icon" aria-hidden="true">⌕</span><span class="nav-label">Search</span></button>
       <button class="nav-btn" data-view="playlists" title="Library" aria-label="Library"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Library</span></button>
-      
-      <button class="nav-btn" data-view="insights" title="Insights" aria-label="Insights"><span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Insights</span></button>
-      <button class="nav-btn" data-view="rooms" title="Listening rooms" aria-label="Listening rooms"><span class="nav-icon" aria-hidden="true">◉</span><span class="nav-label">Listening rooms</span></button>
-      <button class="nav-btn" data-view="social" title="Social" aria-label="Social"><span class="nav-icon" aria-hidden="true">♧</span><span class="nav-label">Social</span></button>
-      <button class="nav-btn" data-view="queue" title="Queue" aria-label="Queue"><span class="nav-icon" aria-hidden="true">≡</span><span class="nav-label">Queue</span><span id="queueCount" class="count">0</span></button>
+      <button class="nav-btn" data-view="rooms" title="Together" aria-label="Together"><span class="nav-icon" aria-hidden="true">◉</span><span class="nav-label">Together</span></button>
       <div class="sidebar-spacer"></div>
 </nav>
 
@@ -101,7 +97,12 @@
 
       
 
-      <div id="view-playlists" class="view"><div class="library-heading"><span class="discovery-kicker">YOUR COLLECTION</span><h2>Library</h2><p class="hint">Your playlists and listening history, together in one place.</p></div><section id="libraryPlaylistsPanel">
+      <div id="view-playlists" class="view"><div class="library-heading"><span class="discovery-kicker">YOUR COLLECTION</span><h2>Library</h2><p class="hint">Your playlists and listening history, together in one place.</p></div>
+        <div class="library-subtabs" role="tablist" aria-label="Library sections">
+          <button class="library-subtab active" type="button" data-library-section="playlists">Playlists & History</button>
+          <button class="library-subtab" type="button" data-library-section="queue">Queue</button>
+          <button class="library-subtab" type="button" data-library-section="insights">Insights</button>
+        </div><section id="libraryPlaylistsPanel">
         <div class="row-between">
           <h2>Playlists</h2>
           <div class="row">
@@ -142,6 +143,10 @@
       </div>
 
       <div id="view-rooms" class="view">
+        <div class="together-subtabs" role="tablist" aria-label="Together sections">
+          <button class="together-subtab active" type="button" data-together-section="rooms">Listening Rooms</button>
+          <button class="together-subtab" type="button" data-together-section="social">Social</button>
+        </div>
         <div class="rooms-page-heading">
           <div><span class="rooms-kicker">LISTEN TOGETHER</span><h2>Listening rooms</h2><p>Private rooms, shared queues and host-approved music.</p></div>
           <span class="rooms-live-mark"><i></i> REAL-TIME</span>
