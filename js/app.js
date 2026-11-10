@@ -144,7 +144,8 @@
 
   function showView(name) {
     const mobileLayout = document.documentElement.dataset.deviceLayout === 'mobile';
-    if (mobileLayout && name === 'history') { name = 'playlists'; setLibraryTab('history'); }
+    if (name === 'history') { name = 'playlists'; setLibraryTab('history'); }
+    else if (name === 'playlists') setLibraryTab('playlists');
     if (!document.getElementById('view-' + name)) name = 'search';
     const librarySection = ['playlists', 'queue', 'history'].includes(name);
     document.documentElement.dataset.libraryOpen = mobileLayout && librarySection ? 'true' : 'false';
