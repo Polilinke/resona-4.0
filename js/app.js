@@ -133,10 +133,20 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
+  document.querySelectorAll('[data-library-tab]').forEach(btn => btn.addEventListener('click', () => setLibraryTab(btn.dataset.libraryTab)));
+  function setLibraryTab(tab) {
+    const playlists = tab !== 'history';
+    $('libraryPlaylistsPanel')?.classList.toggle('hidden', !playlists);
+    $('libraryHistoryPanel')?.classList.toggle('hidden', playlists);
+    document.querySelectorAll('[data-library-tab]').forEach(b => b.classList.toggle('active', b.dataset.libraryTab === (playlists ? 'playlists' : 'history')));
+    if (playlists) renderPlaylists(); else renderHistory();
+  }
+
   function showView(name) {
+    const mobileLayout = document.documentElement.dataset.deviceLayout === 'mobile';
+    if (mobileLayout && name === 'history') { name = 'playlists'; setLibraryTab('history'); }
     if (!document.getElementById('view-' + name)) name = 'search';
     const librarySection = ['playlists', 'queue', 'history'].includes(name);
-    const mobileLayout = document.documentElement.dataset.deviceLayout === 'mobile';
     document.documentElement.dataset.libraryOpen = mobileLayout && librarySection ? 'true' : 'false';
 
     document.querySelectorAll('.nav-btn[data-view]').forEach(b => {
