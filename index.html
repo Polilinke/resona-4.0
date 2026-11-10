@@ -300,13 +300,25 @@
       <button id="visualizerCloseBtn" class="btn ghost" type="button" aria-label="Close visualizer">✕ Close</button>
     </div>
     <div class="visualizer-main">
-      <canvas id="visualizerCanvas" aria-label="Animated music visualizer"></canvas>
+      <div class="visualizer-spectrum-pane">
+        <div class="visualizer-pane-label">LIVE SPECTRUM</div>
+        <canvas id="visualizerCanvas" aria-label="Animated music visualizer"></canvas>
+      </div>
+      <aside id="visualizerLyricsPanel" class="visualizer-lyrics-panel hidden" aria-label="Synchronized lyrics">
+        <div class="visualizer-lyrics-head">
+          <div><span class="visualizer-pane-label">NOW SINGING</span><strong>Lyrics</strong></div>
+          <span class="visualizer-lyrics-live">LIVE SYNC</span>
+        </div>
+        <div id="visualizerLyricsStatus" class="visualizer-lyrics-status">Play a track to load its lyrics.</div>
+        <div id="visualizerLyrics" class="visualizer-lyrics-list" aria-live="polite"></div>
+      </aside>
     </div>
     <div class="visualizer-stage-bottom">
       <div class="visualizer-modes" role="group" aria-label="Visualizer style">
         <button class="visualizer-mode active" data-visual-mode="spectrum" type="button">Spectrum</button>
       </div>
       <div class="visualizer-live-controls">
+        <button id="visualizerLyricsToggle" class="btn ghost small" type="button" aria-pressed="false">Show lyrics</button>
         <button id="visualizerBeatSyncBtn" class="btn ghost small" type="button">Enable beat sync</button>
         <span id="visualizerSourceStatus" class="visualizer-source-status">Waiting for audio</span>
       </div>
