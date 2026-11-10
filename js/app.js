@@ -698,9 +698,12 @@
     if (history.length) sections.push({ title:'Pick up where you left off', subtitle:'Your recent rotation', tracks:history.slice(0,6) });
     if (popular.length) {
       const mixed = shuffle(unique(popular), Date.now() >>> 4);
-      sections.push({ title:'Fresh finds', subtitle:'A few tracks worth a listen', tracks:mixed.slice(0,6) });
-      sections.push({ title:'Popular right now', subtitle:'Trending picks from your region', tracks:mixed.slice(6,12) });
-      sections.push({ title:'Your next repeat', subtitle:'A shuffled mix from the current catalogue', tracks:mixed.slice(12,18) });
+      const shelfTracks = offset => mixed.length
+        ? Array.from({ length:Math.min(6,mixed.length) }, (_, index) => mixed[(offset + index) % mixed.length])
+        : [];
+      sections.push({ title:'Fresh finds', subtitle:'A few tracks worth a listen', tracks:shelfTracks(0) });
+      sections.push({ title:'Popular right now', subtitle:'Trending picks from your region', tracks:shelfTracks(Math.floor(mixed.length / 3)) });
+      sections.push({ title:'Your next repeat', subtitle:'A shuffled mix from the current catalogue', tracks:shelfTracks(Math.floor((mixed.length * 2) / 3)) });
     }
     sections.forEach(section => {
       if (!section.tracks.length) return;
