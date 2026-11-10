@@ -3382,6 +3382,7 @@ body.visualizer-stage-open{overflow:hidden}
 
 /* AudioAuditor-inspired expanded song player: artwork + lyrics + bottom transport. */
 .np-full.audioauditor-player {
+  height:auto;
   padding:22px clamp(16px,3vw,48px) 14px;
   overflow:hidden;
   background:
