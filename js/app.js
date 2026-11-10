@@ -147,10 +147,18 @@
 
   function showLibrarySection(section) {
     document.querySelectorAll('.library-subtab').forEach(btn => btn.classList.toggle('active', btn.dataset.librarySection === section));
-    ['playlists','queue','insights'].forEach(name => {
-      const view = document.getElementById('view-' + name);
-      if (view) view.classList.toggle('active', name === section || (section === 'playlists' && name === 'playlists'));
-    });
+    const library = document.getElementById('view-playlists');
+    const queue = document.getElementById('view-queue');
+    const insights = document.getElementById('view-insights');
+    // Playlists and Insights live inside the Library container; keep that
+    // container active so its tabs never disappear when switching sections.
+    if (library) library.classList.add('active');
+    if (queue) queue.classList.toggle('active', section === 'queue');
+    if (insights) insights.classList.toggle('active', section === 'insights');
+    const playlistsPanel = document.getElementById('libraryPlaylistsPanel');
+    const historyPanel = document.getElementById('libraryHistoryPanel');
+    if (playlistsPanel) playlistsPanel.classList.toggle('hidden', section !== 'playlists');
+    if (historyPanel) historyPanel.classList.toggle('hidden', section !== 'playlists');
     document.documentElement.dataset.libraryOpen = 'true';
     if (section === 'playlists') setLibraryTab();
     if (section === 'queue') renderQueue();
