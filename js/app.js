@@ -613,7 +613,11 @@
       actions.append(button('Remove', () => opts.removable(track), 'btn small danger'));
     }
 
-    info.append(copy, meta, actions);
+    const orbit = document.createElement('div');
+    orbit.className = 'track-solar-system';
+    orbit.setAttribute('aria-hidden', 'true');
+    orbit.innerHTML = '<span class="solar-sun"></span><i class="solar-orbit orbit-one"><b></b></i><i class="solar-orbit orbit-two"><b></b></i><i class="solar-orbit orbit-three"><b></b></i>';
+    info.append(orbit, copy, meta, actions);
     row.append(img, info);
     requestAnimationFrame(() => {
       if (t.scrollWidth > titleViewport.clientWidth + 3) {
