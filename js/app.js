@@ -128,37 +128,30 @@
     btn.addEventListener('click', () => showView(btn.dataset.view));
   });
   $('brandHomeBtn')?.addEventListener('click', () => {
-    showView('search');
+    showView('home');
+    renderDiscovery();
     document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  document.querySelectorAll('[data-library-tab]').forEach(btn => btn.addEventListener('click', () => setLibraryTab(btn.dataset.libraryTab)));
-  function setLibraryTab(tab) {
-    const playlists = tab !== 'history';
-    $('libraryPlaylistsPanel')?.classList.toggle('hidden', !playlists);
-    $('libraryHistoryPanel')?.classList.toggle('hidden', playlists);
-    document.querySelectorAll('[data-library-tab]').forEach(b => b.classList.toggle('active', b.dataset.libraryTab === (playlists ? 'playlists' : 'history')));
-    if (playlists) renderPlaylists(); else renderHistory();
+  function setLibraryTab() {
+    $('libraryPlaylistsPanel')?.classList.remove('hidden');
+    $('libraryHistoryPanel')?.classList.remove('hidden');
+    renderPlaylists();
+    renderHistory();
   }
 
   function showView(name) {
-    const mobileLayout = document.documentElement.dataset.deviceLayout === 'mobile';
-    if (name === 'history') { name = 'playlists'; setLibraryTab('history'); }
-    else if (name === 'playlists') setLibraryTab('playlists');
-    if (!document.getElementById('view-' + name)) name = 'search';
-    const librarySection = ['playlists', 'queue', 'history'].includes(name);
-    document.documentElement.dataset.libraryOpen = mobileLayout && librarySection ? 'true' : 'false';
-
-    document.querySelectorAll('.nav-btn[data-view]').forEach(b => {
-      const activeName = mobileLayout && librarySection ? 'playlists' : name;
-      b.classList.toggle('active', b.dataset.view === activeName);
-    });
+    if (name === 'history') name = 'playlists';
+    if (!document.getElementById('view-' + name)) name = 'home';
+    const librarySection = ['playlists', 'queue'].includes(name);
+    document.documentElement.dataset.libraryOpen = librarySection ? 'true' : 'false';
+    document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === name));
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
-    if (name === 'playlists') renderPlaylists();
-    if (name === 'history') renderHistory();
+    if (name === 'playlists') setLibraryTab();
     if (name === 'queue') renderQueue();
-    if (name === 'search') renderResults();
+    if (name === 'search') { renderResults(); $('searchInput')?.focus({ preventScroll: true }); }
+    if (name === 'home') renderDiscovery();
     if (name === 'rooms') window.ResonaRooms?.open();
   }
 
@@ -342,36 +335,15 @@
 
   // ---------- Home: popular music (1 quota unit, cached 24 hours) ----------
   async function showHome() {
-    renderDiscovery();
     state.searchRequestId++;
     state.searchSource = 'youtube';
-    $('searchSourceSelect').value = 'youtube';
-    officialOnlyToggle.disabled = false;
-    officialOnlyToggle.closest('.official-filter')?.classList.remove('source-filter-disabled');
-    showView('search');
-    const region = Store.getSettings().popularRegion || 'US';
-    const cacheKey = 'popular:' + region;
-    const cached = Store.getCachedSearch(cacheKey);
-    if (cached) {
-      state.rawResults = cached;
-      state.isSearch = false;
-      $('searchStatus').textContent = 'Popular music right now';
-      renderResults();
-      return;
+    if ($('searchSourceSelect')) $('searchSourceSelect').value = 'youtube';
+    if (officialOnlyToggle) {
+      officialOnlyToggle.disabled = false;
+      officialOnlyToggle.closest('.official-filter')?.classList.remove('source-filter-disabled');
     }
-
-    $('searchStatus').textContent = 'Loading popular music…';
-    try {
-      const results = await YouTubeAPI.fetchPopular(region);
-      Store.setCachedSearch(cacheKey, results);
-      state.rawResults = results;
-      state.isSearch = false;
-      $('searchStatus').textContent = 'Popular music right now';
-      renderResults();
-    } catch (err) {
-      $('searchStatus').textContent = 'Could not load popular music: ' + err.message;
-    }
-    updateQuotaBadge();
+    showView('home');
+    renderDiscovery();
   }
 
   async function runSearch(query, force = false) {
