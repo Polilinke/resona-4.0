@@ -251,25 +251,16 @@
   </footer>
 
   <!-- Expanded now-playing view -->
-  <div id="npFull" class="np-full hidden" aria-hidden="true">
+  <div id="npFull" class="np-full audioauditor-player hidden" aria-hidden="true">
     <button id="npClose" class="btn ghost np-close" title="Close (Esc)">⌄ Close</button>
     <div class="np-full-inner">
-      <div class="np-artwork-wrap">
-        <img id="npFullArt" class="np-full-art" alt="Album artwork" />
+      <section class="np-artwork-wrap">
+        <div class="np-artwork-glow"><img id="npFullArt" class="np-full-art" alt="Album artwork" /></div>
         <div id="npFullTitle" class="np-full-title">Nothing playing</div>
         <div id="npFullArtist" class="np-full-artist"></div>
         <div id="npFullAlbum" class="np-full-album"></div>
-        <div class="np-full-progress">
-          <span id="npFullTime">0:00</span>
-          <input id="npFullSeek" type="range" min="0" max="1000" value="0" />
-          <span id="npFullDur">0:00</span>
-        </div>
-        <div class="np-full-controls">
-          <button id="npFullPrev" class="btn icon" title="Previous track">⏮</button>
-          <button id="npFullPlay" class="btn icon primary" title="Play / pause">▶</button>
-          <button id="npFullNext" class="btn icon" title="Next track">⏭</button>
-        </div>
-      </div>
+        <div class="np-full-spectrum" aria-label="Decorative audio spectrum"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </section>
       <section class="np-lyrics-panel">
         <div class="np-lyrics-toolbar">
           <div class="np-lyrics-heading">LYRICS</div>
@@ -288,6 +279,20 @@
           </div>
           <button id="npLyricNext" class="btn icon np-lyric-arrow" title="Next lyric">›</button>
         </div>
+      </section>
+      <section class="np-full-dock" aria-label="Playback controls">
+        <div class="np-full-progress">
+          <span id="npFullTime">0:00</span>
+          <input id="npFullSeek" type="range" min="0" max="1000" value="0" />
+          <span id="npFullDur">0:00</span>
+        </div>
+        <div class="np-dock-track"><strong id="npDockTitle">Nothing playing</strong><span id="npDockArtist"></span><small>RESONA · NOW PLAYING</small></div>
+        <div class="np-full-controls">
+          <button id="npFullPrev" class="btn icon" title="Previous track">⏮</button>
+          <button id="npFullPlay" class="btn icon primary" title="Play / pause">▶</button>
+          <button id="npFullNext" class="btn icon" title="Next track">⏭</button>
+        </div>
+        <div class="np-dock-tools"><button id="npDockEq" class="btn ghost small" type="button">EQ</button><button id="npDockVisual" class="btn ghost small" type="button">VISUALS</button><span class="np-dock-volume">♫</span></div>
       </section>
     </div>
   </div>
