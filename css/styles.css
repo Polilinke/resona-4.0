@@ -3773,3 +3773,31 @@ body.visualizer-stage-open{overflow:hidden}
  .home-track-grid .track:hover { transform:none; }
 }
 @media (prefers-reduced-motion:reduce) { .home-track-grid .track { transition:none; } }
+
+
+/* Tiny orbital accent restored to discovery song cards */
+.home-track-grid .track { grid-template-columns:76px minmax(0,1fr); }
+.home-track-grid .track .track-info { display:grid; grid-template-columns:34px minmax(0,1fr); grid-template-rows:auto auto; column-gap:9px; align-items:center; }
+.home-track-grid .track .track-solar-system {
+  grid-column:1; grid-row:1; position:relative; width:32px; height:32px; align-self:center;
+  display:block; flex:none; overflow:visible; filter:drop-shadow(0 0 5px rgba(77,220,255,.22));
+}
+.home-track-grid .track .solar-sun {
+  position:absolute; width:7px; height:7px; border-radius:50%; left:12.5px; top:12.5px;
+  background:#ffd98a; box-shadow:0 0 7px 2px rgba(255,190,95,.65),0 0 14px rgba(80,206,255,.28);
+}
+.home-track-grid .track .solar-orbit { position:absolute; left:50%; top:50%; border:1px solid rgba(111,211,237,.42); border-radius:50%; transform:translate(-50%,-50%); animation:resona-orbit-spin 7s linear infinite; }
+.home-track-grid .track .orbit-one { width:15px; height:15px; }
+.home-track-grid .track .orbit-two { width:24px; height:24px; animation-duration:11s; animation-direction:reverse; }
+.home-track-grid .track .orbit-three { width:32px; height:32px; animation-duration:16s; }
+.home-track-grid .track .solar-orbit b { position:absolute; width:4px; height:4px; left:50%; top:-2px; border-radius:50%; background:#70e8ff; box-shadow:0 0 6px #70e8ff; }
+.home-track-grid .track .orbit-two b { background:#c5a4ff; box-shadow:0 0 6px #c5a4ff; }
+.home-track-grid .track .orbit-three b { background:#8ee7c4; box-shadow:0 0 6px #8ee7c4; }
+.home-track-grid .track .track-copy { grid-column:2; grid-row:1; min-width:0; }
+.home-track-grid .track .track-actions { grid-column:2; grid-row:2; margin-left:5px; }
+.home-track-grid .track .track-play-btn { transform:translateX(3px); }
+@keyframes resona-orbit-spin { from { transform:translate(-50%,-50%) rotate(0deg); } to { transform:translate(-50%,-50%) rotate(360deg); } }
+@media (prefers-reduced-motion:reduce) { .home-track-grid .track .solar-orbit { animation:none; } }
+@media (max-width:680px) {
+ .home-track-grid .track .track-info { grid-template-columns:34px minmax(0,1fr); }
+}
