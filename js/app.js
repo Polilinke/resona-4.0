@@ -408,6 +408,7 @@
     const cached = Store.getCachedSearch(cacheKey);
     if (cached) {
       state.rawResults = cached;
+      rememberSearchTracks('popular:' + region, cached);
       state.isSearch = false;
       renderResults();
       return;
@@ -415,6 +416,7 @@
     try {
       const results = await YouTubeAPI.fetchPopular(region);
       Store.setCachedSearch(cacheKey, results);
+      rememberSearchTracks('popular:' + region, results);
       state.rawResults = results;
       state.isSearch = false;
       renderResults();
@@ -437,6 +439,7 @@
     const cached = Store.getCachedSearch(cacheKey);
     if (cached) {
       state.rawResults = cached;
+      if (source === 'youtube') rememberSearchTracks(query, cached);
       state.isSearch = true;
       renderResults();
       $('searchStatus').textContent = source === 'audius'
@@ -456,6 +459,7 @@
         : await YouTubeAPI.search(query);
       if (requestId !== state.searchRequestId || source !== state.searchSource) return;
       Store.setCachedSearch(cacheKey, results);
+      if (source === 'youtube') rememberSearchTracks(query, results);
       state.rawResults = results;
       state.isSearch = true;
       renderResults();
