@@ -751,13 +751,16 @@
     const sections = [];
     if (history.length) sections.push({ title:'Pick up where you left off', subtitle:'Your recent rotation', tracks:history.slice(0,6) });
     if (popular.length) {
-      const mixed = shuffle(unique(popular), Date.now() >>> 4);
-      const shelfTracks = offset => mixed.length
-        ? Array.from({ length:Math.min(6,mixed.length) }, (_, index) => mixed[(offset + index) % mixed.length])
-        : [];
-      sections.push({ title:'Fresh finds', subtitle:'A few tracks worth a listen', tracks:shelfTracks(0) });
-      sections.push({ title:'Popular right now', subtitle:'Trending picks from your region', tracks:shelfTracks(Math.floor(mixed.length / 3)) });
-      sections.push({ title:'Your next repeat', subtitle:'A shuffled mix from the current catalogue', tracks:shelfTracks(Math.floor((mixed.length * 2) / 3)) });
+      // Split one shuffled catalogue into non-overlapping shelves. Rotating the same
+      // array made "Popular" and "Your next repeat" show many of the same songs.
+      const recentIds = new Set(history.map(track => track.id).filter(Boolean));
+      const mixed = shuffle(unique(popular).filter(track => !recentIds.has(track.id)), Date.now() >>> 4);
+      const fresh = mixed.slice(0,6);
+      const trending = mixed.slice(6,12);
+      const nextRepeat = mixed.slice(12,18);
+      if (fresh.length) sections.push({ title:'Fresh finds', subtitle:'A few tracks worth a listen', tracks:fresh });
+      if (trending.length) sections.push({ title:'Popular right now', subtitle:'Trending picks from your region', tracks:trending });
+      if (nextRepeat.length) sections.push({ title:'Your next repeat', subtitle:'More tracks picked from the catalogue', tracks:nextRepeat });
     }
     sections.forEach(section => {
       if (!section.tracks.length) return;
@@ -795,11 +798,13 @@
       });
     };
     const history = unique(Store.getHistory()).slice(0, 8);
+    const historyIds = new Set(history.map(track => track.id).filter(Boolean));
+    // Keep recommendation shelves separate from recent plays, then partition the
+    // shuffled catalogue so each shelf gets its own songs instead of rotated repeats.
     const catalogue = unique([
       ...state.rawResults,
-      ...getDiscoveryPool(),
-      ...Store.getHistory()
-    ]);
+      ...getDiscoveryPool()
+    ]).filter(track => !historyIds.has(track.id));
     const shuffled = items => {
       const copy = items.slice();
       for (let i = copy.length - 1; i > 0; i--) {
@@ -808,15 +813,13 @@
       }
       return copy;
     };
-    const rotate = (items, offset) => items.length
-      ? Array.from({ length:Math.min(8,items.length) }, (_, i) => items[(offset + i) % items.length])
-      : [];
+    const mixed = shuffled(catalogue);
     const sections = [
-      { title:'Your Frequent Plays', tracks:history.length ? history : catalogue.slice(0,8), style:'mobile-frequent-shelf' },
-      { title:'Fresh finds', tracks:rotate(shuffled(catalogue),0), style:'mobile-cover-shelf' },
-      { title:'Popular right now', tracks:rotate(catalogue,Math.floor(catalogue.length/3)), style:'mobile-cover-shelf' },
-      { title:'Your next repeat', tracks:rotate(shuffled(catalogue),Math.floor(catalogue.length/3)), style:'mobile-cover-shelf' },
-      { title:'Songs for You', tracks:rotate(shuffled(catalogue),0), style:'mobile-songs-shelf' }
+      { title:'Your Frequent Plays', tracks:history, style:'mobile-frequent-shelf' },
+      { title:'Fresh finds', tracks:mixed.slice(0,8), style:'mobile-cover-shelf' },
+      { title:'Popular right now', tracks:mixed.slice(8,16), style:'mobile-cover-shelf' },
+      { title:'Your next repeat', tracks:mixed.slice(16,24), style:'mobile-cover-shelf' },
+      { title:'Songs for You', tracks:mixed.slice(24,32), style:'mobile-songs-shelf' }
     ];
     sections.forEach(section => {
       const shelf = document.createElement('section');
