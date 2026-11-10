@@ -59,6 +59,10 @@ const NowPlaying = (() => {
     $('npFullTitle').textContent = track ? track.title : 'Nothing playing';
     $('npFullArtist').textContent = track ? track.artist : '';
     $('npFullArt').src = track && track.thumbnail ? track.thumbnail : '';
+    const dockTitle = $('npDockTitle');
+    const dockArtist = $('npDockArtist');
+    if (dockTitle) dockTitle.textContent = track ? track.title : 'Nothing playing';
+    if (dockArtist) dockArtist.textContent = track ? track.artist : 'Search for a track to begin';
   }
 
   function syncVisualizerLyrics() {
@@ -259,6 +263,8 @@ const NowPlaying = (() => {
     $('npFullPlay').addEventListener('click', () => opts.toggle && opts.toggle());
     $('npFullNext').addEventListener('click', () => opts.next && opts.next());
     $('npFullPrev').addEventListener('click', () => opts.prev && opts.prev());
+    $('npDockEq')?.addEventListener('click', () => $('eqBtn')?.click());
+    $('npDockVisual')?.addEventListener('click', () => $('visualizerOpenBtn')?.click());
     $('npFullSeek').addEventListener('change', (e) => {
       const dur = opts.getDuration ? opts.getDuration() : 0;
       if (dur > 0 && opts.seek) opts.seek((Number(e.target.value) / 1000) * dur);
