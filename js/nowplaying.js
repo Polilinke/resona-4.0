@@ -230,6 +230,7 @@ const NowPlaying = (() => {
     const view = $('npFull');
     view.style.top = top + 'px';
     view.classList.remove('hidden');
+    window.dispatchEvent(new Event('resona:np-open'));
     view.setAttribute('aria-hidden', 'false');
     renderInfo();
     tick();
@@ -241,6 +242,7 @@ const NowPlaying = (() => {
   function close() {
     const view = $('npFull');
     view.classList.add('hidden');
+    window.dispatchEvent(new Event('resona:np-close'));
     view.setAttribute('aria-hidden', 'true');
     clearInterval(timer);
     document.removeEventListener('keydown', onKey);
@@ -264,7 +266,6 @@ const NowPlaying = (() => {
     $('npFullNext').addEventListener('click', () => opts.next && opts.next());
     $('npFullPrev').addEventListener('click', () => opts.prev && opts.prev());
     $('npDockEq')?.addEventListener('click', () => $('eqBtn')?.click());
-    $('npDockVisual')?.addEventListener('click', () => $('visualizerOpenBtn')?.click());
     $('npFullSeek').addEventListener('change', (e) => {
       const dur = opts.getDuration ? opts.getDuration() : 0;
       if (dur > 0 && opts.seek) opts.seek((Number(e.target.value) / 1000) * dur);
