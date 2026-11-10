@@ -850,12 +850,15 @@
       return copy;
     };
     const mixed = shuffled(catalogue);
+    // The YouTube popular endpoint returns at most 20 tracks. Reserve the
+    // final eight for the compact two-column Songs for You section instead
+    // of slicing past the end of the catalogue.
     const sections = [
       { title:'Your Frequent Plays', tracks:history, style:'mobile-frequent-shelf' },
-      { title:'Fresh finds', tracks:mixed.slice(0,8), style:'mobile-cover-shelf' },
-      { title:'Popular right now', tracks:mixed.slice(8,16), style:'mobile-cover-shelf' },
-      { title:'Your next repeat', tracks:mixed.slice(16,24), style:'mobile-cover-shelf' },
-      { title:'Songs for You', tracks:mixed.slice(24,32), style:'mobile-songs-shelf' }
+      { title:'Fresh finds', tracks:mixed.slice(0,4), style:'mobile-cover-shelf' },
+      { title:'Popular right now', tracks:mixed.slice(4,8), style:'mobile-cover-shelf' },
+      { title:'Your next repeat', tracks:mixed.slice(8,12), style:'mobile-cover-shelf' },
+      { title:'Songs for You', tracks:mixed.slice(12,20), style:'mobile-songs-shelf' }
     ];
     const recommendationSections = sections.filter(section => section.title === 'Your Frequent Plays' || section.tracks.length);
     if (!catalogue.length && !history.length) {
