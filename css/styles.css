@@ -483,7 +483,7 @@ html[data-device-layout="mobile"] .topbar {
 html[data-device-layout="mobile"] .brand { flex: 1 0 auto; }
 html[data-device-layout="mobile"] .controls-top { margin-left: auto; gap: 6px; }
 html[data-device-layout="mobile"] #fullscreenBtn { display: none; }
-html[data-device-layout="mobile"] .search-wrap { order: 3; flex: 1 0 100%; min-width: 0; }
+html[data-device-layout="mobile"] .search-wrap { flex: 1 0 100%; min-width: 0; }
 html[data-device-layout="mobile"] #searchInput { min-width: 0; padding: 12px 14px; font-size: 16px; }
 html[data-device-layout="mobile"] .quota-badge { display: none; }
 html[data-device-layout="mobile"] .layout { display: contents; }
@@ -4119,3 +4119,14 @@ body.visualizer-stage-open{overflow:hidden}
 
 .library-subnav-btn { min-height:38px; padding:8px 14px; border:1px solid var(--panel-border); border-radius:11px; color:var(--muted); background:var(--panel); cursor:pointer; }
 .library-subnav-btn.active { color:var(--accent); border-color:var(--accent); background:rgba(var(--accent-rgb),.13); }
+
+
+/* Mobile navigation refresh: search lives on its own tab; Library is one continuous page. */
+html[data-device-layout="mobile"] .library-subnav { display: none !important; }
+html[data-device-layout="mobile"] #view-playlists { display: none; }
+html[data-device-layout="mobile"] #view-playlists.active { display: block; }
+html[data-device-layout="mobile"] #libraryPlaylistsPanel,
+html[data-device-layout="mobile"] #libraryHistoryPanel { display: block; }
+html[data-device-layout="mobile"] #libraryHistoryPanel { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--panel-border); }
+html[data-device-layout="mobile"] .library-heading { margin-bottom: 20px; }
+html[data-device-layout="mobile"] #view-search .search-wrap { margin-bottom: 14px; }
