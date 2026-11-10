@@ -3736,3 +3736,40 @@ body.visualizer-stage-open{overflow:hidden}
   .np-full.audioauditor-player .np-full-controls {grid-column:2;grid-row:2}
   .np-full.audioauditor-player .np-dock-tools {grid-column:1/-1;grid-row:3;justify-self:start}
 }
+
+
+/* Resona discovery home — compact music shelves inspired by streaming-service layouts */
+.home-shelves { display:flex; flex-direction:column; gap:30px; margin:18px 0 34px; }
+.home-shelf { min-width:0; }
+.home-shelf-heading { display:flex; align-items:end; justify-content:space-between; gap:14px; margin:0 2px 13px; }
+.home-shelf-heading h2 { margin:0; color:var(--text); font-size:clamp(19px,2vw,24px); letter-spacing:-.035em; }
+.home-shelf-heading p { margin:4px 0 0; color:var(--muted); font-size:12px; }
+.home-track-grid { display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; align-items:stretch; }
+.home-track-grid .track {
+  display:grid; grid-template-columns:76px minmax(0,1fr); grid-template-rows:auto auto;
+  gap:10px 12px; align-content:start; min-width:0; min-height:108px; padding:11px;
+  border-radius:15px; background:linear-gradient(145deg,rgba(32,31,52,.82),rgba(14,19,31,.88));
+  border:1px solid rgba(190,174,255,.13); transition:transform .2s,border-color .2s,background .2s;
+}
+.home-track-grid .track:hover { transform:translateY(-3px); border-color:rgba(var(--accent-rgb),.45); }
+.home-track-grid .track > img { grid-column:1; grid-row:1 / span 2; width:76px; height:76px; aspect-ratio:1; border-radius:11px; object-fit:cover; }
+.home-track-grid .track .track-info { min-width:0; align-self:center; }
+.home-track-grid .track .track-title { display:block; white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.3; font-size:13px; }
+.home-track-grid .track .track-artist { margin-top:5px; font-size:11px; }
+.home-track-grid .track .track-meta { display:none; }
+.home-track-grid .track .track-actions { grid-column:2; grid-row:2; justify-content:flex-start; align-items:center; gap:6px; }
+.home-track-grid .track .track-play-btn { min-width:34px; min-height:30px; padding:5px 10px; }
+.home-track-grid .track .track-more-btn { min-width:30px; min-height:30px; }
+.home-track-grid .track .track-waveform,.home-track-grid .track .track-sonic { display:none; }
+#results:not(.hidden) { display:flex; flex-direction:column; gap:8px; }
+#results:not(.hidden) .track { grid-template-columns:96px minmax(0,1fr) auto; }
+@media (max-width:1050px) { .home-track-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:680px) {
+ .home-shelves { gap:24px; margin-top:14px; }
+ .home-shelf-heading { align-items:center; }
+ .home-shelf-heading h2 { font-size:18px; }
+ .home-track-grid { display:flex !important; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; gap:10px; padding:2px 2px 10px; scrollbar-width:thin; }
+ .home-track-grid .track { flex:0 0 min(78vw,285px); scroll-snap-align:start; }
+ .home-track-grid .track:hover { transform:none; }
+}
+@media (prefers-reduced-motion:reduce) { .home-track-grid .track { transition:none; } }
