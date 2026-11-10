@@ -145,47 +145,48 @@
     renderHistory();
   }
 
+  function isMobileNavigation() {
+    return document.documentElement.dataset.deviceLayout === 'mobile';
+  }
+
   function showLibrarySection(section) {
+    if (!isMobileNavigation()) return;
     document.querySelectorAll('.library-subtab').forEach(btn => btn.classList.toggle('active', btn.dataset.librarySection === section));
-    const library = document.getElementById('view-playlists');
-    const queue = document.getElementById('view-queue');
-    const insights = document.getElementById('view-insights');
-    // Playlists and Insights live inside the Library container; keep that
-    // container active so its tabs never disappear when switching sections.
-    if (library) library.classList.add('active');
-    if (queue) queue.classList.toggle('active', section === 'queue');
-    if (insights) insights.classList.toggle('active', section === 'insights');
-    const playlistsPanel = document.getElementById('libraryPlaylistsPanel');
-    const historyPanel = document.getElementById('libraryHistoryPanel');
-    if (playlistsPanel) playlistsPanel.classList.toggle('hidden', section !== 'playlists');
-    if (historyPanel) historyPanel.classList.toggle('hidden', section !== 'playlists');
+    const target = document.getElementById('view-' + section);
+    if (target) document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === target));
+    document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
+      const active = btn.dataset.view === 'playlists';
+      btn.classList.toggle('active', active);
+      if (active) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
+    });
     document.documentElement.dataset.libraryOpen = 'true';
+    document.querySelector('.content')?.scrollTo({top:0,behavior:'instant'});
     if (section === 'playlists') setLibraryTab();
     if (section === 'queue') renderQueue();
     if (section === 'insights') window.ResonaInsights?.render?.();
   }
 
   function showTogetherSection(section) {
+    if (!isMobileNavigation()) return;
     document.querySelectorAll('.together-subtab').forEach(btn => btn.classList.toggle('active', btn.dataset.togetherSection === section));
-    const rooms = document.getElementById('view-rooms');
-    const social = document.getElementById('view-social');
-    if (rooms) rooms.classList.toggle('active', section === 'rooms');
-    if (social) social.classList.toggle('active', section === 'social');
+    const target = document.getElementById(section === 'social' ? 'view-social' : 'view-rooms');
+    if (target) document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === target));
+    document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
+      const active = btn.classList.contains('mobile-nav-only') && btn.dataset.view === 'rooms';
+      btn.classList.toggle('active', active);
+      if (active) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
+    });
+    document.documentElement.dataset.libraryOpen = 'false';
+    document.querySelector('.content')?.scrollTo({top:0,behavior:'instant'});
     if (section === 'rooms') window.ResonaRooms?.open?.();
     if (section === 'social') window.ResonaSocial?.open?.();
   }
 
   function showView(name) {
     if (name === 'history') name = 'playlists';
-    if (['queue','insights'].includes(name)) {
-      showView('playlists');
-      showLibrarySection(name);
-      return;
-    }
-    if (name === 'social') {
-      showView('rooms');
-      showTogetherSection('social');
-      return;
+    if (isMobileNavigation()) {
+      if (['playlists','queue','insights'].includes(name)) { showLibrarySection(name); return; }
+      if (['rooms','social'].includes(name)) { showTogetherSection(name === 'social' ? 'social' : 'rooms'); return; }
     }
     const target = document.getElementById('view-' + name);
     if (!target) { console.warn('Resona navigation target missing:', name); return; }
@@ -198,13 +199,17 @@
     });
     document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === target));
     document.querySelector('.content')?.scrollTo({top:0,behavior:'instant'});
-    if (name === 'playlists') showLibrarySection('playlists');
-    if (name === 'rooms') showTogetherSection('rooms');
+    if (name === 'playlists') setLibraryTab();
+    if (name === 'queue') renderQueue();
+    if (name === 'rooms') window.ResonaRooms?.open?.();
+    if (name === 'insights') window.ResonaInsights?.render?.();
+    if (name === 'social') window.ResonaSocial?.open?.();
     if (name === 'search') renderResults();
     if (name === 'home') renderDiscovery();
   }
 
   document.addEventListener('click', event => {
+    if (!isMobileNavigation()) return;
     const libraryTab = event.target.closest('[data-library-section]');
     if (libraryTab) { event.preventDefault(); showLibrarySection(libraryTab.dataset.librarySection); }
     const togetherTab = event.target.closest('[data-together-section]');
