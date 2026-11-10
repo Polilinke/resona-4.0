@@ -124,8 +124,12 @@
   });
 
   // ---------- Views ----------
-  document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
-    btn.addEventListener('click', () => showView(btn.dataset.view));
+  const sidebarNav = document.querySelector('.sidebar');
+  sidebarNav?.addEventListener('click', event => {
+    const btn = event.target.closest('.nav-btn[data-view]');
+    if (!btn || !sidebarNav.contains(btn)) return;
+    event.preventDefault();
+    showView(btn.dataset.view);
   });
   $('brandHomeBtn')?.addEventListener('click', () => {
     showView('home');
@@ -143,16 +147,32 @@
 
   function showView(name) {
     if (name === 'history') name = 'playlists';
-    if (!document.getElementById('view-' + name)) name = 'home';
+    const target = document.getElementById('view-' + name);
+    if (!target) {
+      console.warn('Resona navigation target missing:', name);
+      return;
+    }
     const librarySection = ['playlists', 'queue'].includes(name);
     document.documentElement.dataset.libraryOpen = librarySection ? 'true' : 'false';
-    document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === name));
-    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+    document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
+      const active = btn.dataset.view === name;
+      btn.classList.toggle('active', active);
+      if (active) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
+    });
+    document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === target));
+    const content = document.querySelector('.content');
+    if (content) content.scrollTo({ top:0, behavior:'instant' });
     if (name === 'playlists') setLibraryTab();
     if (name === 'queue') renderQueue();
-    if (name === 'search') { renderResults(); $('searchInput')?.focus({ preventScroll: true }); }
+    if (name === 'search') renderResults();
     if (name === 'home') renderDiscovery();
-    if (name === 'rooms') window.ResonaRooms?.open();
+    if (name === 'rooms') {
+      if (window.ResonaRooms?.open) window.ResonaRooms.open();
+      else console.warn('Listening Rooms module is not ready yet.');
+    }
+    if (name === 'insights') window.ResonaInsights?.render?.();
+    if (name === 'social') window.ResonaSocial?.open?.();
   }
 
   // ---------- Shared API status ----------
