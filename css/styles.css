@@ -4240,8 +4240,7 @@ html[data-device-layout="mobile"] .sidebar .nav-btn.active {
 html[data-device-layout="mobile"] .sidebar .nav-icon {font-size:25px;line-height:1.1}
 html[data-device-layout="mobile"] .sidebar .nav-label {font-size:11px}
 html[data-device-layout="mobile"] .sidebar .nav-btn[data-view="social"],
-html[data-device-layout="mobile"] .sidebar .nav-btn[data-view="queue"],
-html[data-device-layout="mobile"] .sidebar .nav-btn[data-view="insights"] {display:none}
+html[data-device-layout="mobile"] .sidebar .nav-btn[data-view="queue"] {display:none}
 html[data-device-layout="mobile"] .sidebar .nav-btn[data-view="rooms"] {display:flex}
 html[data-device-layout="mobile"] .player {
   grid-row:2;position:relative;bottom:auto;z-index:6;
