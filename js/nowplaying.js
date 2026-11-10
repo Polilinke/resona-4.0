@@ -163,6 +163,9 @@ const NowPlaying = (() => {
     $('npFullAlbum').textContent = 'Album: loading…';
     const id = ++requestId;
     $('npLyrics').textContent = '';
+    lines = [];
+    synced = false;
+    activeIdx = -1;
     manualIdx = -1;
     $('npLyricsStatus').textContent = 'Loading lyrics…';
     syncVisualizerLyrics();
