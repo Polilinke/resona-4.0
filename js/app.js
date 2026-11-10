@@ -172,7 +172,7 @@
     const target = document.getElementById(section === 'social' ? 'view-social' : 'view-rooms');
     if (target) document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === target));
     document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
-      const active = btn.classList.contains('mobile-nav-only') && btn.dataset.view === 'rooms';
+      const active = btn.classList.contains('mobile-nav-only') && btn.dataset.view === 'social';
       btn.classList.toggle('active', active);
       if (active) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
     });
