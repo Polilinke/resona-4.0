@@ -738,7 +738,7 @@
     if (!host) return;
     host.replaceChildren();
     const popular = state.rawResults.slice();
-    const history = Store.getHistory().slice(0, 8);
+    const history = Store.getHistory().slice(0, 12);
     const unique = items => {
       const seen = new Set();
       return items.filter(track => {
@@ -748,29 +748,40 @@
         return true;
       });
     };
-    const frequent = unique(history.length ? history : popular).slice(0, 8);
-    const songs = unique(popular).slice(0, 8);
-    const makeShelf = (titleText, tracks, className) => {
-      if (!tracks.length) return;
+    const shuffle = items => {
+      const copy = items.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const n = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[n]] = [copy[n], copy[i]];
+      }
+      return copy;
+    };
+    const catalogue = unique(popular);
+    const sections = [
+      { title:'Your Frequent Plays', tracks:unique(history.length ? history : catalogue).slice(0,8), style:'mobile-frequent-shelf' },
+      { title:'Fresh finds', tracks:catalogue.slice(0,8), style:'mobile-cover-shelf' },
+      { title:'Popular right now', tracks:catalogue.slice(0,8), style:'mobile-cover-shelf' },
+      { title:'Your next repeat', tracks:shuffle(catalogue).slice(0,8), style:'mobile-cover-shelf' },
+      { title:'Songs for You', tracks:catalogue.slice(0,8), style:'mobile-songs-shelf' }
+    ];
+    sections.forEach(section => {
+      if (!section.tracks.length) return;
       const shelf = document.createElement('section');
-      shelf.className = 'mobile-home-shelf ' + className;
+      shelf.className = 'mobile-home-shelf ' + section.style;
       const heading = document.createElement('div');
       heading.className = 'mobile-shelf-heading';
       const title = document.createElement('h2');
-      title.textContent = titleText;
-      heading.append(title);
+      title.textContent = section.title;
       const rule = document.createElement('span');
       rule.className = 'mobile-shelf-rule';
-      heading.append(rule);
+      heading.append(title, rule);
       const list = document.createElement('div');
       list.className = 'mobile-track-list';
-      tracks.forEach(track => list.append(trackRow(track, { list:tracks })));
+      section.tracks.forEach(track => list.append(trackRow(track, { list:section.tracks })));
       shelf.append(heading, list);
       host.append(shelf);
-    };
-    makeShelf('Your Frequent Plays', frequent, 'mobile-frequent-shelf');
-    makeShelf('Songs for You', songs, 'mobile-songs-shelf');
-    if (!frequent.length && !songs.length) host.append(emptyNote('Your music will appear here.'));
+    });
+    if (!host.children.length) host.append(emptyNote('Your music will appear here when popular tracks load.'));
   }
 
   function renderResults() {
