@@ -4087,3 +4087,32 @@ body.visualizer-stage-open{overflow:hidden}
   }
 }
 
+
+
+/* Mobile navigation: keep discovery uncluttered and move search into its own tab. */
+@media (max-width:680px) {
+  html[data-device-layout="mobile"] .topbar .search-wrap {
+    display:none !important;
+  }
+  html[data-device-layout="mobile"] .sidebar [data-view="history"] {
+    display:none !important;
+  }
+  html[data-device-layout="mobile"] .sidebar [data-view="playlists"] .nav-label {
+    font-size:12px;
+  }
+  html[data-device-layout="mobile"] .library-subnav {
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:8px !important;
+    position:sticky;
+    top:0;
+    z-index:4;
+    margin:0 0 16px !important;
+    padding:10px 0 !important;
+    background:var(--bg);
+  }
+  html[data-device-layout="mobile"] #libraryHistoryPanel.hidden,
+  html[data-device-layout="mobile"] #libraryPlaylistsPanel.hidden {
+    display:none !important;
+  }
+}
