@@ -61,6 +61,25 @@ const NowPlaying = (() => {
     $('npFullArt').src = track && track.thumbnail ? track.thumbnail : '';
   }
 
+  function syncVisualizerLyrics() {
+    const box = $('visualizerLyrics');
+    const status = $('visualizerLyricsStatus');
+    if (!box || !status) return;
+    box.textContent = '';
+    const sourceStatus = $('npLyricsStatus');
+    status.textContent = sourceStatus ? sourceStatus.textContent : '';
+    lines.forEach((line, i) => {
+      const row = document.createElement('p');
+      row.className = 'visualizer-lyric-line' + (i === activeIdx ? ' active' : '');
+      row.textContent = line.text || '\u00a0';
+      row.dataset.i = i;
+      row.addEventListener('click', () => jumpToLyric(i));
+      box.appendChild(row);
+    });
+    const active = box.querySelector('.visualizer-lyric-line.active');
+    if (active) active.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
   function renderLyrics(list, isSynced) {
     const box = $('npLyrics');
     box.textContent = '';
@@ -76,6 +95,7 @@ const NowPlaying = (() => {
       p.addEventListener('click', () => jumpToLyric(i));
       box.appendChild(p);
     });
+    syncVisualizerLyrics();
   }
 
   function setActiveLyric(idx) {
@@ -87,6 +107,15 @@ const NowPlaying = (() => {
     if (el) {
       el.classList.add('active');
       el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+    const mirror = $('visualizerLyrics');
+    if (mirror) {
+      mirror.querySelectorAll('.visualizer-lyric-line.active').forEach(node => node.classList.remove('active'));
+      const mirrorLine = mirror.querySelector(`.visualizer-lyric-line[data-i="${activeIdx}"]`);
+      if (mirrorLine) {
+        mirrorLine.classList.add('active');
+        mirrorLine.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
     }
   }
 
@@ -136,6 +165,7 @@ const NowPlaying = (() => {
     $('npLyrics').textContent = '';
     manualIdx = -1;
     $('npLyricsStatus').textContent = 'Loading lyrics…';
+    syncVisualizerLyrics();
     updateOffsetLabel();
     if (!tr) return;
     try {
