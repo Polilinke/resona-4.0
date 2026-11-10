@@ -226,9 +226,12 @@ const NowPlaying = (() => {
 
   function open() {
     if (!track) return;
-    const top = document.querySelector('.topbar').getBoundingClientRect().bottom;
+    const topbar = document.querySelector('.topbar');
+    const top = topbar ? topbar.getBoundingClientRect().bottom : 0;
     const view = $('npFull');
+    view.style.setProperty('--np-top-offset', top + 'px');
     view.style.top = top + 'px';
+    view.style.height = 'calc(100dvh - ' + top + 'px)';
     view.classList.remove('hidden');
     window.dispatchEvent(new Event('resona:np-open'));
     view.setAttribute('aria-hidden', 'false');
