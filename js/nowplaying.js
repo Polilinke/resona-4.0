@@ -231,7 +231,8 @@ const NowPlaying = (() => {
     const view = $('npFull');
     view.style.setProperty('--np-top-offset', top + 'px');
     view.style.top = top + 'px';
-    view.style.height = 'calc(100dvh - ' + top + 'px)';
+    view.style.bottom = '0px';
+    view.style.height = 'auto';
     view.classList.remove('hidden');
     window.dispatchEvent(new Event('resona:np-open'));
     view.setAttribute('aria-hidden', 'false');
