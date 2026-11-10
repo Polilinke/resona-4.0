@@ -905,25 +905,28 @@ input[type=checkbox],input[type=range]{accent-color:#62dff7}
 [data-accent="purple"] { --accent:#a99bcf; --accent-rgb:169,155,207; }
 [data-accent="pink"] { --accent:#d99caf; --accent-rgb:217,156,175; }
 [data-accent="green"] { --accent:#91bda9; --accent-rgb:145,189,169; }
+/* Theme Studio drives the actual page backdrop and every glass surface.
+   No fixed purple/teal background colours: presets recolour the whole app. */
 body {
  background:
-  radial-gradient(ellipse at 13% 18%,rgba(66,164,181,.13),transparent 43%),
-  radial-gradient(ellipse at 86% 82%,rgba(171,112,69,.12),transparent 42%),
-  #03070b;
+  radial-gradient(ellipse at 13% 18%,rgba(var(--glass-glow-rgb,103,207,224),.16),transparent 43%),
+  radial-gradient(ellipse at 86% 82%,rgba(var(--warm-rgb,200,143,98),.11),transparent 42%),
+  var(--app-background,var(--bg));
+ transition:background-color .35s ease;
 }
 .topbar,.sidebar,.player,.track,.playlist-card,.feature-card,.insight-card,
 .wrapped-panel,.modal-card,.np-artwork-wrap,.np-lyrics-panel,.feature-track,
 #backgroundChoice .device-choice-card {
  background:
-  linear-gradient(115deg,rgba(72,169,185,.105),transparent 40%,rgba(183,125,80,.105)),
+  linear-gradient(115deg,rgba(var(--glass-glow-rgb,103,207,224),.12),transparent 40%,rgba(var(--warm-rgb,200,143,98),.10)),
   linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.012) 55%,rgba(255,255,255,.045)),
-  rgba(7,14,20,.72);
- border-color:rgba(161,201,207,.2);
+  color-mix(in srgb,var(--app-surface, #07141b) 88%,transparent);
+ border-color:rgba(var(--glass-edge-rgb,161,201,207),.24);
  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),
   inset 0 -1px 0 rgba(255,255,255,.035),
   0 18px 48px rgba(0,0,0,.3);
- backdrop-filter:blur(32px) saturate(165%);
- -webkit-backdrop-filter:blur(32px) saturate(165%);
+ backdrop-filter:blur(var(--glass-blur,32px)) saturate(var(--glass-saturation,165%));
+ -webkit-backdrop-filter:blur(var(--glass-blur,32px)) saturate(var(--glass-saturation,165%));
 }
 .btn { border-color:rgba(113,190,201,.28); }
 .btn:hover { border-color:rgba(120,205,214,.56); }
