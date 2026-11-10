@@ -1457,7 +1457,7 @@
     }
   });
   // Full-screen visualizer: real frequency data for direct audio and captured tab audio.
-  const visualizerStage = $('visualizerStage');
+  const visualizerStage = $('npFull');
   const visualizerCanvas = $('visualizerCanvas');
   const visualizerContext = visualizerCanvas?.getContext('2d');
   let visualStageFrame = 0;
@@ -1475,30 +1475,21 @@
     try { return !!(state.playerReady && state.player && state.player.getPlayerState() === 1); }
     catch (_) { return false; }
   }
-  function openDynamicVisualizer() {
-    if (!visualizerStage) return;
+  function startSongScreenSpectrum() {
+    if (!visualizerStage || visualizerStage.classList.contains('hidden')) return;
     visualStageOpen = true;
-    visualizerStage.classList.remove('hidden');
-    visualizerStage.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('visualizer-stage-open');
-    updateDynamicVisualizerTrack();
-    resizeDynamicVisualizer();
     updateDynamicVisualizerSource();
+    resizeDynamicVisualizer();
     cancelAnimationFrame(visualStageFrame);
     visualStageFrame = requestAnimationFrame(drawDynamicVisualizer);
   }
-  function closeDynamicVisualizer() {
+  function stopSongScreenSpectrum() {
     visualStageOpen = false;
-    if (!visualizerStage) return;
-    visualizerStage.classList.add('hidden');
-    visualizerStage.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('visualizer-stage-open');
     cancelAnimationFrame(visualStageFrame);
   }
   function updateDynamicVisualizerTrack() {
     const track = state.currentTrack;
-    $('visualizerTrackTitle').textContent = track?.title || 'Nothing playing';
-    $('visualizerTrackArtist').textContent = track?.artist || 'Start a track to begin';
+    // Track details are already shown in the expanded song header and dock.
   }
   function updateDynamicVisualizerSource() {
     const status = $('visualizerSourceStatus');
@@ -1620,16 +1611,8 @@
     }
     visualStageFrame = requestAnimationFrame(drawDynamicVisualizer);
   }
-  $('visualizerOpenBtn')?.addEventListener('click', openDynamicVisualizer);
-  $('visualizerLyricsToggle')?.addEventListener('click', () => {
-    const panel = $('visualizerLyricsPanel');
-    const button = $('visualizerLyricsToggle');
-    const visible = panel.classList.toggle('hidden') === false;
-    visualizerStage.classList.toggle('lyrics-visible', visible);
-    button.setAttribute('aria-pressed', String(visible));
-    button.textContent = visible ? 'Hide lyrics' : 'Show lyrics';
-    if (visible) requestAnimationFrame(resizeDynamicVisualizer);
-  });
+  window.addEventListener('resona:np-open', startSongScreenSpectrum);
+  window.addEventListener('resona:np-close', stopSongScreenSpectrum);
   $('visualizerBeatSyncBtn')?.addEventListener('click', async () => {
     const button = $('visualizerBeatSyncBtn');
     button.disabled = true;
@@ -1644,14 +1627,7 @@
       button.textContent = 'Enable beat sync';
     }
   });
-  $('visualizerCloseBtn')?.addEventListener('click', closeDynamicVisualizer);
-  visualizerStage?.addEventListener('click', event => { if (event.target === visualizerStage) closeDynamicVisualizer(); });
-  visualizerStage?.querySelectorAll('[data-visual-mode]').forEach(button => button.addEventListener('click', () => {
-    visualMode = button.dataset.visualMode;
-    visualizerStage.querySelectorAll('[data-visual-mode]').forEach(item => item.classList.toggle('active', item === button));
-  }));
   window.addEventListener('resize', resizeDynamicVisualizer);
-  window.addEventListener('keydown', event => { if (event.key === 'Escape' && visualStageOpen) closeDynamicVisualizer(); });
   window.addEventListener('resona:track-changed', () => {
     updateDynamicVisualizerTrack();
     updateDynamicVisualizerSource();
