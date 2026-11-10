@@ -58,8 +58,8 @@
   <main class="layout">
     <nav class="sidebar" aria-label="Main navigation">
       <button class="nav-btn active" data-view="search" title="Home" aria-label="Home"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span></button>
-      <button class="nav-btn" data-view="playlists" title="Playlists" aria-label="Playlists"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Playlists</span></button>
-      <button class="nav-btn" data-view="history" title="History" aria-label="History"><span class="nav-icon" aria-hidden="true">◷</span><span class="nav-label">History</span></button>
+      <button class="nav-btn" data-view="playlists" title="Library" aria-label="Library"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Library</span></button>
+      
       <button class="nav-btn" data-view="insights" title="Insights" aria-label="Insights"><span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Insights</span></button>
       <button class="nav-btn" data-view="rooms" title="Listening rooms" aria-label="Listening rooms"><span class="nav-icon" aria-hidden="true">◉</span><span class="nav-label">Listening rooms</span></button>
       <button class="nav-btn" data-view="social" title="Social" aria-label="Social"><span class="nav-icon" aria-hidden="true">♧</span><span class="nav-label">Social</span></button>
@@ -92,7 +92,7 @@
 
       
 
-      <div id="view-playlists" class="view">
+      <div id="view-playlists" class="view"><div class="library-subnav"><button class="library-subnav-btn active" data-library-tab="playlists">Playlists</button><button class="library-subnav-btn" data-library-tab="history">History</button></div><section id="libraryPlaylistsPanel">
         <div class="row-between">
           <h2>Playlists</h2>
           <div class="row">
@@ -101,7 +101,7 @@
           </div>
         </div>
         <div id="playlistsContainer"></div>
-      </div>
+      </section><section id="libraryHistoryPanel" class="hidden">
 
       <div id="view-history" class="view">
         <div class="row-between">
@@ -109,7 +109,7 @@
           <button id="clearHistoryBtn" class="btn ghost">Clear history</button>
         </div>
         <div id="historyList" class="track-list"></div>
-      </div>
+      </div></section>
 
       <div id="view-insights" class="view">
         <div class="row-between"><h2>Your listening insights</h2><div class="row"><select id="wrappedPeriodSelect" aria-label="Wrapped period"><option value="year">This year</option><option value="month">This month</option></select><button id="wrappedBtn" class="btn">Generate Resona Wrapped</button></div></div>
