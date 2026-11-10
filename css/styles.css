@@ -3378,3 +3378,152 @@ body.visualizer-stage-open{overflow:hidden}
 @media(prefers-reduced-motion:reduce) {
   .visualizer-lyrics-panel,.visualizer-lyric-line { animation:none!important; transition:none!important; }
 }
+
+
+/* AudioAuditor-inspired expanded song player: artwork + lyrics + bottom transport. */
+.np-full.audioauditor-player {
+  padding:22px clamp(16px,3vw,48px) 14px;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 25% 38%,rgba(20,128,127,.16),transparent 48%),
+    linear-gradient(115deg,#061019 0%,#071a20 52%,#082522 100%);
+  color:#effaff;
+}
+.np-full.audioauditor-player:before {
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.24;
+  background:linear-gradient(90deg,transparent,rgba(81,226,208,.035),transparent);
+}
+.np-full.audioauditor-player .np-full-inner {
+  position:relative;width:100%;height:100%;min-height:0;margin:0;
+  display:grid;grid-template-columns:minmax(280px,.94fr) minmax(360px,1.06fr);
+  grid-template-rows:minmax(0,1fr) auto;align-items:stretch;gap:18px clamp(24px,4vw,64px);
+}
+.np-full.audioauditor-player .np-artwork-wrap {
+  width:100%;min-width:0;min-height:0;align-self:center;justify-self:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 0 0;text-align:center;
+}
+.np-artwork-glow {
+  width:clamp(210px, min(38vh,31vw), 390px);height:clamp(210px, min(38vh,31vw), 390px);
+  padding:9px;border-radius:15px;
+  background:linear-gradient(145deg,rgba(105,255,229,.58),rgba(38,164,161,.12));
+  box-shadow:0 0 22px rgba(61,235,209,.42),0 0 58px rgba(26,206,185,.24),0 18px 55px rgba(0,0,0,.35);
+}
+.np-full.audioauditor-player .np-full-art {
+  display:block;width:100%;height:100%;border-radius:9px;object-fit:cover;
+  box-shadow:none;
+}
+.np-full.audioauditor-player .np-full-title {
+  width:min(100%,480px);margin:17px 0 3px;color:#a6fff3;
+  font-size:clamp(19px,2vw,28px);font-weight:800;letter-spacing:-.035em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.np-full.audioauditor-player .np-full-artist {
+  margin:0;padding:5px 12px;border:1px solid rgba(84,230,211,.2);
+  border-radius:7px;background:rgba(22,146,139,.19);color:#a8eee5;font-size:12px;font-weight:650;
+}
+.np-full.audioauditor-player .np-full-album {display:none}
+.np-full-spectrum {
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  width:min(100%,540px);height:72px;margin-top:18px;overflow:hidden;
+}
+.np-full-spectrum i {
+  display:block;flex:1 1 3px;max-width:7px;height:var(--bar-height,24%);
+  border-radius:3px;background:linear-gradient(180deg,#6fffe6 0%,#49cdbd 65%,rgba(48,148,151,.42) 100%);
+  box-shadow:0 0 7px rgba(74,239,216,.22);
+  transform-origin:center;animation:auditorSpectrum var(--bar-speed,1s) ease-in-out infinite alternate;
+  animation-delay:var(--bar-delay,0s);
+}
+.np-full-spectrum i:nth-child(7n) {--bar-height:88%;--bar-speed:.82s}
+.np-full-spectrum i:nth-child(7n + 1) {--bar-height:66%;--bar-speed:1.12s}
+.np-full-spectrum i:nth-child(7n + 2) {--bar-height:48%;--bar-speed:.94s}
+.np-full-spectrum i:nth-child(7n + 3) {--bar-height:34%;--bar-speed:1.28s}
+.np-full-spectrum i:nth-child(7n + 4) {--bar-height:76%;--bar-speed:.76s}
+.np-full-spectrum i:nth-child(7n + 5) {--bar-height:23%;--bar-speed:1.18s}
+.np-full-spectrum i:nth-child(7n + 6) {--bar-height:56%;--bar-speed:1.02s}
+.np-full-spectrum i:nth-child(3n) {animation-delay:-.45s}
+@keyframes auditorSpectrum {from{transform:scaleY(.34);opacity:.64}to{transform:scaleY(1);opacity:1}}
+.np-full.audioauditor-player .np-lyrics-panel {
+  width:100%;min-width:0;min-height:0;align-self:stretch;overflow:hidden;
+  border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;
+  display:flex;flex-direction:column;padding:10px 0 0;
+}
+.np-full.audioauditor-player .np-lyrics-toolbar {
+  flex:0 0 auto;padding:0 0 12px;border-bottom:1px solid rgba(132,211,211,.13);
+}
+.np-full.audioauditor-player .np-lyrics-heading {color:#80e9dd;letter-spacing:.2em}
+.np-full.audioauditor-player .lyrics-tools {gap:5px}
+.np-full.audioauditor-player .np-lyrics-stage {
+  flex:1;min-height:0;grid-template-columns:28px minmax(0,1fr) 28px;gap:8px;
+  align-items:stretch;padding-top:6px;
+}
+.np-full.audioauditor-player .np-lyrics-center {
+  display:flex;min-height:0;flex-direction:column;text-align:left;overflow:hidden;
+}
+.np-full.audioauditor-player .np-lyrics-status {flex:0 0 auto;color:#91a9ad;margin:8px 0 0}
+.np-full.audioauditor-player .np-lyrics {
+  flex:1;max-height:none;min-height:0;padding:20px 8px 26px;
+  scrollbar-color:rgba(102,216,205,.24) transparent;
+  mask-image:linear-gradient(transparent 0%,#000 8%,#000 92%,transparent 100%);
+}
+.np-full.audioauditor-player .np-lyrics .lyric-line {
+  margin:13px 0;color:rgba(211,230,231,.43);font-size:clamp(15px,1.35vw,20px);
+  line-height:1.48;font-weight:550;letter-spacing:-.012em;text-align:left;
+}
+.np-full.audioauditor-player .np-lyrics .lyric-line.active {
+  color:#f4ffff;font-size:clamp(16px,1.5vw,21px);font-weight:780;
+  transform:translateX(2px);text-shadow:0 0 20px rgba(100,240,224,.12);
+}
+.np-full.audioauditor-player .np-lyric-arrow {align-self:center;color:#a4c7c8;border-color:rgba(112,203,199,.18)!important}
+.np-full.audioauditor-player .np-full-dock {
+  grid-column:1/-1;display:grid;grid-template-columns:minmax(180px,1fr) auto minmax(180px,1fr);
+  grid-template-rows:auto auto;align-items:center;gap:7px 18px;
+  padding:9px 2px 0;border-top:1px solid rgba(105,209,204,.2);
+  background:rgba(2,12,17,.24);
+}
+.np-full.audioauditor-player .np-full-progress {
+  grid-column:1/-1;width:100%;max-width:none;margin:0;gap:10px;color:#9dbfc0;
+}
+.np-full.audioauditor-player .np-full-progress input {accent-color:#80eee0}
+.np-full.audioauditor-player .np-dock-track {display:flex;min-width:0;flex-direction:column;gap:2px}
+.np-dock-track strong {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#a5f6eb;font-size:14px}
+.np-dock-track span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#a2b8bc;font-size:11px}
+.np-dock-track small {color:#66878b;font-size:8px;font-weight:800;letter-spacing:.16em}
+.np-full.audioauditor-player .np-full-controls {justify-self:center;gap:9px;margin:0}
+.np-full.audioauditor-player .np-full-controls .btn.icon {width:36px;height:36px;border-color:rgba(104,210,203,.18);background:rgba(10,43,48,.42)}
+.np-full.audioauditor-player .np-full-controls .btn.primary {width:42px;height:42px;background:#74e9dc;color:#06201f;border-color:#74e9dc}
+.np-dock-tools {display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.np-dock-tools .btn {border-color:rgba(104,210,203,.18);color:#a7d7d5}
+.np-dock-volume {color:#9eddd7;font-size:16px;padding:0 8px}
+.np-full.audioauditor-player .np-close {
+  top:12px;right:16px;border:1px solid rgba(115,212,205,.18);
+  background:rgba(5,22,28,.72);color:#c5e5e4;
+}
+.np-full.audioauditor-player.lyrics-black {background:#edf4f5;color:#101820}
+.np-full.audioauditor-player.lyrics-black .np-lyrics .lyric-line,
+.np-full.audioauditor-player.lyrics-black .np-lyrics .lyric-line.active {color:#101820!important}
+.np-full.audioauditor-player.lyrics-black .np-lyrics-toolbar {border-color:rgba(0,0,0,.16)}
+@media(max-width:760px) {
+  .np-full.audioauditor-player {overflow-y:auto;padding:56px 14px 12px}
+  .np-full.audioauditor-player .np-full-inner {
+    height:auto;min-height:100%;grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto minmax(220px,1fr) auto;gap:10px;
+  }
+  .np-full.audioauditor-player .np-artwork-wrap {padding:0}
+  .np-artwork-glow {width:min(42vw,190px);height:min(42vw,190px);padding:6px}
+  .np-full.audioauditor-player .np-full-title {margin-top:9px;font-size:17px}
+  .np-full-spectrum {height:38px;margin-top:8px}
+  .np-full.audioauditor-player .np-lyrics-panel {padding:8px 0 0}
+  .np-full.audioauditor-player .np-lyrics-toolbar {align-items:flex-start;flex-wrap:wrap}
+  .np-full.audioauditor-player .lyrics-tools {justify-content:flex-end}
+  .np-full.audioauditor-player .np-lyrics-stage {min-height:190px}
+  .np-full.audioauditor-player .np-full-dock {
+    position:sticky;bottom:0;grid-template-columns:minmax(0,1fr) auto;gap:7px 8px;
+    padding:10px 0 calc(5px + env(safe-area-inset-bottom));backdrop-filter:blur(16px);
+  }
+  .np-full.audioauditor-player .np-full-progress {grid-column:1/-1}
+  .np-full.audioauditor-player .np-full-controls {grid-column:2;grid-row:2}
+  .np-dock-track {grid-column:1;grid-row:2}
+  .np-dock-tools {grid-column:1/-1;justify-content:flex-start}
+}
+@media(prefers-reduced-motion:reduce) {.np-full-spectrum i{animation:none!important}}
