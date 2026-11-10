@@ -406,23 +406,42 @@
     const region = Store.getSettings().popularRegion || 'US';
     const cacheKey = 'popular:' + region;
     const cached = Store.getCachedSearch(cacheKey);
-    if (cached) {
+    if (Array.isArray(cached) && cached.length) {
       state.rawResults = cached;
       rememberSearchTracks('popular:' + region, cached);
       state.isSearch = false;
       renderResults();
       return;
     }
+
+    let results = [];
+    let youtubeError = null;
     try {
-      const results = await YouTubeAPI.fetchPopular(region);
+      results = await YouTubeAPI.fetchPopular(region);
+    } catch (err) {
+      youtubeError = err;
+    }
+
+    // YouTube's most-popular chart can return an empty list or be unavailable
+    // for some regions/categories. Use Audius trending as a real catalogue
+    // fallback so a first-time visitor still gets playable recommendations.
+    if (!Array.isArray(results) || !results.length) {
+      try {
+        results = await AudiusAPI.getTrending(50);
+      } catch (fallbackError) {
+        results = [];
+        $('searchStatus').textContent = 'Could not load music recommendations: ' +
+          (youtubeError?.message || fallbackError?.message || 'Music services are temporarily unavailable.');
+      }
+    }
+
+    if (results.length) {
       Store.setCachedSearch(cacheKey, results);
       rememberSearchTracks('popular:' + region, results);
-      state.rawResults = results;
-      state.isSearch = false;
-      renderResults();
-    } catch (err) {
-      $('searchStatus').textContent = 'Could not load popular music: ' + err.message;
     }
+    state.rawResults = results;
+    state.isSearch = false;
+    renderResults();
     updateQuotaBadge();
   }
 
@@ -838,7 +857,15 @@
       { title:'Your next repeat', tracks:mixed.slice(16,24), style:'mobile-cover-shelf' },
       { title:'Songs for You', tracks:mixed.slice(24,32), style:'mobile-songs-shelf' }
     ];
-    sections.forEach(section => {
+    const recommendationSections = sections.filter(section => section.title === 'Your Frequent Plays' || section.tracks.length);
+    if (!catalogue.length && !history.length) {
+      const note = document.createElement('p');
+      note.className = 'mobile-shelf-empty';
+      note.textContent = 'Recommendations are temporarily unavailable. Try refreshing in a moment.';
+      host.append(note);
+      return;
+    }
+    recommendationSections.forEach(section => {
       const shelf = document.createElement('section');
       shelf.className = 'mobile-home-shelf ' + section.style;
       const heading = document.createElement('div');
