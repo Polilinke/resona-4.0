@@ -1621,6 +1621,15 @@
     visualStageFrame = requestAnimationFrame(drawDynamicVisualizer);
   }
   $('visualizerOpenBtn')?.addEventListener('click', openDynamicVisualizer);
+  $('visualizerLyricsToggle')?.addEventListener('click', () => {
+    const panel = $('visualizerLyricsPanel');
+    const button = $('visualizerLyricsToggle');
+    const visible = panel.classList.toggle('hidden') === false;
+    visualizerStage.classList.toggle('lyrics-visible', visible);
+    button.setAttribute('aria-pressed', String(visible));
+    button.textContent = visible ? 'Hide lyrics' : 'Show lyrics';
+    if (visible) requestAnimationFrame(resizeDynamicVisualizer);
+  });
   $('visualizerBeatSyncBtn')?.addEventListener('click', async () => {
     const button = $('visualizerBeatSyncBtn');
     button.disabled = true;
