@@ -702,7 +702,7 @@ html[data-device-layout="mobile"] .track-actions .btn {
 
 
 /* Mobile Library: one destination with internal Songs / Playlists / Queue / History tabs. */
-.library-subnav { display: none; }
+.library-subnav { display: flex; gap:8px; margin:0 0 16px; }
 html[data-device-layout="mobile"] {
   height: 100%;
 }
@@ -4116,3 +4116,6 @@ body.visualizer-stage-open{overflow:hidden}
     display:none !important;
   }
 }
+
+.library-subnav-btn { min-height:38px; padding:8px 14px; border:1px solid var(--panel-border); border-radius:11px; color:var(--muted); background:var(--panel); cursor:pointer; }
+.library-subnav-btn.active { color:var(--accent); border-color:var(--accent); background:rgba(var(--accent-rgb),.13); }
