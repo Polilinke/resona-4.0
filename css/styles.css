@@ -3855,3 +3855,25 @@ body.visualizer-stage-open{overflow:hidden}
 @media (max-width:680px) {
   .home-track-grid .track .track-copy { grid-template-columns:34px minmax(0,1fr); }
 }
+
+
+/* Homepage scroll performance: keep the glass treatment on the rest of the app,
+   but avoid expensive backdrop sampling on every discovery card. */
+.home-track-grid .track {
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 5px 16px rgba(0,0,0,.16) !important;
+  transition:transform .16s ease,border-color .16s ease,background-color .16s ease !important;
+}
+.home-track-grid .track:hover {
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 7px 18px rgba(0,0,0,.2) !important;
+}
+.home-shelf {
+  content-visibility:auto;
+  contain-intrinsic-size:auto 300px;
+}
+@media (max-width:680px) {
+  .home-track-grid .track:hover {
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 5px 16px rgba(0,0,0,.16) !important;
+  }
+}
