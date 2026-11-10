@@ -206,6 +206,10 @@
       </div>
 
       <div id="view-social" class="view">
+        <div class="together-subtabs" role="tablist" aria-label="Together sections">
+          <button class="together-subtab" type="button" data-together-section="rooms">Listening Rooms</button>
+          <button class="together-subtab active" type="button" data-together-section="social">Social</button>
+        </div>
         <div class="social-page-heading"><div><span class="rooms-kicker">YOUR RESONA CIRCLE</span><h2>Social</h2><p>Find friends, chat privately and invite people to listen together.</p></div><span class="rooms-live-mark">FRIENDS ONLY</span></div>
         <div id="socialStatus" class="rooms-status hidden" role="status" aria-live="polite"></div>
         <section id="socialSignedOut" class="rooms-panel hidden"><h3>Your music circle starts here</h3><p>Sign in to find friends, chat privately and receive room invitations.</p><button id="socialSignInBtn" class="btn primary" type="button">Sign in to Resona</button></section>
@@ -228,6 +232,11 @@
         </div>
       </div>
       <div id="view-queue" class="view">
+        <div class="library-subtabs" role="tablist" aria-label="Library sections">
+          <button class="library-subtab" type="button" data-library-section="playlists">Playlists & History</button>
+          <button class="library-subtab active" type="button" data-library-section="queue">Queue</button>
+          <button class="library-subtab" type="button" data-library-section="insights">Insights</button>
+        </div>
         <div class="row-between">
           <h2>Queue</h2>
           <div class="queue-header-actions"><button id="shuffleQueueBtn" class="btn ghost">Shuffle upcoming</button><button id="clearQueueBtn" class="btn ghost">Clear queue</button></div>
