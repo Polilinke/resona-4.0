@@ -173,6 +173,7 @@ const NowPlaying = (() => {
       if (id !== requestId) return; // a newer track has started
       if (!hit) {
         $('npLyricsStatus').textContent = 'No lyrics found for this track.';
+        syncVisualizerLyrics();
         $('npFullAlbum').textContent = 'Album: not available';
         return;
       }
@@ -180,13 +181,16 @@ const NowPlaying = (() => {
       if (hit.syncedLyrics) {
         renderLyrics(parseLrc(hit.syncedLyrics), true);
         $('npLyricsStatus').textContent = '';
+        syncVisualizerLyrics();
       } else {
         renderLyrics(hit.plainLyrics.split('\n').map((t) => ({ t: null, text: t })), false);
         $('npLyricsStatus').textContent = 'Lyrics are not time-synced for this track.';
+        syncVisualizerLyrics();
       }
     } catch (err) {
       if (id !== requestId) return;
       $('npLyricsStatus').textContent = 'Could not load lyrics: ' + err.message;
+        syncVisualizerLyrics();
       $('npFullAlbum').textContent = 'Album: not available';
     }
   }
