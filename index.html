@@ -67,15 +67,14 @@
 
     <section class="content">
       <div id="view-home" class="view active">
-        <div class="mobile-home-top" aria-label="Music categories">
+        <div class="mobile-home-top">
           <button class="mobile-avatar" type="button" aria-label="Open account" onclick="document.getElementById('accountBtn').click()"><span></span></button>
-          <button class="mobile-category active" type="button">Music</button>
-          <button class="mobile-category" type="button" aria-label="Podcasts are not available yet" disabled>Podcasts</button>
+          <div class="mobile-home-brand"><span class="mobile-brand-dot"></span> RESONA</div>
         </div>
         <section class="discovery-shell">
           <div class="discovery-heading"><div><span class="discovery-kicker">YOUR SOUND, YOUR WAY</span><h1>Find your next <em>repeat.</em></h1><p>Fresh picks shaped by what you’ve been searching for.</p></div><button id="remixBtn" class="remix-button" type="button"><span class="remix-mark">⤨</span><span><strong>Remix</strong><small>Shuffle your discoveries</small></span></button></div>
           <div id="discoveryFeature" class="discovery-feature"><div class="discovery-placeholder">Search a few songs and Resona will start learning your sound.</div></div>
-        </section>        <div id="homeShelves" class="home-shelves"></div>
+        </section>        <div id="homeShelves" class="home-shelves"></div><div id="mobileHomeShelves" class="mobile-home-shelves"></div>
       </div>
 
       <div id="view-search" class="view">
