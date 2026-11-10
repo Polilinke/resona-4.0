@@ -145,35 +145,63 @@
     renderHistory();
   }
 
+  function showLibrarySection(section) {
+    document.querySelectorAll('.library-subtab').forEach(btn => btn.classList.toggle('active', btn.dataset.librarySection === section));
+    ['playlists','queue','insights'].forEach(name => {
+      const view = document.getElementById('view-' + name);
+      if (view) view.classList.toggle('active', name === section || (section === 'playlists' && name === 'playlists'));
+    });
+    document.documentElement.dataset.libraryOpen = 'true';
+    if (section === 'playlists') setLibraryTab();
+    if (section === 'queue') renderQueue();
+    if (section === 'insights') window.ResonaInsights?.render?.();
+  }
+
+  function showTogetherSection(section) {
+    document.querySelectorAll('.together-subtab').forEach(btn => btn.classList.toggle('active', btn.dataset.togetherSection === section));
+    const rooms = document.getElementById('view-rooms');
+    const social = document.getElementById('view-social');
+    if (rooms) rooms.classList.toggle('active', section === 'rooms');
+    if (social) social.classList.toggle('active', section === 'social');
+    if (section === 'rooms') window.ResonaRooms?.open?.();
+    if (section === 'social') window.ResonaSocial?.open?.();
+  }
+
   function showView(name) {
     if (name === 'history') name = 'playlists';
-    const target = document.getElementById('view-' + name);
-    if (!target) {
-      console.warn('Resona navigation target missing:', name);
+    if (['queue','insights'].includes(name)) {
+      showView('playlists');
+      showLibrarySection(name);
       return;
     }
-    const librarySection = ['playlists', 'queue'].includes(name);
-    document.documentElement.dataset.libraryOpen = librarySection ? 'true' : 'false';
+    if (name === 'social') {
+      showView('rooms');
+      showTogetherSection('social');
+      return;
+    }
+    const target = document.getElementById('view-' + name);
+    if (!target) { console.warn('Resona navigation target missing:', name); return; }
+    document.documentElement.dataset.libraryOpen = name === 'playlists' ? 'true' : 'false';
     document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
       const active = btn.dataset.view === name;
       btn.classList.toggle('active', active);
-      if (active) btn.setAttribute('aria-current', 'page');
+      if (active) btn.setAttribute('aria-current','page');
       else btn.removeAttribute('aria-current');
     });
     document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === target));
-    const content = document.querySelector('.content');
-    if (content) content.scrollTo({ top:0, behavior:'instant' });
-    if (name === 'playlists') setLibraryTab();
-    if (name === 'queue') renderQueue();
+    document.querySelector('.content')?.scrollTo({top:0,behavior:'instant'});
+    if (name === 'playlists') showLibrarySection('playlists');
+    if (name === 'rooms') showTogetherSection('rooms');
     if (name === 'search') renderResults();
     if (name === 'home') renderDiscovery();
-    if (name === 'rooms') {
-      if (window.ResonaRooms?.open) window.ResonaRooms.open();
-      else console.warn('Listening Rooms module is not ready yet.');
-    }
-    if (name === 'insights') window.ResonaInsights?.render?.();
-    if (name === 'social') window.ResonaSocial?.open?.();
   }
+
+  document.addEventListener('click', event => {
+    const libraryTab = event.target.closest('[data-library-section]');
+    if (libraryTab) { event.preventDefault(); showLibrarySection(libraryTab.dataset.librarySection); }
+    const togetherTab = event.target.closest('[data-together-section]');
+    if (togetherTab) { event.preventDefault(); showTogetherSection(togetherTab.dataset.togetherSection); }
+  });
 
   // ---------- Shared API status ----------
   function updateQuotaBadge() {
