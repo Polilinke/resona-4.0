@@ -57,7 +57,11 @@
       <button class="nav-btn active" data-view="home" title="Home" aria-label="Home"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span></button>
       <button class="nav-btn" data-view="search" title="Search" aria-label="Search"><span class="nav-icon" aria-hidden="true">⌕</span><span class="nav-label">Search</span></button>
       <button class="nav-btn" data-view="playlists" title="Library" aria-label="Library"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Library</span></button>
-      <button class="nav-btn" data-view="rooms" title="Together" aria-label="Together"><span class="nav-icon" aria-hidden="true">◉</span><span class="nav-label">Together</span></button>
+      <button class="nav-btn desktop-nav-only" data-view="insights" title="Insights" aria-label="Insights"><span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Insights</span></button>
+      <button class="nav-btn desktop-nav-only" data-view="rooms" title="Listening rooms" aria-label="Listening rooms"><span class="nav-icon" aria-hidden="true">◉</span><span class="nav-label">Listening rooms</span></button>
+      <button class="nav-btn desktop-nav-only" data-view="social" title="Social" aria-label="Social"><span class="nav-icon" aria-hidden="true">♧</span><span class="nav-label">Social</span></button>
+      <button class="nav-btn desktop-nav-only" data-view="queue" title="Queue" aria-label="Queue"><span class="nav-icon" aria-hidden="true">≡</span><span class="nav-label">Queue</span><span id="queueCount" class="count">0</span></button>
+      <button class="nav-btn mobile-nav-only" data-view="rooms" title="Together" aria-label="Together"><span class="nav-icon" aria-hidden="true">◉</span><span class="nav-label">Together</span></button>
       <div class="sidebar-spacer"></div>
 </nav>
 
@@ -122,6 +126,11 @@
       </div></section>
 
       <div id="view-insights" class="view">
+        <div class="library-subtabs" role="tablist" aria-label="Library sections">
+          <button class="library-subtab" type="button" data-library-section="playlists">Playlists & History</button>
+          <button class="library-subtab" type="button" data-library-section="queue">Queue</button>
+          <button class="library-subtab active" type="button" data-library-section="insights">Insights</button>
+        </div>
         <div class="row-between"><h2>Your listening insights</h2><div class="row"><select id="wrappedPeriodSelect" aria-label="Wrapped period"><option value="year">This year</option><option value="month">This month</option></select><button id="wrappedBtn" class="btn">Generate Resona Wrapped</button></div></div>
         <div id="insightsStats" class="insights-grid"></div>
         <section class="feature-card personalisation-panel">
