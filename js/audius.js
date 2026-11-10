@@ -53,6 +53,12 @@
     return tracks.map(normalizeTrack);
   }
 
+  async function getTrending(limit = 50) {
+    const params = new URLSearchParams({ time: 'week', limit: String(limit) });
+    const tracks = await request('/tracks/trending?' + params.toString());
+    return tracks.map(normalizeTrack);
+  }
+
   function getStreamUrl(trackId) {
     if (!trackId) throw new Error('This Audius track is missing its track ID.');
     const url = new URL(activeBase + '/tracks/' + encodeURIComponent(trackId) + '/stream');
@@ -60,5 +66,5 @@
     return url.toString();
   }
 
-  window.AudiusAPI = { search, getStreamUrl };
+  window.AudiusAPI = { search, getTrending, getStreamUrl };
 })();
