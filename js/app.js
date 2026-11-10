@@ -420,6 +420,7 @@
     img.src = track.thumbnail || '';
     img.alt = '';
     img.loading = 'lazy';
+    img.decoding = 'async';
 
     const info = document.createElement('div');
     info.className = 'track-info';
