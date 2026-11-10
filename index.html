@@ -237,7 +237,6 @@
         <button id="playBtn" class="btn icon primary" title="Play / pause">▶</button>
         <button id="nextBtn" class="btn icon" title="Next">⏭</button>
         <button id="eqBtn" class="btn ghost eq-open-btn" type="button" title="Open equalizer">EQ</button>
-        <button id="visualizerOpenBtn" class="btn ghost visualizer-open-btn" type="button" title="Open dynamic visualizer" aria-label="Open dynamic visualizer">VISUAL</button>
       </div>
       <div class="visualizer" id="visualizer" aria-hidden="true">
         <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
@@ -259,7 +258,7 @@
         <div id="npFullTitle" class="np-full-title">Nothing playing</div>
         <div id="npFullArtist" class="np-full-artist"></div>
         <div id="npFullAlbum" class="np-full-album"></div>
-        <div class="np-full-spectrum" aria-label="Decorative audio spectrum"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="np-live-spectrum"><div class="np-live-spectrum-label">LIVE SPECTRUM</div><canvas id="visualizerCanvas" aria-label="Live music spectrum"></canvas><div class="np-live-spectrum-controls"><button id="visualizerBeatSyncBtn" class="btn ghost small" type="button">Enable beat sync</button><span id="visualizerSourceStatus" class="visualizer-source-status">Waiting for audio</span></div></div>
       </section>
       <section class="np-lyrics-panel">
         <div class="np-lyrics-toolbar">
@@ -292,43 +291,13 @@
           <button id="npFullPlay" class="btn icon primary" title="Play / pause">▶</button>
           <button id="npFullNext" class="btn icon" title="Next track">⏭</button>
         </div>
-        <div class="np-dock-tools"><button id="npDockEq" class="btn ghost small" type="button">EQ</button><button id="npDockVisual" class="btn ghost small" type="button">VISUALS</button><span class="np-dock-volume">♫</span></div>
+        <div class="np-dock-tools"><button id="npDockEq" class="btn ghost small" type="button">EQ</button><span class="np-dock-volume">♫</span></div>
       </section>
     </div>
   </div>
 
 
-  <!-- Full-screen dynamic visualizer -->
-  <section id="visualizerStage" class="visualizer-stage hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Dynamic music visualizer">
-    <div class="visualizer-stage-top">
-      <div class="visualizer-stage-brand"><span class="visualizer-stage-kicker">RESONA / LIVE VISUALS</span><strong id="visualizerTrackTitle">Nothing playing</strong><span id="visualizerTrackArtist">Start a track to begin</span></div>
-      <button id="visualizerCloseBtn" class="btn ghost" type="button" aria-label="Close visualizer">✕ Close</button>
-    </div>
-    <div class="visualizer-main">
-      <div class="visualizer-spectrum-pane">
-        <div class="visualizer-pane-label">LIVE SPECTRUM</div>
-        <canvas id="visualizerCanvas" aria-label="Animated music visualizer"></canvas>
-      </div>
-      <aside id="visualizerLyricsPanel" class="visualizer-lyrics-panel hidden" aria-label="Synchronized lyrics">
-        <div class="visualizer-lyrics-head">
-          <div><span class="visualizer-pane-label">NOW SINGING</span><strong>Lyrics</strong></div>
-          <span class="visualizer-lyrics-live">LIVE SYNC</span>
-        </div>
-        <div id="visualizerLyricsStatus" class="visualizer-lyrics-status">Play a track to load its lyrics.</div>
-        <div id="visualizerLyrics" class="visualizer-lyrics-list" aria-live="polite"></div>
-      </aside>
-    </div>
-    <div class="visualizer-stage-bottom">
-      <div class="visualizer-modes" role="group" aria-label="Visualizer style">
-        <button class="visualizer-mode active" data-visual-mode="spectrum" type="button">Spectrum</button>
-      </div>
-      <div class="visualizer-live-controls">
-        <button id="visualizerLyricsToggle" class="btn ghost small" type="button" aria-pressed="false">Show lyrics</button>
-        <button id="visualizerBeatSyncBtn" class="btn ghost small" type="button">Enable beat sync</button>
-        <span id="visualizerSourceStatus" class="visualizer-source-status">Waiting for audio</span>
-      </div>
-    </div>
-  </section>
+  <!-- Live spectrum is integrated into the expanded song player above. -->
 
   <!-- Audio Lab: local audio playback with real-time Web Audio EQ -->
   <div id="audioToolsDialog" class="modal hidden" aria-hidden="true">
