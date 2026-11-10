@@ -665,13 +665,82 @@
       .map(item => item.track);
   }
 
+  function renderHomeShelves() {
+    const host = $('homeShelves');
+    if (!host) return;
+    host.replaceChildren();
+    const popular = state.rawResults.slice();
+    const history = Store.getHistory().slice(0, 9);
+    if (!popular.length && !history.length) {
+      host.append(emptyNote('Popular picks will appear here when music loads.'));
+      return;
+    }
+    const shuffle = (items, seed) => {
+      const copy = items.slice();
+      let value = seed >>> 0;
+      for (let i = copy.length - 1; i > 0; i--) {
+        value = (value * 1664525 + 1013904223) >>> 0;
+        const j = value % (i + 1);
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+    const unique = items => {
+      const seen = new Set();
+      return items.filter(track => {
+        const key = track.id || track.title;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    };
+    const sections = [];
+    if (history.length) sections.push({ title:'Pick up where you left off', subtitle:'Your recent rotation', tracks:history.slice(0,6) });
+    if (popular.length) {
+      const mixed = shuffle(unique(popular), Date.now() >>> 4);
+      sections.push({ title:'Fresh finds', subtitle:'A few tracks worth a listen', tracks:mixed.slice(0,6) });
+      sections.push({ title:'Popular right now', subtitle:'Trending picks from your region', tracks:mixed.slice(6,12) });
+      sections.push({ title:'Your next repeat', subtitle:'A shuffled mix from the current catalogue', tracks:mixed.slice(12,18) });
+    }
+    sections.forEach(section => {
+      if (!section.tracks.length) return;
+      const shelf = document.createElement('section');
+      shelf.className = 'home-shelf';
+      const heading = document.createElement('div');
+      heading.className = 'home-shelf-heading';
+      const labels = document.createElement('div');
+      const title = document.createElement('h2');
+      title.textContent = section.title;
+      const subtitle = document.createElement('p');
+      subtitle.textContent = section.subtitle;
+      labels.append(title, subtitle);
+      const playAll = button('▶ Play all', () => playFromList(section.tracks, section.tracks[0]), 'btn small ghost');
+      heading.append(labels, playAll);
+      const grid = document.createElement('div');
+      grid.className = 'track-list home-track-grid';
+      section.tracks.forEach(track => grid.append(trackRow(track, { list:section.tracks })));
+      shelf.append(heading, grid);
+      host.append(shelf);
+    });
+  }
+
   function renderResults() {
     const box = $('results');
     box.replaceChildren();
+    const home = !state.isSearch && state.searchSource === 'youtube';
+    $('homeShelves')?.classList.toggle('hidden', !home);
+    $('discoveryFeature')?.closest('.discovery-shell')?.classList.toggle('hidden', !home);
+    document.querySelector('.search-provider-row')?.classList.toggle('hidden', home);
+    document.querySelector('.search-filter-bar')?.classList.toggle('hidden', home);
+    box.classList.toggle('hidden', home);
     state.results = state.isSearch && state.searchSource === 'youtube' && officialOnlyToggle.checked
       ? getOfficialResults()
       : state.rawResults.slice();
-    state.results.forEach(track => box.append(trackRow(track, { list: state.results })));
+    if (home) {
+      renderHomeShelves();
+      return;
+    }
+    state.results.forEach(track => box.append(trackRow(track, { list:state.results })));
   }
 
   function renderHistory() {
