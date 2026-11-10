@@ -34,10 +34,7 @@
       <span class="brand-text">RESONA</span>
     </button>
 
-    <div class="search-wrap">
-      <input id="searchInput" type="search" placeholder="Search songs, artists, albums… then press Enter" autocomplete="off" />
-      <div id="quotaBadge" class="quota-badge">Quota: —</div>
-    </div>
+    
 
     <div class="controls-top">
       <label class="fresh-bg-control" for="freshBgToggle" title="Toggle the video background">
@@ -57,7 +54,7 @@
 
   <main class="layout">
     <nav class="sidebar" aria-label="Main navigation">
-      <button class="nav-btn active" data-view="search" title="Home" aria-label="Home"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span></button>
+      <button class="nav-btn active" data-view="search" title="Home" aria-label="Home"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Search</span></button>
       <button class="nav-btn" data-view="playlists" title="Library" aria-label="Library"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Library</span></button>
       
       <button class="nav-btn" data-view="insights" title="Insights" aria-label="Insights"><span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Insights</span></button>
@@ -69,6 +66,10 @@
 
     <section class="content">
       <div id="view-search" class="view active">
+        <div class="search-wrap">
+      <input id="searchInput" type="search" placeholder="Search songs, artists, albums… then press Enter" autocomplete="off" />
+      <div id="quotaBadge" class="quota-badge">Quota: —</div>
+    </div>
         <section class="discovery-shell">
           <div class="discovery-heading"><div><span class="discovery-kicker">YOUR SOUND, YOUR WAY</span><h1>Find your next <em>repeat.</em></h1><p>Fresh picks shaped by what you’ve been searching for.</p></div><button id="remixBtn" class="remix-button" type="button"><span class="remix-mark">⤨</span><span><strong>Remix</strong><small>Shuffle your discoveries</small></span></button></div>
           <div id="discoveryFeature" class="discovery-feature"><div class="discovery-placeholder">Search a few songs and Resona will start learning your sound.</div></div>
