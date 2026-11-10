@@ -4618,19 +4618,26 @@ html[data-device-layout="mobile"] .mobile-songs-shelf .track > img {
   html[data-device-layout="mobile"] .volume {display:none !important}
 }
 
-/* Mobile section tabs */
-.library-subtabs,.together-subtabs {
-  display:flex;gap:8px;overflow-x:auto;padding:8px 0 14px;
-  border-bottom:1px solid #292929;margin-bottom:16px;
-}
-.library-subtab,.together-subtab {
-  flex:0 0 auto;padding:9px 14px;border:1px solid #333;border-radius:999px;
-  background:#101010;color:#aaa;font:inherit;font-size:13px;cursor:pointer;
-}
-.library-subtab.active,.together-subtab.active {
-  color:#fff;border-color:var(--accent);background:rgba(var(--accent-rgb),.12);
-}
+/* Section tabs are part of the consolidated phone navigation only. */
+.library-subtabs,.together-subtabs {display:none}
 @media(max-width:850px) {
+ html[data-device-layout="mobile"] .library-subtabs,
+ html[data-device-layout="mobile"] .together-subtabs {
+   display:flex;gap:8px;overflow-x:auto;padding:8px 0 14px;
+   border-bottom:1px solid #292929;margin-bottom:16px;
+ }
+ html[data-device-layout="mobile"] .library-subtab,
+ html[data-device-layout="mobile"] .together-subtab {
+   flex:0 0 auto;padding:9px 14px;border:1px solid #333;border-radius:999px;
+   background:#101010;color:#aaa;font:inherit;font-size:13px;cursor:pointer;
+ }
+ html[data-device-layout="mobile"] .library-subtab.active,
+ html[data-device-layout="mobile"] .together-subtab.active {
+   color:#fff;border-color:var(--accent);background:rgba(var(--accent-rgb),.12);
+ }
+ html[data-device-layout="mobile"] .desktop-nav-only {display:none !important}
+ html:not([data-device-layout="mobile"]) .mobile-nav-only {display:none !important}
+
  html[data-device-layout="mobile"] .sidebar {
    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
    grid-template-rows:1fr !important;height:66px !important;min-height:66px !important;max-height:66px !important;
