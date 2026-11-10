@@ -733,6 +733,46 @@
     });
   }
 
+  function renderMobileHomeShelves() {
+    const host = $('mobileHomeShelves');
+    if (!host) return;
+    host.replaceChildren();
+    const popular = state.rawResults.slice();
+    const history = Store.getHistory().slice(0, 8);
+    const unique = items => {
+      const seen = new Set();
+      return items.filter(track => {
+        const key = track.id || track.title;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    };
+    const frequent = unique(history.length ? history : popular).slice(0, 8);
+    const songs = unique(popular).slice(0, 8);
+    const makeShelf = (titleText, tracks, className) => {
+      if (!tracks.length) return;
+      const shelf = document.createElement('section');
+      shelf.className = 'mobile-home-shelf ' + className;
+      const heading = document.createElement('div');
+      heading.className = 'mobile-shelf-heading';
+      const title = document.createElement('h2');
+      title.textContent = titleText;
+      heading.append(title);
+      const rule = document.createElement('span');
+      rule.className = 'mobile-shelf-rule';
+      heading.append(rule);
+      const list = document.createElement('div');
+      list.className = 'mobile-track-list';
+      tracks.forEach(track => list.append(trackRow(track, { list:tracks })));
+      shelf.append(heading, list);
+      host.append(shelf);
+    };
+    makeShelf('Your Frequent Plays', frequent, 'mobile-frequent-shelf');
+    makeShelf('Songs for You', songs, 'mobile-songs-shelf');
+    if (!frequent.length && !songs.length) host.append(emptyNote('Your music will appear here.'));
+  }
+
   function renderResults() {
     const box = $('results');
     box.replaceChildren();
@@ -747,6 +787,7 @@
       : state.rawResults.slice();
     if (home) {
       renderHomeShelves();
+      renderMobileHomeShelves();
       return;
     }
     state.results.forEach(track => box.append(trackRow(track, { list:state.results })));
