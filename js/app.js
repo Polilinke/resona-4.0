@@ -586,17 +586,18 @@
       actions.append(move);
     }
 
+    const startTrack = () => {
+      if (track.source === 'local-audio') {
+        $('audioToolsDialog').classList.remove('hidden');
+        $('audioToolsDialog').setAttribute('aria-hidden', 'false');
+        $('audioToolsStatus').textContent = 'Choose the original file again to play this local track.';
+        $('audioFileInput').click();
+      } else {
+        playFromList(opts.list || [track], track);
+      }
+    };
     actions.append(
-      button('▶', () => {
-        if (track.source === 'local-audio') {
-          $('audioToolsDialog').classList.remove('hidden');
-          $('audioToolsDialog').setAttribute('aria-hidden', 'false');
-          $('audioToolsStatus').textContent = 'Choose the original file again to play this local track.';
-          $('audioFileInput').click();
-        } else {
-          playFromList(opts.list || [track], track);
-        }
-      }, 'btn small primary track-play-btn')
+      button('▶', startTrack, 'btn small primary track-play-btn')
     );
 
     const moreWrap = document.createElement('div');
@@ -705,6 +706,11 @@
     copy.prepend(orbit);
     info.append(copy, meta, actions);
     row.append(img, info);
+    row.addEventListener('click', event => {
+      if (event.target.closest('button,a,input,select,textarea')) return;
+      startTrack();
+    });
+    row.style.cursor = 'pointer';
     requestAnimationFrame(() => {
       if (t.scrollWidth > titleViewport.clientWidth + 3) {
         titleViewport.style.setProperty('--title-overflow', (t.scrollWidth - titleViewport.clientWidth) + 'px');
@@ -791,9 +797,9 @@
       // array made "Popular" and "Your next repeat" show many of the same songs.
       const recentIds = new Set(history.map(track => track.id).filter(Boolean));
       const mixed = shuffle(unique(popular).filter(track => !recentIds.has(track.id)), Date.now() >>> 4);
-      const fresh = mixed.slice(0,6);
-      const trending = mixed.slice(6,12);
-      const nextRepeat = mixed.slice(12,18);
+      const fresh = mixed.slice(0,4);
+      const trending = mixed.slice(4,8);
+      const nextRepeat = mixed.slice(8,16);
       if (fresh.length) sections.push({ title:'Fresh finds', subtitle:'A few tracks worth a listen', tracks:fresh });
       if (trending.length) sections.push({ title:'Popular right now', subtitle:'Trending picks from your region', tracks:trending });
       if (nextRepeat.length) sections.push({ title:'Your next repeat', subtitle:'More tracks picked from the catalogue', tracks:nextRepeat });
@@ -850,15 +856,14 @@
       return copy;
     };
     const mixed = shuffled(catalogue);
-    // The YouTube popular endpoint returns at most 20 tracks. Reserve the
-    // final eight for the compact two-column Songs for You section instead
-    // of slicing past the end of the catalogue.
+    // Keep eight tracks in Your Next Repeat and retain a separate compact
+    // two-column Songs for You shelf when the catalogue has enough tracks.
     const sections = [
       { title:'Your Frequent Plays', tracks:history, style:'mobile-frequent-shelf' },
       { title:'Fresh finds', tracks:mixed.slice(0,4), style:'mobile-cover-shelf' },
       { title:'Popular right now', tracks:mixed.slice(4,8), style:'mobile-cover-shelf' },
-      { title:'Your next repeat', tracks:mixed.slice(8,12), style:'mobile-cover-shelf' },
-      { title:'Songs for You', tracks:mixed.slice(12,20), style:'mobile-songs-shelf' }
+      { title:'Your next repeat', tracks:mixed.slice(8,16), style:'mobile-cover-shelf' },
+      { title:'Songs for You', tracks:mixed.slice(16,24), style:'mobile-songs-shelf' }
     ];
     const recommendationSections = sections.filter(section => section.title === 'Your Frequent Plays' || section.tracks.length);
     if (!catalogue.length && !history.length) {
@@ -1248,7 +1253,7 @@
     state.player = new YT.Player('ytHolder', {
       width: '200',
       height: '113',
-      playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, enablejsapi: 1, origin: window.location.origin },
       events: {
         onReady: () => {
           state.playerReady = true;
