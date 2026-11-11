@@ -134,3 +134,51 @@ html[data-device-layout="mobile"] .mobile-v2-settings {
   html[data-device-layout="mobile"][data-mobile-ui="v2"] .mobile-v2-choice-group button { color:var(--text); border-color:var(--panel-border); }
   html[data-device-layout="mobile"][data-mobile-ui="v2"] .mobile-v2-choice-group button[aria-pressed="true"] { color:#fff; }
 }
+
+
+/* V2 mobile header: brand on the left, settings pinned to the top-right. */
+@media(max-width:760px) {
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .topbar {
+    position:relative!important;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    min-height:58px;
+    padding:9px 14px!important;
+    gap:8px!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .topbar .brand {
+    flex:1 1 auto!important;
+    min-width:0;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .controls-top {
+    position:absolute!important;
+    top:50%!important;
+    right:12px!important;
+    transform:translateY(-50%)!important;
+    display:flex!important;
+    margin:0!important;
+    padding:0!important;
+    gap:0!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .controls-top > :not(#settingsBtn) {
+    display:none!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .controls-top #settingsBtn {
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:40px!important;
+    min-width:40px!important;
+    height:40px!important;
+    min-height:40px!important;
+    padding:0!important;
+    border:1px solid var(--panel-border)!important;
+    border-radius:8px!important;
+    color:var(--text)!important;
+    background:var(--panel)!important;
+    font-size:18px!important;
+    line-height:1!important;
+  }
+}
