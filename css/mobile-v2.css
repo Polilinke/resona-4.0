@@ -1,0 +1,136 @@
+/* Resona mobile V2 foundation.
+   All rules are scoped to the mobile layout and never touch desktop or V1. */
+.mobile-v2-settings { display:none; }
+html[data-device-layout="mobile"] .mobile-v2-settings {
+  display:block;
+  margin:18px 0;
+  padding:16px;
+  border:1px solid var(--panel-border);
+  border-radius:10px;
+  background:var(--panel);
+}
+.mobile-v2-settings h4 { margin:0 0 6px; font-size:15px; }
+.mobile-v2-setting-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--panel-border); }
+.mobile-v2-choice-group { display:flex; gap:6px; }
+.mobile-v2-choice-group button {
+  border:1px solid var(--panel-border); border-radius:7px; padding:8px 11px;
+  color:var(--text); background:transparent; font:inherit; font-size:12px; cursor:pointer;
+}
+.mobile-v2-choice-group button[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#07151a; font-weight:700; }
+
+@media(max-width:760px) {
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] {
+    --radius:8px;
+    --bg:#101419;
+    --panel:#1b2229;
+    --panel-border:#303b45;
+    --text:#edf1f4;
+    --muted:#9aa6b2;
+    --accent:#7da7c7;
+    --accent-rgb:125,167,199;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"][data-mobile-theme="light"] {
+    --bg:#f2f3f1;
+    --panel:#ffffff;
+    --panel-border:#d9dddf;
+    --text:#20272d;
+    --muted:#68737c;
+    --accent:#456f91;
+    --accent-rgb:69,111,145;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] body {
+    background:var(--bg);
+    color:var(--text);
+    font-family:Inter,"Segoe UI",system-ui,sans-serif;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] #baseBg,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] #albumBg,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] #bgVideo,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .hud-grid,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] #cursorGlow { display:none!important; }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .content { background:var(--bg); }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .view { color:var(--text); }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .discovery-shell,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .discovery-feature,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .feature-card,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .rooms-panel,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .mobile-v2-settings {
+    background:var(--panel)!important;
+    border:1px solid var(--panel-border)!important;
+    border-radius:8px!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .discovery-shell { padding:16px!important; }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .discovery-heading h1,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .library-heading h2,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .rooms-page-heading h2,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .social-page-heading h2 {
+    color:var(--text)!important; letter-spacing:-.035em; font-weight:750;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .discovery-kicker,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .rooms-kicker,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .theme-studio-kicker {
+    color:var(--muted)!important; letter-spacing:.12em;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .track-row,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .track-card,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .home-shelf,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .mobile-home-shelf {
+    border-radius:8px!important;
+    box-shadow:none!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .library-subtab,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .together-subtab,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .btn,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] input,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] select,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] textarea {
+    border-radius:7px!important;
+    box-shadow:none!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .library-subtab,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .together-subtab {
+    border:1px solid var(--panel-border)!important;
+    background:var(--panel)!important;
+    color:var(--muted)!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .library-subtab.active,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .together-subtab.active {
+    background:var(--accent)!important; border-color:var(--accent)!important; color:#fff!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .nav-btn {
+    border-radius:8px!important; box-shadow:none!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .nav-btn.active {
+    background:var(--panel)!important; color:var(--accent)!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .hint,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .rooms-muted,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] p { color:var(--muted); }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-full.audioauditor-player {
+    background:var(--bg)!important; color:var(--text)!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-artwork-glow {
+    padding:0!important; border-radius:8px!important; background:transparent!important; box-shadow:none!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-full.audioauditor-player .np-full-art {
+    border-radius:7px!important; box-shadow:none!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-full.audioauditor-player .np-full-title,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-dock-track strong { color:var(--text)!important; }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-full.audioauditor-player .np-full-artist {
+    color:var(--muted)!important; background:var(--panel)!important; border:1px solid var(--panel-border)!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-full.audioauditor-player .np-full-dock {
+    background:var(--panel)!important; border-color:var(--panel-border)!important; backdrop-filter:none!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-full.audioauditor-player .np-lyrics .lyric-line { color:var(--muted)!important; text-shadow:none!important; }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-full.audioauditor-player .np-lyrics .lyric-line.active { color:var(--text)!important; }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .np-full-spectrum i { box-shadow:none!important; }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .mobile-v2-settings {
+    color:var(--text); background:var(--panel)!important; border-color:var(--panel-border)!important;
+  }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .mobile-v2-choice-group button { color:var(--text); border-color:var(--panel-border); }
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .mobile-v2-choice-group button[aria-pressed="true"] { color:#fff; }
+}
