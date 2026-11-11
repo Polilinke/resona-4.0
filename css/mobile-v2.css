@@ -182,3 +182,15 @@ html[data-device-layout="mobile"] .mobile-v2-settings {
     line-height:1!important;
   }
 }
+
+/* Ensure the V2 header is restored after legacy mobile rules hide it. */
+@media (max-width:760px) {
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] body > .topbar,
+  html[data-device-layout="mobile"][data-mobile-ui="v2"] .topbar {
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    z-index:100!important;
+  }
+}
