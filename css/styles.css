@@ -4675,3 +4675,59 @@ html[data-device-layout="mobile"] .mobile-songs-shelf .track > img {
   html[data-device-layout="mobile"] .content {padding-bottom:calc(150px + env(safe-area-inset-bottom)) !important}
   html[data-device-layout="mobile"] .player {bottom:calc(68px + env(safe-area-inset-bottom)) !important}
 }
+
+
+/* Mobile expanded player: keep the artwork frame and image the same size,
+   and avoid the older generic mobile rules stretching the artwork. */
+@media (max-width: 760px) {
+  html[data-device-layout="mobile"] .np-full.audioauditor-player {
+    padding: max(52px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  html[data-device-layout="mobile"] .np-full.audioauditor-player .np-full-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(180px, 1fr) auto;
+    gap: 12px;
+    height: auto;
+    min-height: 100%;
+  }
+  html[data-device-layout="mobile"] .np-full.audioauditor-player .np-artwork-wrap {
+    width: min(100%, 390px);
+    max-width: 390px;
+    margin: 0 auto;
+    padding: 0;
+  }
+  html[data-device-layout="mobile"] .np-full.audioauditor-player .np-artwork-glow {
+    width: min(52vw, 190px);
+    height: min(52vw, 190px);
+    flex: 0 0 auto;
+    padding: 6px;
+  }
+  html[data-device-layout="mobile"] .np-full.audioauditor-player .np-full-art {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    border-radius: 9px;
+  }
+  html[data-device-layout="mobile"] .np-full.audioauditor-player .np-full-title {
+    max-width: 100%;
+    margin-top: 10px;
+    font-size: clamp(17px, 5vw, 21px);
+  }
+  html[data-device-layout="mobile"] .np-full.audioauditor-player .np-lyrics-panel {
+    min-height: 0;
+    height: 100%;
+  }
+  html[data-device-layout="mobile"] .np-full.audioauditor-player .np-lyrics-stage {
+    min-height: 180px;
+  }
+  html[data-device-layout="mobile"] .np-full.audioauditor-player .np-full-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 4px;
+    background: rgba(2,12,17,.92);
+  }
+}
