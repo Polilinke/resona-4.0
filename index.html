@@ -10,6 +10,7 @@
   <link rel="apple-touch-icon" href="favicon.svg" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/background.css" />
+  <link rel="stylesheet" href="css/mobile-v2.css" />
 </head>
 <body>
   <div id="cursorGlow" aria-hidden="true"></div>
@@ -471,6 +472,24 @@
         </select>
       </label>
       <div class="row-end"><button id="changeDeviceLayoutBtn" class="btn ghost">Change device layout</button></div>
+      <section class="mobile-v2-settings" aria-labelledby="mobileV2SettingsTitle">
+        <h4 id="mobileV2SettingsTitle">Mobile appearance</h4>
+        <p class="hint">Choose the mobile interface. Desktop always keeps the original layout.</p>
+        <div class="mobile-v2-setting-row">
+          <span>Interface</span>
+          <div class="mobile-v2-choice-group" role="group" aria-label="Mobile interface">
+            <button type="button" data-mobile-ui-choice="v1">V1 · Current</button>
+            <button type="button" data-mobile-ui-choice="v2">V2 · New</button>
+          </div>
+        </div>
+        <div class="mobile-v2-setting-row" id="mobileV2ThemeRow">
+          <span>Colour mode</span>
+          <div class="mobile-v2-choice-group" role="group" aria-label="Mobile colour mode">
+            <button type="button" data-mobile-theme-choice="light">Light</button>
+            <button type="button" data-mobile-theme-choice="dark">Dark</button>
+          </div>
+        </div>
+      </section>
       <label>Popular songs region (home page)
         <select id="regionSelect">
           <option value="US">United States (English)</option>
@@ -587,5 +606,6 @@
   <script src="js/account-ui.js"></script>
   <script src="js/rooms.js"></script>
   <script src="js/social.js"></script>
+  <script src="js/mobile-v2.js"></script>
 </body>
 </html>
